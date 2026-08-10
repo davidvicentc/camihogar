@@ -1,0 +1,170 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Tipografía del sistema de Apple. En Mac/iPhone/iPad resuelve a San
+       Francisco; en Windows/Android cae en Inter, que comparte proporciones. */
+    --font-apple-display: -apple-system, BlinkMacSystemFont, "SF Pro Display",
+      "SF Pro Text", var(--font-inter), "Helvetica Neue", Helvetica, Arial,
+      sans-serif;
+    --font-apple-text: -apple-system, BlinkMacSystemFont, "SF Pro Text",
+      "SF Pro Display", var(--font-inter), "Helvetica Neue", Helvetica, Arial,
+      sans-serif;
+
+    /* Tokens derivados del logo: #25160F y #E8511A */
+    --background: 34 47% 97%;
+    --foreground: 19 42% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 19 42% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 19 42% 10%;
+    --primary: 19 42% 10%;
+    --primary-foreground: 34 47% 97%;
+    --secondary: 32 38% 94%;
+    --secondary-foreground: 19 42% 10%;
+    --muted: 32 38% 94%;
+    --muted-foreground: 24 21% 36%;
+    --accent: 16 82% 51%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 32 38% 91%;
+    --input: 32 30% 86%;
+    --ring: 16 82% 51%;
+    --radius: 1rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-brand-bg text-brand-dark antialiased;
+    font-family: var(--font-apple-text);
+    font-synthesis-weight: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1;
+  }
+
+  /* Apple aprieta el tracking a medida que crece el tamaño del titular */
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-apple-display);
+    letter-spacing: -0.022em;
+    font-weight: 600;
+  }
+
+  h1 {
+    letter-spacing: -0.035em;
+  }
+
+  /* Los números tabulares evitan el baile de precios en las tarjetas */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  ::selection {
+    background: rgba(232, 81, 26, 0.22);
+    color: #25160f;
+  }
+}
+
+@layer utilities {
+  /* Oculta la barra de scroll en carruseles táctiles sin perder el scroll */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Iluminación cálida para la presentación de productos */
+  .warm-glow {
+    position: relative;
+  }
+  .warm-glow::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      ellipse 75% 55% at 50% 35%,
+      rgba(232, 81, 26, 0.16),
+      transparent 70%
+    );
+    pointer-events: none;
+  }
+
+  /* Titulares con el naranja del logo en degradado */
+  .text-gradient-ember {
+    background-image: linear-gradient(
+      100deg,
+      #ff8a5b 0%,
+      #e8511a 55%,
+      #ff7a45 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Superficie de vidrio sobre fondos oscuros (nav, chips, tarjetas) */
+  .glass-dark {
+    background: rgba(37, 22, 15, 0.55);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+  }
+  .glass-light {
+    background: rgba(251, 248, 244, 0.72);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+  }
+
+  /* Trama de la ventana del logo, usada como textura de fondo */
+  .logo-grid {
+    background-image: linear-gradient(
+        to right,
+        rgba(232, 81, 26, 0.12) 1px,
+        transparent 1px
+      ),
+      linear-gradient(to bottom, rgba(232, 81, 26, 0.12) 1px, transparent 1px);
+    background-size: 56px 56px;
+  }
+
+  /* Respeta el notch/home-indicator en móviles con Bottom App Bar */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .h-bottom-nav {
+    height: calc(4.25rem + env(safe-area-inset-bottom));
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+  .text-pretty {
+    text-wrap: pretty;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
