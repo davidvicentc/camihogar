@@ -3,7 +3,8 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowLeft, MessageCircle } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import { SiWhatsapp } from "@icons-pack/react-simple-icons";
 import { CustomizerPreview } from "@/components/customizer/customizer-preview";
 import { SwatchPicker } from "@/components/customizer/swatch-picker";
 import { ConfigPicker } from "@/components/customizer/config-picker";
@@ -70,7 +71,7 @@ function MobileSummaryBar() {
           onClick={() => trackEvent(product._id, "WHATSAPP_CLICK")}
           className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-[#25D366] px-4 py-2.5 text-sm font-semibold text-white shadow-warm-sm transition-transform hover:bg-[#1fb958] active:scale-95"
         >
-          <MessageCircle className="h-4 w-4" aria-hidden="true" />
+          <SiWhatsapp className="h-4 w-4" aria-hidden="true" />
           Pedir
         </a>
       </motion.div>

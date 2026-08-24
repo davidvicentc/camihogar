@@ -1,4 +1,5 @@
-import { MessageCircle, ShieldCheck, Truck } from "lucide-react";
+import { ShieldCheck, Truck } from "lucide-react";
+import { SiWhatsapp } from "@icons-pack/react-simple-icons";
 import { BRAND } from "@/lib/constants";
 
 const BADGES = [
@@ -13,7 +14,7 @@ const BADGES = [
     text: BRAND.delivery,
   },
   {
-    icon: MessageCircle,
+    icon: SiWhatsapp,
     title: "Atención cercana",
     text: "Pide y coordina por WhatsApp",
   },

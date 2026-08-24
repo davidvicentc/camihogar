@@ -1,4 +1,5 @@
-import { Eye, MessageCircle, Package, Percent } from "lucide-react";
+import { Eye, Package, Percent } from "lucide-react";
+import { SiWhatsapp } from "@icons-pack/react-simple-icons";
 import { getDashboardSummary } from "@/lib/data/analytics";
 import { StatCard } from "@/components/admin/stat-card";
 import { DashboardCharts } from "@/components/admin/dashboard-charts";
@@ -36,7 +37,7 @@ export default async function AdminDashboardPage() {
         <StatCard
           label="Clics a WhatsApp"
           value={numberFormat.format(summary.totalWhatsappClicks)}
-          icon={<MessageCircle className="h-5 w-5" />}
+          icon={<SiWhatsapp className="h-5 w-5" />}
           hint={`Además, ${numberFormat.format(summary.totalCustomizerOpens)} aperturas del personalizador`}
         />
         <StatCard

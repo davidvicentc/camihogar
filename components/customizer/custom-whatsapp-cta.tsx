@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { MessageCircle } from "lucide-react";
+import { SiWhatsapp } from "@icons-pack/react-simple-icons";
 import { Button } from "@/components/ui/button";
 import { useCustomizerStore } from "@/store/customizer-store";
 import { customOrderLink } from "@/lib/whatsapp";
@@ -42,7 +42,7 @@ export function CustomWhatsAppCta() {
             rel="noopener noreferrer"
             onClick={() => trackEvent(product._id, "WHATSAPP_CLICK")}
           >
-            <MessageCircle aria-hidden="true" />
+            <SiWhatsapp aria-hidden="true" />
             Pedir este Mueble Personalizado
           </a>
         </Button>

@@ -1,6 +1,8 @@
 import Link from "next/link";
-import { Instagram, MessageCircle, ShieldCheck, Truck } from "lucide-react";
+import { Instagram, ShieldCheck, Truck } from "lucide-react";
+import { SiWhatsapp } from "@icons-pack/react-simple-icons";
 import { LogoLockup } from "@/components/brand/logo";
+import { VicentStudiosCredit } from "@/components/brand/vicent-studios";
 import { BRAND, CATEGORY_META } from "@/lib/constants";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
 
@@ -64,7 +66,7 @@ export function Footer() {
                 aria-label="Escríbenos por WhatsApp"
                 className="rounded-full border border-brand-bg/15 p-2.5 transition-colors hover:border-[#25D366] hover:bg-[#25D366] hover:text-white"
               >
-                <MessageCircle className="h-5 w-5" aria-hidden="true" />
+                <SiWhatsapp className="h-5 w-5" aria-hidden="true" />
               </a>
             </div>
           </div>
@@ -136,9 +138,7 @@ export function Footer() {
             <p>
               © {year} {BRAND.name}. Todos los derechos reservados.
             </p>
-            <p>
-              Hecho con <span className="text-brand-accent">♥</span> para tu hogar
-            </p>
+            <VicentStudiosCredit />
           </div>
         </div>
       </div>

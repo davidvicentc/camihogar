@@ -4,7 +4,8 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, useMotionValueEvent, useScroll } from "framer-motion";
-import { Menu, MessageCircle } from "lucide-react";
+import { Menu } from "lucide-react";
+import { SiWhatsapp } from "@icons-pack/react-simple-icons";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/brand/logo";
 import { MobileDrawer } from "@/components/layout/mobile-drawer";
@@ -116,7 +117,7 @@ export function Navbar() {
                 rel="noopener noreferrer"
                 aria-label="Escríbenos por WhatsApp"
               >
-                <MessageCircle className="h-4 w-4" />
+                <SiWhatsapp className="h-4 w-4" />
                 <span className="hidden sm:inline">Escríbenos</span>
               </a>
             </Button>

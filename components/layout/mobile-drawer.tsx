@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Instagram, MessageCircle } from "lucide-react";
+import { Instagram } from "lucide-react";
+import { SiWhatsapp } from "@icons-pack/react-simple-icons";
 import {
   Sheet,
   SheetContent,
@@ -116,7 +117,7 @@ export function MobileDrawer({ open, onOpenChange }: MobileDrawerProps) {
               target="_blank"
               rel="noopener noreferrer"
             >
-              <MessageCircle className="h-4 w-4" />
+              <SiWhatsapp className="h-4 w-4" />
               Escríbenos por WhatsApp
             </a>
           </Button>

@@ -3,7 +3,8 @@
 import * as React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { MessageCircle, ShieldCheck, Star, Truck, Wand2 } from "lucide-react";
+import { ShieldCheck, Star, Truck, Wand2 } from "lucide-react";
+import { SiWhatsapp } from "@icons-pack/react-simple-icons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -224,7 +225,7 @@ export function ProductInfo({ product }: { product: ProductDTO }) {
             rel="noopener noreferrer"
             onClick={() => trackEvent(product._id, "WHATSAPP_CLICK")}
           >
-            <MessageCircle aria-hidden="true" />
+            <SiWhatsapp aria-hidden="true" />
             Consultar / Comprar por WhatsApp
           </a>
         </Button>

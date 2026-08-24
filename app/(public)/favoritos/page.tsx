@@ -4,7 +4,8 @@ import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import { Heart, MessageCircle, X } from "lucide-react";
+import { Heart, X } from "lucide-react";
+import { SiWhatsapp } from "@icons-pack/react-simple-icons";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useFavoritesStore } from "@/store/favorites-store";
@@ -139,7 +140,7 @@ export default function FavoritosPage() {
           <div className="mt-8 flex justify-center">
             <Button asChild variant="whatsapp" size="lg" className="w-full sm:w-auto">
               <a href={whatsappHref} target="_blank" rel="noopener noreferrer">
-                <MessageCircle aria-hidden="true" />
+                <SiWhatsapp aria-hidden="true" />
                 Consultar todos por WhatsApp
               </a>
             </Button>
