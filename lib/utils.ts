@@ -29,6 +29,22 @@ export function slugify(text: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
+/**
+ * URL pública del sitio, usada en metadatos, sitemap y los enlaces que se
+ * envían al cliente por WhatsApp.
+ *
+ * Prioriza `NEXT_PUBLIC_SITE_URL` (dominio propio). Si no está configurada,
+ * cae al dominio que Vercel expone en el build para no filtrar `localhost`
+ * dentro de los mensajes de WhatsApp en producción.
+ */
 export function getSiteUrl(): string {
-  return process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const explicit = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (explicit) return explicit.replace(/\/+$/, "");
+
+  const vercelHost =
+    process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL ??
+    process.env.NEXT_PUBLIC_VERCEL_URL;
+  if (vercelHost) return `https://${vercelHost.replace(/\/+$/, "")}`;
+
+  return "http://localhost:3000";
 }

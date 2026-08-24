@@ -35,7 +35,7 @@ Abre <http://localhost:3000> (tienda) y <http://localhost:3000/admin> (panel, pr
 | `NEXT_PUBLIC_WHATSAPP_NUMBER` | Número WhatsApp Business en formato internacional sin `+` (ej. `58412…`) |
 | `ADMIN_PASSWORD` | Clave de acceso al panel `/admin` |
 | `AUTH_SECRET` | Secreto largo aleatorio para firmar la cookie de sesión (`openssl rand -hex 32`) |
-| `NEXT_PUBLIC_SITE_URL` | URL pública del sitio (en Vercel: `https://tudominio.com`) |
+| `NEXT_PUBLIC_SITE_URL` | URL pública del sitio (en Vercel: `https://tudominio.com`). Si se omite, se usa el dominio del deploy de Vercel; en local, `http://localhost:3000` |
 
 > Sin `MONGODB_URI` el sitio arranca igualmente con estados vacíos elegantes; sin Cloudinary, el wizard del admin acepta URLs de imagen manuales.
 
@@ -91,9 +91,23 @@ middleware.ts          # Protección de /admin con cookie firmada
 ## Despliegue en Vercel
 
 1. Sube el repositorio a GitHub y haz **Import Project** en Vercel (framework autodetectado: Next.js; no requiere configuración extra — `vercel.json` incluido solo fija la región).
-2. En **Settings → Environment Variables** agrega todas las variables de la tabla anterior (usa `NEXT_PUBLIC_SITE_URL` con tu dominio final).
-3. En MongoDB Atlas: **Network Access → Allow access from anywhere** (`0.0.0.0/0`) o las IPs de Vercel.
-4. Deploy. Ejecuta el seed una única vez desde tu máquina apuntando al Atlas de producción: `npm run seed`.
+2. En **Settings → Environment Variables** agrega todas las variables de la tabla anterior, marcadas para *Production*, *Preview* y *Development*. Genera secretos nuevos para producción (no reutilices los de desarrollo):
+
+   ```bash
+   openssl rand -hex 32     # AUTH_SECRET
+   ```
+
+3. En MongoDB Atlas: crea el cluster y en **Network Access** agrega `0.0.0.0/0` (Vercel usa IPs dinámicas, no hay un rango fijo que puedas restringir en el plan gratuito).
+4. Deploy.
+5. Siembra los productos **una única vez** apuntando al Atlas de producción. El seed prioriza la variable del entorno sobre `.env.local`, así que pásala en línea — si ejecutas `npm run seed` a secas escribirás en tu Mongo local, no en Atlas:
+
+   ```bash
+   MONGODB_URI="mongodb+srv://usuario:password@cluster.mongodb.net/camihogar" npm run seed
+   ```
+
+   Es idempotente: salta los productos cuyo título ya existe, así que volver a correrlo no duplica nada.
+
+6. Al conectar un dominio propio, actualiza `NEXT_PUBLIC_SITE_URL` y vuelve a desplegar: ese valor se hornea en el build y es el que viaja en los enlaces de WhatsApp, `robots.txt` y `sitemap.xml`. Si no la configuras, el sitio cae al dominio `*.vercel.app` del deploy.
 
 ## Scripts
 
