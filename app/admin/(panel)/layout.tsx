@@ -1,22 +1,158 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { BarChart3, ExternalLink, Package, PlusCircle } from "lucide-react";
+import {
+  AlertTriangle,
+  BarChart3,
+  Boxes,
+  ClipboardList,
+  ExternalLink,
+  Factory,
+  Hammer,
+  History,
+  ListChecks,
+  Package,
+  PlusCircle,
+  Route,
+  Shield,
+  Users,
+  Warehouse,
+  type LucideIcon,
+} from "lucide-react";
 import { LogoutButton } from "@/components/admin/logout-button";
 import { Logo, LogoMark } from "@/components/brand/logo";
+import { getSesionOperario } from "@/lib/fabricacion/auth";
+import type { Capacidad, SesionOperario } from "@/lib/types/fabricacion";
 import { BRAND } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: `Panel administrativo — ${BRAND.name}`,
 };
 
-const NAV_LINKS = [
-  { href: "/admin", label: "Dashboard", icon: BarChart3 },
-  { href: "/admin/productos", label: "Productos", icon: Package },
-  { href: "/admin/productos/nuevo", label: "Nuevo producto", icon: PlusCircle },
+interface EnlaceNav {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+  /**
+   * El enlace se ve si quien mira tiene ALGUNA de estas capacidades.
+   * Sin lista, lo ve todo el mundo (la tienda no usa capacidades del taller).
+   */
+  capacidades?: readonly Capacidad[];
+}
+
+interface GrupoNav {
+  titulo: string;
+  enlaces: readonly EnlaceNav[];
+}
+
+const NAV_LINKS: readonly GrupoNav[] = [
+  {
+    titulo: "Tienda",
+    enlaces: [
+      { href: "/admin", label: "Dashboard", icon: BarChart3 },
+      { href: "/admin/productos", label: "Productos", icon: Package },
+      { href: "/admin/productos/nuevo", label: "Nuevo producto", icon: PlusCircle },
+    ],
+  },
+  {
+    titulo: "Fabricación",
+    enlaces: [
+      {
+        href: "/admin/fabricacion",
+        label: "Fabricación",
+        icon: Factory,
+        capacidades: ["ver_tablero"],
+      },
+      {
+        href: "/admin/fabricacion/pedidos",
+        label: "Pedidos",
+        icon: ClipboardList,
+        capacidades: ["ver_tablero", "gestionar_pedidos"],
+      },
+      {
+        href: "/admin/fabricacion/unidades",
+        label: "Muebles",
+        icon: Boxes,
+        capacidades: ["ver_tablero"],
+      },
+      {
+        href: "/admin/fabricacion/incidencias",
+        label: "Problemas",
+        icon: AlertTriangle,
+        capacidades: ["ver_tablero", "resolver_incidencias"],
+      },
+      {
+        href: "/admin/fabricacion/rutas",
+        label: "Rutas",
+        icon: Route,
+        capacidades: ["gestionar_rutas"],
+      },
+      {
+        href: "/admin/fabricacion/catalogo",
+        label: "Pasos",
+        icon: ListChecks,
+        capacidades: ["gestionar_catalogo"],
+      },
+      {
+        href: "/admin/fabricacion/equipo",
+        label: "Equipo",
+        icon: Users,
+        capacidades: ["gestionar_usuarios"],
+      },
+      {
+        href: "/admin/fabricacion/roles",
+        label: "Roles",
+        icon: Shield,
+        capacidades: ["gestionar_roles"],
+      },
+      {
+        href: "/admin/fabricacion/estaciones",
+        label: "Áreas",
+        icon: Warehouse,
+        capacidades: ["gestionar_estaciones"],
+      },
+      {
+        href: "/admin/fabricacion/auditoria",
+        label: "Historial",
+        icon: History,
+        capacidades: ["ver_auditoria"],
+      },
+    ],
+  },
 ] as const;
 
-export default function AdminPanelLayout({ children }: { children: ReactNode }) {
+const CLASES_ENLACE_ESCRITORIO =
+  "flex items-center gap-3 rounded-2xl px-4 py-2.5 text-sm font-medium text-brand-bg/70 transition-colors hover:bg-white/10 hover:text-brand-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent";
+
+const CLASES_ENLACE_MOVIL =
+  "flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-medium text-brand-bg/70 transition-colors hover:bg-white/10 hover:text-brand-bg";
+
+/**
+ * ¿Se le enseña este enlace a quien está mirando?
+ *
+ * Si no se pudo resolver la sesión (`null`) se enseñan todos: quien llega aquí
+ * ya pasó el portero de `/admin`, así que es un fallo pasajero y esconder el
+ * menú entero haría creer que el panel se rompió. Cada página vuelve a
+ * comprobar la capacidad y muestra su aviso si no la tiene.
+ */
+function puedeVer(enlace: EnlaceNav, sesion: SesionOperario | null): boolean {
+  if (!enlace.capacidades) return true;
+  if (!sesion) return true;
+  if (sesion.esAdmin) return true;
+  return enlace.capacidades.some((capacidad) => sesion.capacidades.includes(capacidad));
+}
+
+function gruposVisibles(sesion: SesionOperario | null): GrupoNav[] {
+  return NAV_LINKS.map((grupo) => ({
+    titulo: grupo.titulo,
+    enlaces: grupo.enlaces.filter((enlace) => puedeVer(enlace, sesion)),
+  })).filter((grupo) => grupo.enlaces.length > 0);
+}
+
+export default async function AdminPanelLayout({ children }: { children: ReactNode }) {
+  const sesion = await getSesionOperario();
+  const grupos = gruposVisibles(sesion);
+
   return (
     <div className="min-h-screen bg-brand-bg">
       {/* Sidebar — desktop */}
@@ -32,25 +168,32 @@ export default function AdminPanelLayout({ children }: { children: ReactNode }) 
           <p className="mt-2 text-xs text-brand-bg/50">{BRAND.tagline}</p>
         </div>
 
-        <nav aria-label="Panel" className="flex-1 space-y-1 px-4">
-          {NAV_LINKS.map(({ href, label, icon: Icon }) => (
-            <Link
-              key={href}
-              href={href}
-              className="flex items-center gap-3 rounded-2xl px-4 py-2.5 text-sm font-medium text-brand-bg/70 transition-colors hover:bg-white/10 hover:text-brand-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent"
-            >
-              <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
-              {label}
-            </Link>
+        <nav aria-label="Panel" className="flex-1 space-y-1 overflow-y-auto px-4 pb-4">
+          {grupos.map((grupo, indice) => (
+            <div key={grupo.titulo} className={indice === 0 ? "space-y-1" : "space-y-1 pt-4"}>
+              <p className="px-4 pb-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-brand-bg/40">
+                {grupo.titulo}
+              </p>
+              {grupo.enlaces.map(({ href, label, icon: Icon }) => (
+                <Link key={href} href={href} className={CLASES_ENLACE_ESCRITORIO}>
+                  <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  {label}
+                </Link>
+              ))}
+            </div>
           ))}
         </nav>
 
         <div className="px-4 pb-6">
           <div className="mx-4 mb-3 h-px bg-white/10" aria-hidden="true" />
           <Link
-            href="/"
-            className="flex items-center gap-3 rounded-2xl px-4 py-2.5 text-sm font-medium text-brand-bg/70 transition-colors hover:bg-white/10 hover:text-brand-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent"
+            href="/fabrica"
+            className="flex items-center gap-3 rounded-2xl bg-brand-accent/15 px-4 py-2.5 text-sm font-semibold text-brand-flame transition-colors hover:bg-brand-accent/25 hover:text-brand-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent"
           >
+            <Hammer className="h-4 w-4 shrink-0" aria-hidden="true" />
+            App de taller
+          </Link>
+          <Link href="/" className={CLASES_ENLACE_ESCRITORIO}>
             <ExternalLink className="h-4 w-4 shrink-0" aria-hidden="true" />
             Ver tienda
           </Link>
@@ -69,20 +212,31 @@ export default function AdminPanelLayout({ children }: { children: ReactNode }) 
             <LogoMark className="h-7" />
           </Link>
           <nav aria-label="Panel" className="flex items-center gap-1">
-            {NAV_LINKS.map(({ href, label, icon: Icon }) => (
-              <Link
-                key={href}
-                href={href}
-                className="flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-medium text-brand-bg/70 transition-colors hover:bg-white/10 hover:text-brand-bg"
-              >
-                <Icon className="h-3.5 w-3.5" aria-hidden="true" />
-                {label}
-              </Link>
+            {grupos.map((grupo, indice) => (
+              <div key={grupo.titulo} className="flex items-center gap-1">
+                {indice > 0 && (
+                  <span className="mx-1 h-6 w-px shrink-0 bg-white/15" aria-hidden="true" />
+                )}
+                <span className="shrink-0 px-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-brand-bg/40">
+                  {grupo.titulo}
+                </span>
+                {grupo.enlaces.map(({ href, label, icon: Icon }) => (
+                  <Link key={href} href={href} className={CLASES_ENLACE_MOVIL}>
+                    <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+                    {label}
+                  </Link>
+                ))}
+              </div>
             ))}
+            <span className="mx-1 h-6 w-px shrink-0 bg-white/15" aria-hidden="true" />
             <Link
-              href="/"
-              className="flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-medium text-brand-bg/70 transition-colors hover:bg-white/10 hover:text-brand-bg"
+              href="/fabrica"
+              className="flex shrink-0 items-center gap-1.5 rounded-xl bg-brand-accent/15 px-3 py-2 text-xs font-semibold text-brand-flame transition-colors hover:bg-brand-accent/25 hover:text-brand-bg"
             >
+              <Hammer className="h-3.5 w-3.5" aria-hidden="true" />
+              App de taller
+            </Link>
+            <Link href="/" className={CLASES_ENLACE_MOVIL}>
               <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
               Ver tienda
             </Link>
