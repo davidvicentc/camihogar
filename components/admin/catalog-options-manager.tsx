@@ -3,6 +3,14 @@
 import { useState, useTransition } from "react";
 import { Check, Pencil, Plus, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
   createBrand,
@@ -29,6 +37,11 @@ export function CatalogOptionsManager({
   const [image, setImage] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [confirmTarget, setConfirmTarget] = useState<{
+    type: "save" | "delete";
+    id?: string;
+    name: string;
+  } | null>(null);
   const [pending, startTransition] = useTransition();
   const isBrand = kind === "marca";
 
@@ -40,8 +53,14 @@ export function CatalogOptionsManager({
   function save() {
     const cleanName = name.trim();
     if (!cleanName) return;
-    const action = editingId ? "actualizar" : "crear";
-    if (!window.confirm(`¿Seguro que quieres ${action} la ${kind} “${cleanName}”?`)) return;
+    setConfirmTarget({ type: "save", name: cleanName });
+  }
+
+  function executeSave() {
+    if (!confirmTarget || confirmTarget.type !== "save") return;
+    const cleanName = confirmTarget.name.trim();
+    if (!cleanName) return;
+
     setError(null);
     startTransition(async () => {
       const result = editingId
@@ -54,6 +73,7 @@ export function CatalogOptionsManager({
 
       if (!result.ok) {
         setError(result.error ?? "No se pudo guardar.");
+        setConfirmTarget(null);
         return;
       }
 
@@ -64,32 +84,43 @@ export function CatalogOptionsManager({
           )
         );
       } else {
-        // The server revalidates the page; this optimistic row keeps the UI immediate.
         setItems((current) => [
           ...current,
           {
             _id: `pending-${Date.now()}`,
             name: cleanName,
             slug: cleanName.toLowerCase().replace(/\s+/g, "-"),
-            isActive: true, description, image,
+            isActive: true,
+            description,
+            image,
           },
         ]);
       }
       reset();
+      setConfirmTarget(null);
     });
   }
 
   function remove(id: string) {
     setError(null);
     const item = items.find((entry) => entry._id === id);
-    if (!window.confirm(`¿Seguro que quieres eliminar la ${kind} “${item?.name ?? ""}”?`)) return;
+    setConfirmTarget({ type: "delete", id, name: item?.name ?? "" });
+  }
+
+  function executeDelete() {
+    if (!confirmTarget || confirmTarget.type !== "delete" || !confirmTarget.id) return;
+
+    const id = confirmTarget.id;
+    setError(null);
     startTransition(async () => {
       const result = isBrand ? await deleteBrand(id) : await deleteCategory(id);
       if (!result.ok) {
         setError(result.error ?? "No se pudo eliminar.");
+        setConfirmTarget(null);
         return;
       }
       setItems((current) => current.filter((item) => item._id !== id));
+      setConfirmTarget(null);
     });
   }
 
@@ -140,6 +171,34 @@ export function CatalogOptionsManager({
           </div>
         ))}
       </div>
+
+      <Dialog open={confirmTarget !== null} onOpenChange={(open) => { if (!open) setConfirmTarget(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {confirmTarget?.type === "save" ? `¿Seguro que quieres ${editingId ? "actualizar" : "crear"} esta ${kind}?` : `¿Seguro que quieres eliminar esta ${kind}?`}
+            </DialogTitle>
+            <DialogDescription>
+              {confirmTarget?.type === "save"
+                ? `Se guardará “${confirmTarget.name}” en ${kind === "marca" ? "marcas" : "categorías"}.`
+                : `Se eliminará “${confirmTarget?.name ?? ""}” y no se podrá recuperar.`}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="sm:justify-end">
+            <Button type="button" variant="ghost" onClick={() => setConfirmTarget(null)}>
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              variant="accent"
+              onClick={confirmTarget?.type === "save" ? executeSave : executeDelete}
+              disabled={pending}
+            >
+              {confirmTarget?.type === "save" ? (editingId ? "Guardar" : "Crear") : "Eliminar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

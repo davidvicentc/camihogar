@@ -4,7 +4,6 @@ import Link from "next/link";
 import {
   BarChart3,
   ExternalLink,
-  Hammer,
   Package,
   PlusCircle,
   Tags,
@@ -120,13 +119,6 @@ export default async function AdminPanelLayout({ children }: { children: ReactNo
 
         <div className="px-4 pb-6">
           <div className="mx-4 mb-3 h-px bg-white/10" aria-hidden="true" />
-          {/* <Link
-            href="/fabrica"
-            className="flex items-center gap-3 rounded-2xl bg-brand-accent/15 px-4 py-2.5 text-sm font-semibold text-brand-flame transition-colors hover:bg-brand-accent/25 hover:text-brand-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent"
-          >
-            <Hammer className="h-4 w-4 shrink-0" aria-hidden="true" />
-            App de taller
-          </Link> */}
           <Link href="/" className={CLASES_ENLACE_ESCRITORIO}>
             <ExternalLink className="h-4 w-4 shrink-0" aria-hidden="true" />
             Ver tienda
@@ -163,13 +155,6 @@ export default async function AdminPanelLayout({ children }: { children: ReactNo
               </div>
             ))}
             <span className="mx-1 h-6 w-px shrink-0 bg-white/15" aria-hidden="true" />
-            {/* <Link
-              href="/fabrica"
-              className="flex shrink-0 items-center gap-1.5 rounded-xl bg-brand-accent/15 px-3 py-2 text-xs font-semibold text-brand-flame transition-colors hover:bg-brand-accent/25 hover:text-brand-bg"
-            >
-              <Hammer className="h-3.5 w-3.5" aria-hidden="true" />
-              App de taller
-            </Link> */}
             <Link href="/" className={CLASES_ENLACE_MOVIL}>
               <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
               Ver tienda
