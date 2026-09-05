@@ -25,6 +25,8 @@ export function CatalogOptionsManager({
 }) {
   const [items, setItems] = useState(initialItems);
   const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [image, setImage] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -32,7 +34,7 @@ export function CatalogOptionsManager({
 
   function reset() {
     setName("");
-    setEditingId(null);
+    setEditingId(null); setDescription(""); setImage("");
   }
 
   function save() {
@@ -45,10 +47,10 @@ export function CatalogOptionsManager({
       const result = editingId
         ? isBrand
           ? await updateBrand(editingId, cleanName)
-          : await updateCategory(editingId, cleanName)
+          : await updateCategory(editingId, cleanName, description, image)
         : isBrand
           ? await createBrand(cleanName)
-          : await createCategory(cleanName);
+          : await createCategory(cleanName, description, image);
 
       if (!result.ok) {
         setError(result.error ?? "No se pudo guardar.");
@@ -58,7 +60,7 @@ export function CatalogOptionsManager({
       if (editingId) {
         setItems((current) =>
           current.map((item) =>
-            item._id === editingId ? { ...item, name: cleanName } : item
+            item._id === editingId ? { ...item, name: cleanName, description, image } : item
           )
         );
       } else {
@@ -69,7 +71,7 @@ export function CatalogOptionsManager({
             _id: `pending-${Date.now()}`,
             name: cleanName,
             slug: cleanName.toLowerCase().replace(/\s+/g, "-"),
-            isActive: true,
+            isActive: true, description, image,
           },
         ]);
       }
@@ -90,6 +92,8 @@ export function CatalogOptionsManager({
       setItems((current) => current.filter((item) => item._id !== id));
     });
   }
+
+  function beginEdit(item: CatalogOptionDTO) { setEditingId(item._id); setName(item.name); setDescription(item.description ?? ""); setImage(item.image ?? ""); }
 
   return (
     <div className="space-y-5">
@@ -116,6 +120,7 @@ export function CatalogOptionsManager({
           )}
         </div>
       </div>
+      {!isBrand && <div className="grid gap-2 sm:grid-cols-2"><Input value={description} onChange={(event) => setDescription(event.target.value)} placeholder="Descripción de la categoría" /><Input value={image} onChange={(event) => setImage(event.target.value)} placeholder="URL de imagen" type="url" /></div>}
 
       {error && <p role="alert" className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
 
@@ -125,7 +130,7 @@ export function CatalogOptionsManager({
           <div key={item._id} className="flex items-center justify-between gap-3 px-4 py-3">
             <span className="font-medium text-brand-dark">{item.name}</span>
             <div className="flex gap-1">
-              <Button type="button" variant="ghost" size="icon" aria-label={`Editar ${item.name}`} onClick={() => { setEditingId(item._id); setName(item.name); }}>
+              <Button type="button" variant="ghost" size="icon" aria-label={`Editar ${item.name}`} onClick={() => beginEdit(item)}>
                 <Pencil aria-hidden="true" />
               </Button>
               <Button type="button" variant="ghost" size="icon" className="text-red-600" aria-label={`Eliminar ${item.name}`} onClick={() => remove(item._id)} disabled={pending || item._id.startsWith("pending-")}>

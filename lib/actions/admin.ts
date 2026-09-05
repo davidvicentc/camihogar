@@ -33,6 +33,18 @@ export async function saveWhatsAppNumber(number: string): Promise<AdminActionRes
   } catch (error) { return { ok: false, error: error instanceof Error ? error.message : "No se pudo guardar." }; }
 }
 
+export async function saveSiteSettings(input: { whatsappNumber: string; instagramUrl: string; facebookUrl: string; tagline: string; warrantyText: string; deliveryText: string; email: string }): Promise<AdminActionResult> {
+  try {
+    await requirePermission("settings.manage");
+    const whatsappNumber = input.whatsappNumber.replace(/\D/g, "");
+    if (whatsappNumber.length < 10 || whatsappNumber.length > 15) return { ok: false, error: "El WhatsApp debe estar en formato internacional." };
+    await connectDB();
+    await SiteSettingsModel.findOneAndUpdate({ key: "main" }, { ...input, whatsappNumber }, { upsert: true });
+    revalidatePath("/"); revalidatePath("/catalogo"); revalidatePath("/admin/configuracion");
+    return { ok: true };
+  } catch (error) { return { ok: false, error: error instanceof Error ? error.message : "No se pudo guardar." }; }
+}
+
 export async function createAdminUser(input: { name: string; email: string; password: string; permissions: string[] }): Promise<AdminActionResult> {
   try {
     await requirePermission("users.manage");

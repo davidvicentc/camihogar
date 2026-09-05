@@ -23,7 +23,6 @@ import {
 } from "@/components/ui/sheet";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
-import { CATEGORY_META } from "@/lib/constants";
 import { cn, formatPrice } from "@/lib/utils";
 
 const SORT_OPTIONS = [
@@ -76,9 +75,10 @@ function CategoryChip({
 interface CatalogFiltersProps {
   priceRange: { min: number; max: number };
   total: number;
+  categories: { name: string; slug: string }[];
 }
 
-export function CatalogFilters({ priceRange, total }: CatalogFiltersProps) {
+export function CatalogFilters({ priceRange, total, categories }: CatalogFiltersProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -194,13 +194,13 @@ export function CatalogFilters({ priceRange, total }: CatalogFiltersProps) {
         <CategoryChip active={!activeCategorySlug} onClick={() => setCategory(null)}>
           Todo
         </CategoryChip>
-        {CATEGORY_META.map((category) => (
+        {categories.map((category) => (
           <CategoryChip
             key={category.slug}
             active={activeCategorySlug === category.slug}
             onClick={() => setCategory(category.slug)}
           >
-            {category.label}
+            {category.name}
           </CategoryChip>
         ))}
       </div>

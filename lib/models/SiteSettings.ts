@@ -4,6 +4,12 @@ const SiteSettingsSchema = new Schema(
   {
     key: { type: String, required: true, unique: true, default: "main" },
     whatsappNumber: { type: String, default: "" },
+    instagramUrl: { type: String, default: "" },
+    facebookUrl: { type: String, default: "" },
+    tagline: { type: String, default: "" },
+    warrantyText: { type: String, default: "" },
+    deliveryText: { type: String, default: "" },
+    email: { type: String, default: "" },
   },
   { timestamps: true }
 );

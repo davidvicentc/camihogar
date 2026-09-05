@@ -1,4 +1,5 @@
 import { getBestsellers, getFeaturedProducts } from "@/lib/data/products";
+import { getCategories } from "@/lib/data/catalog";
 import { LogoMark } from "@/components/brand/logo";
 import { Hero } from "@/components/home/hero";
 import { CategoryCarousel } from "@/components/home/category-carousel";
@@ -27,9 +28,10 @@ function EmptyCatalog() {
 }
 
 export default async function HomePage() {
-  const [featured, bestsellers] = await Promise.all([
+  const [featured, bestsellers, categories] = await Promise.all([
     getFeaturedProducts(6),
     getBestsellers(8),
+    getCategories(),
   ]);
 
   const storeIsEmpty = featured.length === 0 && bestsellers.length === 0;
@@ -38,7 +40,7 @@ export default async function HomePage() {
     <>
       <Hero />
       <div className="space-y-14 py-12 md:space-y-20 md:py-16">
-        <CategoryCarousel />
+        <CategoryCarousel categories={categories} />
         {storeIsEmpty ? (
           <EmptyCatalog />
         ) : (

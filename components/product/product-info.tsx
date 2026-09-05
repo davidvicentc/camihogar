@@ -69,7 +69,7 @@ export function ProductInfo({ product }: { product: ProductDTO }) {
       {/* Título */}
       <motion.h1
         variants={fadeUp}
-        className="text-balance font-display text-3xl font-semibold leading-tight text-brand-dark lg:text-4xl"
+        className="line-clamp-3 text-balance font-display text-3xl font-semibold leading-tight text-brand-dark lg:text-4xl"
       >
         {product.title}
       </motion.h1>
@@ -80,7 +80,7 @@ export function ProductInfo({ product }: { product: ProductDTO }) {
             <p className="text-base font-semibold text-brand-dark">Elige una variante</p>
             <p className="text-sm text-brand-taupe">Cada opción tiene su propio precio.</p>
           </div>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <div className="grid max-h-[268px] grid-cols-2 gap-3 overflow-y-auto pr-1 sm:grid-cols-3">
             {product.variants.map((variant, index) => (
               <button
                 key={`${variant.name}-${index}`}
@@ -93,7 +93,7 @@ export function ProductInfo({ product }: { product: ProductDTO }) {
                     : "border-brand-dark/15 bg-brand-card text-brand-dark hover:border-brand-accent/50"
                 )}
               >
-                <span className="block text-sm font-semibold">{variant.name}</span>
+                <span className="block truncate text-sm font-semibold">{variant.name}</span>
                 <span className="mt-1 block text-lg font-bold tabular-nums text-brand-accent">
                   {formatPrice(variant.price)}
                 </span>
@@ -149,7 +149,7 @@ export function ProductInfo({ product }: { product: ProductDTO }) {
       {product.description && (
         <motion.p
           variants={fadeUp}
-          className="leading-relaxed text-brand-taupe"
+          className="max-h-32 overflow-y-auto leading-relaxed text-brand-taupe"
         >
           {product.description}
         </motion.p>

@@ -4,6 +4,7 @@ import { CatalogFilters } from "@/components/catalog/catalog-filters";
 import { CatalogGrid } from "@/components/catalog/catalog-grid";
 import { categoryFromSlug } from "@/lib/constants";
 import { getPriceRange, getProducts } from "@/lib/data/products";
+import { getCategories } from "@/lib/data/catalog";
 import type { CatalogFilters as Filters } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -31,8 +32,10 @@ export default async function CatalogoPage({
 }) {
   const sp = await searchParams;
 
+  const categories = await getCategories();
+  const selectedCategory = categories.find((category) => category.slug === sp.categoria);
   const filters: Filters = {
-    category: sp.categoria ? categoryFromSlug(sp.categoria) : undefined,
+    category: selectedCategory?.name ?? (sp.categoria ? categoryFromSlug(sp.categoria) : undefined),
     minPrice: parsePrice(sp.precioMin),
     maxPrice: parsePrice(sp.precioMax),
     inStock: sp.disponibles === "1" ? true : undefined,
@@ -63,7 +66,7 @@ export default async function CatalogoPage({
 
       <div className="mb-6 md:mb-8">
         <Suspense fallback={<div className="h-12" aria-hidden="true" />}>
-          <CatalogFilters priceRange={priceRange} total={products.length} />
+          <CatalogFilters priceRange={priceRange} total={products.length} categories={categories} />
         </Suspense>
       </div>
 

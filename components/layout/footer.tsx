@@ -1,10 +1,12 @@
 import Link from "next/link";
-import { Instagram, ShieldCheck, Truck } from "lucide-react";
+import { Facebook, Instagram, ShieldCheck, Truck } from "lucide-react";
 import { SiWhatsapp } from "@icons-pack/react-simple-icons";
 import { LogoLockup } from "@/components/brand/logo";
 import { VicentStudiosCredit } from "@/components/brand/vicent-studios";
-import { BRAND, CATEGORY_META } from "@/lib/constants";
-import { buildWhatsAppLink } from "@/lib/whatsapp";
+import { BRAND } from "@/lib/constants";
+import { getCategories } from "@/lib/data/catalog";
+import { getSiteSettings } from "@/lib/data/settings";
+import { buildWhatsAppLinkForNumber } from "@/lib/whatsapp";
 
 const HELP_LINKS = [
   { label: "Garantía", href: "#" },
@@ -12,15 +14,12 @@ const HELP_LINKS = [
   { label: "Contacto", href: "#" },
 ] as const;
 
-const TRUST_BADGES = [
-  { icon: ShieldCheck, text: BRAND.warranty },
-  { icon: Truck, text: BRAND.delivery },
-] as const;
-
-export function Footer() {
+export async function Footer() {
   const year = new Date().getFullYear();
-  const whatsappHref = buildWhatsAppLink(
+  const [categories, settings] = await Promise.all([getCategories(), getSiteSettings()]);
+  const whatsappHref = buildWhatsAppLinkForNumber(
     "¡Hola CamiHogar! Quiero más información sobre sus muebles."
+    , settings.whatsappNumber
   );
 
   return (
@@ -47,11 +46,11 @@ export function Footer() {
               <LogoLockup surface="dark" className="w-44 md:w-52" />
             </Link>
             <p className="mt-5 max-w-xs text-pretty text-[0.95rem] leading-relaxed tracking-tight text-brand-bg/60">
-              {BRAND.tagline}
+              {settings.tagline}
             </p>
             <div className="mt-6 flex items-center gap-3">
               <a
-                href={BRAND.instagram}
+                href={settings.instagramUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Instagram de CamiHogar"
@@ -68,6 +67,7 @@ export function Footer() {
               >
                 <SiWhatsapp className="h-5 w-5" aria-hidden="true" />
               </a>
+              {settings.facebookUrl && <a href={settings.facebookUrl} target="_blank" rel="noopener noreferrer" aria-label="Facebook de CamiHogar" className="rounded-full border border-brand-bg/15 p-2.5 transition-all hover:border-brand-accent hover:bg-brand-accent hover:text-white"><Facebook className="h-5 w-5" aria-hidden="true" /></a>}
             </div>
           </div>
 
@@ -77,13 +77,13 @@ export function Footer() {
               Categorías
             </h3>
             <ul className="mt-5 flex flex-col gap-2.5">
-              {CATEGORY_META.map((category) => (
+              {categories.map((category) => (
                 <li key={category.slug}>
                   <Link
                     href={`/catalogo?categoria=${category.slug}`}
                     className="text-sm tracking-tight text-brand-bg/60 transition-colors hover:text-brand-accent"
                   >
-                    {category.label}
+                    {category.name}
                   </Link>
                 </li>
               ))}
@@ -112,7 +112,10 @@ export function Footer() {
 
         {/* Sellos de confianza */}
         <div className="mt-12 flex flex-col gap-3 sm:flex-row">
-          {TRUST_BADGES.map((badge) => (
+          {[
+            { icon: ShieldCheck, text: settings.warrantyText },
+            { icon: Truck, text: settings.deliveryText },
+          ].map((badge) => (
             <div
               key={badge.text}
               className="flex flex-1 items-center gap-3 rounded-2xl border border-brand-bg/10 bg-brand-bg/[0.04] px-5 py-4"

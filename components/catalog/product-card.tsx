@@ -78,7 +78,7 @@ export function ProductCard({ product, priority = false, className }: ProductCar
         </div>
 
         <div className="space-y-1.5 p-4">
-          <p className="text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-brand-accent">
+          <p className="truncate text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-brand-accent">
             {product.category}
           </p>
           <h3 className="line-clamp-2 font-display text-[0.95rem] font-semibold leading-snug tracking-tight text-brand-dark">
@@ -109,13 +109,16 @@ export function ProductCard({ product, priority = false, className }: ProductCar
         </div>
       </Link>
 
-      <div className="min-h-[112px] space-y-2 px-4 pb-3 pt-1">
+      <div className="h-[112px] shrink-0 space-y-2 overflow-hidden px-4 pb-3 pt-1">
         {product.variants && product.variants.length > 1 ? (
           <>
           <p className="text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-brand-taupe">
             Elige tu medida
           </p>
-          <div className="grid grid-cols-2 gap-2">
+          <div
+            className="scrollbar-hide flex gap-2 overflow-x-auto overscroll-x-contain pb-1"
+            aria-label={`Variantes de ${product.title}`}
+          >
             {product.variants.map((variant, index) => (
               <button
                 key={`${variant.name}-${index}`}
@@ -123,7 +126,7 @@ export function ProductCard({ product, priority = false, className }: ProductCar
                 onClick={() => setSelectedVariantIndex(index)}
                 aria-pressed={selectedVariantIndex === index}
                 className={cn(
-                  "min-h-14 rounded-xl border px-3 py-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent",
+                  "min-h-14 w-[112px] shrink-0 snap-start rounded-xl border px-3 py-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent",
                   selectedVariantIndex === index
                     ? "border-brand-accent bg-brand-accent/10 text-brand-dark"
                     : "border-brand-dark/10 bg-brand-bg text-brand-dark hover:border-brand-accent/50"
@@ -138,7 +141,7 @@ export function ProductCard({ product, priority = false, className }: ProductCar
           </div>
           </>
         ) : (
-          <div className="flex h-full min-h-[86px] items-center rounded-xl border border-dashed border-brand-dark/10 bg-brand-bg/60 px-3">
+          <div className="flex h-[86px] items-center rounded-xl border border-dashed border-brand-dark/10 bg-brand-bg/60 px-3">
             <div>
               <p className="text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-brand-taupe">Precio único</p>
               <p className="mt-1 text-xs text-brand-taupe">Disponible para consultar</p>

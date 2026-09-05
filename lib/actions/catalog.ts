@@ -9,6 +9,7 @@ import CategoryModel from "@/lib/models/Category";
 import ProductModel from "@/lib/models/Product";
 import type { ActionResult } from "@/lib/actions/products";
 import { slugify } from "@/lib/utils";
+import type { Model } from "mongoose";
 
 async function requireAdmin(permission: "brands.manage" | "categories.manage") {
   const token = (await cookies()).get(ADMIN_COOKIE)?.value;
@@ -29,15 +30,17 @@ function refreshCatalog() {
   revalidatePath("/admin/marcas");
 }
 
-async function saveOption(Model: typeof BrandModel, permission: "brands.manage" | "categories.manage", name: string, id?: string): Promise<ActionResult<{ _id: string; name: string }>> {
+// Brand and Category have different inferred schemas but share this CRUD shape.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function saveOption(Model: Model<any>, permission: "brands.manage" | "categories.manage", name: string, id?: string, details?: { description?: string; image?: string }): Promise<ActionResult<{ _id: string; name: string }>> {
   await requireAdmin(permission);
   const clean = name.trim();
   if (!clean) return { ok: false, error: "El nombre es obligatorio." };
   await connectDB();
   try {
     const saved = id
-      ? await Model.findByIdAndUpdate(id, { name: clean, slug: slugify(clean) }, { new: true })
-      : await Model.create({ name: clean, slug: slugify(clean) });
+      ? await Model.findByIdAndUpdate(id, { name: clean, slug: slugify(clean), ...details }, { new: true })
+      : await Model.create({ name: clean, slug: slugify(clean), ...details });
     if (!saved) return { ok: false, error: "Registro no encontrado." };
     refreshCatalog();
     return { ok: true, data: { _id: String(saved._id), name: clean } };
@@ -48,8 +51,8 @@ async function saveOption(Model: typeof BrandModel, permission: "brands.manage" 
 
 export async function createBrand(name: string) { return saveOption(BrandModel, "brands.manage", name); }
 export async function updateBrand(id: string, name: string) { return saveOption(BrandModel, "brands.manage", name, id); }
-export async function createCategory(name: string) { return saveOption(CategoryModel, "categories.manage", name); }
-export async function updateCategory(id: string, name: string) { return saveOption(CategoryModel, "categories.manage", name, id); }
+export async function createCategory(name: string, description = "", image = "") { return saveOption(CategoryModel, "categories.manage", name, undefined, { description, image }); }
+export async function updateCategory(id: string, name: string, description = "", image = "") { return saveOption(CategoryModel, "categories.manage", name, id, { description, image }); }
 
 export async function deleteBrand(id: string): Promise<ActionResult> {
   await requireAdmin("brands.manage"); await connectDB();
