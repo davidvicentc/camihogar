@@ -5,7 +5,6 @@ import { CategoryCarousel } from "@/components/home/category-carousel";
 import { Bestsellers } from "@/components/home/bestsellers";
 import { FeaturedStrip } from "@/components/home/featured-strip";
 import { TrustBadges } from "@/components/home/trust-badges";
-import { CustomizerBanner } from "@/components/home/customizer-banner";
 
 export const dynamic = "force-dynamic";
 
@@ -49,7 +48,6 @@ export default async function HomePage() {
           </>
         )}
         <TrustBadges />
-        <CustomizerBanner />
       </div>
     </>
   );

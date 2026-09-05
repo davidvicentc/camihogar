@@ -2,27 +2,22 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import {
-  AlertTriangle,
   BarChart3,
-  Boxes,
-  ClipboardList,
   ExternalLink,
-  Factory,
   Hammer,
-  History,
-  ListChecks,
   Package,
   PlusCircle,
-  Route,
-  Shield,
-  Users,
-  Warehouse,
+  Tags,
+  BadgeCheck,
+  Settings,
+  UserRound,
   type LucideIcon,
 } from "lucide-react";
 import { LogoutButton } from "@/components/admin/logout-button";
 import { Logo, LogoMark } from "@/components/brand/logo";
 import { getSesionOperario } from "@/lib/fabricacion/auth";
 import type { Capacidad, SesionOperario } from "@/lib/types/fabricacion";
+import type { AdminPermission } from "@/lib/types";
 import { BRAND } from "@/lib/constants";
 
 export const metadata: Metadata = {
@@ -37,7 +32,7 @@ interface EnlaceNav {
    * El enlace se ve si quien mira tiene ALGUNA de estas capacidades.
    * Sin lista, lo ve todo el mundo (la tienda no usa capacidades del taller).
    */
-  capacidades?: readonly Capacidad[];
+  capacidades?: readonly (Capacidad | AdminPermission)[];
 }
 
 interface GrupoNav {
@@ -52,71 +47,10 @@ const NAV_LINKS: readonly GrupoNav[] = [
       { href: "/admin", label: "Dashboard", icon: BarChart3 },
       { href: "/admin/productos", label: "Productos", icon: Package },
       { href: "/admin/productos/nuevo", label: "Nuevo producto", icon: PlusCircle },
-    ],
-  },
-  {
-    titulo: "Fabricación",
-    enlaces: [
-      {
-        href: "/admin/fabricacion",
-        label: "Fabricación",
-        icon: Factory,
-        capacidades: ["ver_tablero"],
-      },
-      {
-        href: "/admin/fabricacion/pedidos",
-        label: "Pedidos",
-        icon: ClipboardList,
-        capacidades: ["ver_tablero", "gestionar_pedidos"],
-      },
-      {
-        href: "/admin/fabricacion/unidades",
-        label: "Muebles",
-        icon: Boxes,
-        capacidades: ["ver_tablero"],
-      },
-      {
-        href: "/admin/fabricacion/incidencias",
-        label: "Problemas",
-        icon: AlertTriangle,
-        capacidades: ["ver_tablero", "resolver_incidencias"],
-      },
-      {
-        href: "/admin/fabricacion/rutas",
-        label: "Rutas",
-        icon: Route,
-        capacidades: ["gestionar_rutas"],
-      },
-      {
-        href: "/admin/fabricacion/catalogo",
-        label: "Pasos",
-        icon: ListChecks,
-        capacidades: ["gestionar_catalogo"],
-      },
-      {
-        href: "/admin/fabricacion/equipo",
-        label: "Equipo",
-        icon: Users,
-        capacidades: ["gestionar_usuarios"],
-      },
-      {
-        href: "/admin/fabricacion/roles",
-        label: "Roles",
-        icon: Shield,
-        capacidades: ["gestionar_roles"],
-      },
-      {
-        href: "/admin/fabricacion/estaciones",
-        label: "Áreas",
-        icon: Warehouse,
-        capacidades: ["gestionar_estaciones"],
-      },
-      {
-        href: "/admin/fabricacion/auditoria",
-        label: "Historial",
-        icon: History,
-        capacidades: ["ver_auditoria"],
-      },
+      { href: "/admin/categorias", label: "Categorías", icon: Tags },
+      { href: "/admin/marcas", label: "Marcas", icon: BadgeCheck },
+      { href: "/admin/configuracion", label: "Configuración", icon: Settings, capacidades: ["settings.manage"] },
+      { href: "/admin/usuarios", label: "Usuarios", icon: UserRound, capacidades: ["users.manage"] },
     ],
   },
 ] as const;
@@ -139,7 +73,7 @@ function puedeVer(enlace: EnlaceNav, sesion: SesionOperario | null): boolean {
   if (!enlace.capacidades) return true;
   if (!sesion) return true;
   if (sesion.esAdmin) return true;
-  return enlace.capacidades.some((capacidad) => sesion.capacidades.includes(capacidad));
+  return enlace.capacidades.some((capacidad) => sesion.capacidades.includes(capacidad as Capacidad));
 }
 
 function gruposVisibles(sesion: SesionOperario | null): GrupoNav[] {

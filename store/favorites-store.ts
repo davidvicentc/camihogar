@@ -35,6 +35,9 @@ export const useFavoritesStore = create<FavoritesState>()(
         set((state) => ({ items: state.items.filter((i) => i.id !== id) })),
       clear: () => set({ items: [] }),
     }),
-    { name: "camihogar-favoritos" }
+    {
+      name: "camihogar-favoritos",
+      skipHydration: true,
+    }
   )
 );

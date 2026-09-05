@@ -1,5 +1,5 @@
 import { formatPrice, getSiteUrl } from "@/lib/utils";
-import type { ProductDTO } from "@/lib/types";
+import type { ProductDTO, ProductVariant } from "@/lib/types";
 
 function getWhatsAppNumber(): string {
   return process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "584120000000";
@@ -9,13 +9,23 @@ export function buildWhatsAppLink(message: string): string {
   return `https://wa.me/${getWhatsAppNumber()}?text=${encodeURIComponent(message)}`;
 }
 
-/** CTA principal de la ficha de producto (PDP). */
-export function productInquiryLink(product: ProductDTO): string {
+export function buildWhatsAppLinkForNumber(message: string, number: string): string {
+  return `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
+}
+
+/** CTA principal del catálogo, con la variante y precio que eligió el cliente. */
+export function productInquiryLink(
+  product: ProductDTO,
+  variant?: ProductVariant,
+  whatsappNumber?: string | null
+): string {
   const url = `${getSiteUrl()}/producto/${product.slug}`;
-  const message = `¡Hola CamiHogar! Estoy interesado en el mueble *${product.title}* (Precio: ${formatPrice(
-    product.basePrice
-  )}). Ver producto: ${url}`;
-  return buildWhatsAppLink(message);
+  const price = variant?.price ?? product.basePrice;
+  const variantLine = variant ? `\n- Variante: ${variant.name}` : "";
+  const message = `¡Hola CamiHogar! Estoy interesado en *${product.title}*.${variantLine}\n- Precio: ${formatPrice(
+    price
+  )}\nVer producto: ${url}`;
+  return whatsappNumber ? buildWhatsAppLinkForNumber(message, whatsappNumber) : buildWhatsAppLink(message);
 }
 
 export interface CustomizationSummary {

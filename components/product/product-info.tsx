@@ -1,20 +1,17 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import { motion } from "framer-motion";
-import { ShieldCheck, Star, Truck, Wand2 } from "lucide-react";
+import { ShieldCheck, Star, Truck } from "lucide-react";
 import { SiWhatsapp } from "@icons-pack/react-simple-icons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { BRAND } from "@/lib/constants";
 import { productInquiryLink } from "@/lib/whatsapp";
 import { trackEvent } from "@/lib/track";
 import { cn, formatPrice } from "@/lib/utils";
 import type { ProductDTO } from "@/lib/types";
-
-const spring = { type: "spring", stiffness: 300, damping: 24 } as const;
+import { useWhatsAppNumber } from "@/components/layout/whatsapp-settings-provider";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 14 },
@@ -26,18 +23,34 @@ const fadeUp = {
  * vista previa de variaciones y CTAs de WhatsApp / personalizador.
  */
 export function ProductInfo({ product }: { product: ProductDTO }) {
-  const { fabrics, finishes, configurations } = product.customizationOptions;
-  const isCustomizable =
-    fabrics.length > 0 || finishes.length > 0 || configurations.length > 0;
+  const whatsappNumber = useWhatsAppNumber();
+  const initialVariantIndex =
+    product.variants && product.variants.length > 0
+      ? product.variants.findIndex((variant) => variant.isDefault) >= 0
+        ? product.variants.findIndex((variant) => variant.isDefault)
+        : 0
+      : -1;
 
-  const [fabricIndex, setFabricIndex] = React.useState<number | null>(null);
-  const [finishIndex, setFinishIndex] = React.useState<number | null>(null);
-  const [configIndex, setConfigIndex] = React.useState<number | null>(null);
+  const [selectedVariantIndex, setSelectedVariantIndex] = React.useState<number>(
+    initialVariantIndex >= 0 ? initialVariantIndex : 0
+  );
 
   const reviewsLabel =
     product.reviewsCount === 1
       ? "(1 reseña)"
       : `(${product.reviewsCount} reseñas)`;
+
+  const activeVariantPrice =
+    product.variants && product.variants.length > 0
+      ? product.variants[selectedVariantIndex]?.price ??
+        product.variants[0]?.price ??
+        product.basePrice
+      : product.basePrice;
+
+  const activeVariant =
+    product.variants && product.variants.length > 0
+      ? product.variants[selectedVariantIndex] ?? product.variants[0]
+      : null;
 
   return (
     <motion.div
@@ -60,6 +73,35 @@ export function ProductInfo({ product }: { product: ProductDTO }) {
       >
         {product.title}
       </motion.h1>
+
+      {product.variants && product.variants.length > 0 && (
+        <motion.div variants={fadeUp} className="space-y-3">
+          <div>
+            <p className="text-base font-semibold text-brand-dark">Elige una variante</p>
+            <p className="text-sm text-brand-taupe">Cada opción tiene su propio precio.</p>
+          </div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {product.variants.map((variant, index) => (
+              <button
+                key={`${variant.name}-${index}`}
+                type="button"
+                onClick={() => setSelectedVariantIndex(index)}
+                className={cn(
+                  "min-h-[76px] rounded-2xl border px-4 py-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent",
+                  selectedVariantIndex === index
+                    ? "border-brand-accent bg-brand-accent/10 text-brand-dark shadow-warm-sm"
+                    : "border-brand-dark/15 bg-brand-card text-brand-dark hover:border-brand-accent/50"
+                )}
+              >
+                <span className="block text-sm font-semibold">{variant.name}</span>
+                <span className="mt-1 block text-lg font-bold tabular-nums text-brand-accent">
+                  {formatPrice(variant.price)}
+                </span>
+              </button>
+            ))}
+          </div>
+        </motion.div>
+      )}
 
       {/* Rating */}
       <motion.div
@@ -89,11 +131,16 @@ export function ProductInfo({ product }: { product: ProductDTO }) {
       {/* Precio */}
       <motion.div variants={fadeUp} className="space-y-1">
         <p className="text-3xl font-bold text-brand-dark lg:text-4xl">
-          {formatPrice(product.basePrice)}
+          {formatPrice(activeVariantPrice)}
         </p>
-        {isCustomizable && (
+        {activeVariant && (
           <p className="text-sm text-brand-taupe">
-            Precio base — personalízalo a tu gusto
+            {activeVariant.name} · {activeVariant.sku || "SKU sin definir"}
+          </p>
+        )}
+        {!activeVariant && (
+          <p className="text-sm text-brand-taupe">
+            Precio del producto
           </p>
         )}
       </motion.div>
@@ -108,119 +155,11 @@ export function ProductInfo({ product }: { product: ProductDTO }) {
         </motion.p>
       )}
 
-      {/* Selección rápida (vista previa) */}
-      {isCustomizable && (
-        <motion.div variants={fadeUp} className="space-y-5">
-          <Separator className="bg-brand-dark/5" />
-
-          {fabrics.length > 0 && (
-            <div className="space-y-2.5">
-              <p className="text-sm font-semibold text-brand-dark">
-                Tapizado
-                {fabricIndex !== null && (
-                  <span className="ml-2 font-normal text-brand-taupe">
-                    {fabrics[fabricIndex].name}
-                  </span>
-                )}
-              </p>
-              <div className="flex flex-wrap gap-2.5">
-                {fabrics.map((fabric, index) => (
-                  <motion.button
-                    key={fabric.name}
-                    type="button"
-                    title={fabric.name}
-                    aria-label={`Tapizado ${fabric.name}`}
-                    aria-pressed={fabricIndex === index}
-                    whileHover={{ scale: 1.12 }}
-                    whileTap={{ scale: 0.9 }}
-                    transition={spring}
-                    onClick={() =>
-                      setFabricIndex(fabricIndex === index ? null : index)
-                    }
-                    style={{ backgroundColor: fabric.hex }}
-                    className={cn(
-                      "h-9 w-9 rounded-full border border-brand-dark/10 shadow-warm-sm transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                      fabricIndex === index &&
-                        "ring-2 ring-brand-accent ring-offset-2 ring-offset-brand-bg"
-                    )}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {finishes.length > 0 && (
-            <div className="space-y-2.5">
-              <p className="text-sm font-semibold text-brand-dark">
-                Acabado
-                {finishIndex !== null && (
-                  <span className="ml-2 font-normal text-brand-taupe">
-                    {finishes[finishIndex].name}
-                  </span>
-                )}
-              </p>
-              <div className="flex flex-wrap gap-2.5">
-                {finishes.map((finish, index) => (
-                  <motion.button
-                    key={finish.name}
-                    type="button"
-                    title={finish.name}
-                    aria-label={`Acabado ${finish.name}`}
-                    aria-pressed={finishIndex === index}
-                    whileHover={{ scale: 1.12 }}
-                    whileTap={{ scale: 0.9 }}
-                    transition={spring}
-                    onClick={() =>
-                      setFinishIndex(finishIndex === index ? null : index)
-                    }
-                    style={{ backgroundColor: finish.hex }}
-                    className={cn(
-                      "h-9 w-9 rounded-full border border-brand-dark/10 shadow-warm-sm transition-shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                      finishIndex === index &&
-                        "ring-2 ring-brand-accent ring-offset-2 ring-offset-brand-bg"
-                    )}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {configurations.length > 0 && (
-            <div className="space-y-2.5">
-              <p className="text-sm font-semibold text-brand-dark">Configuración</p>
-              <div className="flex flex-wrap gap-2">
-                {configurations.map((config, index) => (
-                  <motion.button
-                    key={config.label}
-                    type="button"
-                    aria-pressed={configIndex === index}
-                    whileHover={{ scale: 1.04 }}
-                    whileTap={{ scale: 0.96 }}
-                    transition={spring}
-                    onClick={() =>
-                      setConfigIndex(configIndex === index ? null : index)
-                    }
-                    className={cn(
-                      "rounded-full border px-4 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                      configIndex === index
-                        ? "border-transparent bg-brand-accent text-white shadow-warm-sm"
-                        : "border-brand-dark/15 bg-brand-card text-brand-dark hover:border-brand-accent/50"
-                    )}
-                  >
-                    {config.label}
-                  </motion.button>
-                ))}
-              </div>
-            </div>
-          )}
-        </motion.div>
-      )}
-
       {/* CTAs */}
       <motion.div variants={fadeUp} className="space-y-3 pt-1">
         <Button asChild variant="whatsapp" size="lg" className="w-full">
           <a
-            href={productInquiryLink(product)}
+            href={productInquiryLink(product, activeVariant ?? undefined, whatsappNumber)}
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => trackEvent(product._id, "WHATSAPP_CLICK")}
@@ -230,14 +169,6 @@ export function ProductInfo({ product }: { product: ProductDTO }) {
           </a>
         </Button>
 
-        {isCustomizable && (
-          <Button asChild variant="accent" size="lg" className="w-full">
-            <Link href={`/personalizar/${product.slug}`}>
-              <Wand2 aria-hidden="true" />
-              Personalizar este mueble
-            </Link>
-          </Button>
-        )}
       </motion.div>
 
       {/* Fila de confianza */}

@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "test:images": "tsx scripts/test-images.ts",
     "seed": "tsx scripts/seed.ts",
     "seed:fabrica": "tsx scripts/seed-fabricacion.ts",
     "test:fabrica": "tsx scripts/test-fabricacion.ts"

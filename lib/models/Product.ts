@@ -1,5 +1,4 @@
 import mongoose, { Schema, type InferSchemaType, type Model } from "mongoose";
-import { CATEGORIES } from "@/lib/types";
 import { slugify } from "@/lib/utils";
 
 const FabricSchema = new Schema(
@@ -30,18 +29,34 @@ const ConfigurationSchema = new Schema(
   { _id: false }
 );
 
+const VariantSchema = new Schema(
+  {
+    name: { type: String, required: true, trim: true },
+    price: { type: Number, required: true, min: 0 },
+    sku: { type: String, default: "", trim: true, uppercase: true },
+    isDefault: { type: Boolean, default: false },
+  },
+  { _id: false }
+);
+
 const ProductSchema = new Schema(
   {
     title: { type: String, required: true, trim: true },
     slug: { type: String, unique: true, index: true },
     description: { type: String, default: "" },
+    brand: { type: String, default: "", trim: true },
+    brandId: { type: Schema.Types.ObjectId, ref: "Brand", index: true },
+    collection: { type: String, default: "", trim: true },
+    variantName: { type: String, default: "", trim: true },
+    sku: { type: String, default: "", trim: true, uppercase: true },
     category: {
       type: String,
-      enum: CATEGORIES,
       required: true,
       index: true,
     },
+    categoryId: { type: Schema.Types.ObjectId, ref: "Category", index: true },
     basePrice: { type: Number, required: true, min: 0 },
+    variants: { type: [VariantSchema], default: [] },
     images: { type: [String], default: [] },
     dimensions: {
       width: { type: Number, default: 0 },

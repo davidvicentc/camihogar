@@ -13,6 +13,7 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("");
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -25,7 +26,7 @@ function LoginForm() {
       const res = await fetch("/api/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ email: email.trim() || undefined, password }),
       });
       if (res.ok) {
         router.push(searchParams.get("from") ?? "/admin");
@@ -63,6 +64,10 @@ function LoginForm() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="admin-email">Correo (usuarios)</Label>
+            <Input id="admin-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="tu@correo.com" autoComplete="username" />
+          </div>
           <div className="space-y-2">
             <Label htmlFor="admin-password">Clave de acceso</Label>
             <Input

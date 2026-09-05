@@ -10,11 +10,12 @@ import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/brand/logo";
 import { MobileDrawer } from "@/components/layout/mobile-drawer";
 import { cn } from "@/lib/utils";
+import { useWhatsAppNumber } from "@/components/layout/whatsapp-settings-provider";
+import { buildWhatsAppLinkForNumber } from "@/lib/whatsapp";
 
 const NAV_LINKS = [
   { label: "Inicio", href: "/" },
   { label: "Catálogo", href: "/catalogo" },
-  { label: "Personalizador", href: "/personalizar" },
   { label: "Favoritos", href: "/favoritos" },
 ] as const;
 
@@ -26,6 +27,7 @@ export function Navbar() {
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = React.useState(false);
   const [scrolled, setScrolled] = React.useState(false);
+  const whatsappNumber = useWhatsAppNumber();
 
   // La barra se condensa y gana vidrio al separarse del tope, como en iOS.
   const { scrollY } = useScroll();
@@ -112,7 +114,7 @@ export function Navbar() {
           <motion.div whileTap={{ scale: 0.96 }} whileHover={{ scale: 1.03 }}>
             <Button asChild variant="whatsapp" size="sm" className="rounded-full">
               <a
-                href={WHATSAPP_HREF}
+                href={whatsappNumber ? buildWhatsAppLinkForNumber("¡Hola CamiHogar! Quiero más información sobre sus muebles.", whatsappNumber) : WHATSAPP_HREF}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Escríbenos por WhatsApp"

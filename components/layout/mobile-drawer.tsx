@@ -17,11 +17,12 @@ import { Logo, LogoMark } from "@/components/brand/logo";
 import { BRAND, CATEGORY_META } from "@/lib/constants";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
 import { cn } from "@/lib/utils";
+import { useWhatsAppNumber } from "@/components/layout/whatsapp-settings-provider";
+import { buildWhatsAppLinkForNumber } from "@/lib/whatsapp";
 
 const NAV_LINKS = [
   { label: "Inicio", href: "/" },
   { label: "Catálogo", href: "/catalogo" },
-  { label: "Personalizador", href: "/personalizar" },
   { label: "Favoritos", href: "/favoritos" },
 ] as const;
 
@@ -32,6 +33,7 @@ interface MobileDrawerProps {
 
 export function MobileDrawer({ open, onOpenChange }: MobileDrawerProps) {
   const pathname = usePathname();
+  const whatsappNumber = useWhatsAppNumber();
   const close = () => onOpenChange(false);
 
   const isActive = (href: string) =>
@@ -111,9 +113,7 @@ export function MobileDrawer({ open, onOpenChange }: MobileDrawerProps) {
         <div className="mt-auto flex flex-col gap-4 px-6 pb-8 pt-5">
           <Button asChild variant="accent" className="w-full">
             <a
-              href={buildWhatsAppLink(
-                "¡Hola CamiHogar! Quiero más información sobre sus muebles."
-              )}
+              href={whatsappNumber ? buildWhatsAppLinkForNumber("¡Hola CamiHogar! Quiero más información sobre sus muebles.", whatsappNumber) : buildWhatsAppLink("¡Hola CamiHogar! Quiero más información sobre sus muebles.")}
               target="_blank"
               rel="noopener noreferrer"
             >

@@ -27,7 +27,7 @@ export default async function AdminProductosPage() {
         <Button asChild variant="accent">
           <Link href="/admin/productos/nuevo">
             <PlusCircle aria-hidden="true" />
-            Nuevo producto
+            Agregar producto
           </Link>
         </Button>
       </header>

@@ -13,9 +13,15 @@ export const CATEGORIES = [
   "Decoración",
 ] as const;
 
-export type Category = (typeof CATEGORIES)[number];
+export type Category = string;
 
 export type AnalyticsEventType = "VIEW" | "WHATSAPP_CLICK" | "CUSTOMIZER_OPEN";
+
+export const ADMIN_PERMISSIONS = [
+  "products.read", "products.write", "products.delete",
+  "brands.manage", "categories.manage", "settings.manage", "users.manage",
+] as const;
+export type AdminPermission = (typeof ADMIN_PERMISSIONS)[number];
 
 export interface FabricOption {
   name: string;
@@ -54,13 +60,27 @@ export interface ProductMetrics {
   whatsappClicksCount: number;
 }
 
+export interface ProductVariant {
+  name: string;
+  price: number;
+  sku?: string;
+  isDefault?: boolean;
+}
+
 export interface ProductDTO {
   _id: string;
   title: string;
   slug: string;
   description: string;
+  brand: string;
+  brandId?: string;
+  categoryId?: string;
+  collection: string;
+  variantName: string;
+  sku: string;
   category: Category;
   basePrice: number;
+  variants?: ProductVariant[];
   images: string[];
   dimensions: Dimensions;
   customizationOptions: CustomizationOptions;
@@ -77,8 +97,15 @@ export interface ProductDTO {
 export interface ProductInput {
   title: string;
   description: string;
+  brand: string;
+  brandId?: string;
+  categoryId?: string;
+  collection: string;
+  variantName: string;
+  sku: string;
   category: Category;
   basePrice: number;
+  variants?: ProductVariant[];
   images: string[];
   dimensions: Dimensions;
   customizationOptions: CustomizationOptions;

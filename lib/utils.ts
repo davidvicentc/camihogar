@@ -5,6 +5,22 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/** Nunca persiste una URL generada por el optimizador de Next como imagen original. */
+export function normalizeImageUrl(value: string): string {
+  const clean = value.trim();
+  if (!clean) return "";
+  try {
+    const parsed = new URL(clean, "http://localhost");
+    if (parsed.pathname === "/_next/image") {
+      const original = parsed.searchParams.get("url");
+      return original || "";
+    }
+  } catch {
+    return clean;
+  }
+  return clean;
+}
+
 /**
  * Formatea precios en USD con "$" literal (convención del mercado venezolano
  * de muebles y de la plantilla de WhatsApp: "Precio: $1.200").

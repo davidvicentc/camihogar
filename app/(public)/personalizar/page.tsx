@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Palette, Wand2 } from "lucide-react";
@@ -102,6 +103,7 @@ function CustomizableCard({
 }
 
 export default async function PersonalizarPage() {
+  redirect("/catalogo");
   const products = await getCustomizableProducts(24);
 
   return (

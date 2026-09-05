@@ -40,15 +40,24 @@ export async function createSessionToken(): Promise<string> {
   return `${expiresAt}.${signature}`;
 }
 
+export async function createUserSessionToken(userId: string): Promise<string> {
+  const expiresAt = Date.now() + SESSION_HOURS * 60 * 60 * 1000;
+  const payload = `${userId}.${expiresAt}`;
+  return `${payload}.${await hmac(payload, getSecret())}`;
+}
+
 export async function verifySessionToken(
   token: string | undefined
 ): Promise<boolean> {
   if (!token) return false;
-  const [expiresAt, signature] = token.split(".");
+  const parts = token.split(".");
+  const expiresAt = parts.length === 2 ? parts[0] : parts[1];
+  const signature = parts.length === 2 ? parts[1] : parts[2];
   if (!expiresAt || !signature) return false;
   if (Number(expiresAt) < Date.now()) return false;
 
-  const expected = await hmac(expiresAt, getSecret());
+  const payload = parts.length === 2 ? expiresAt : `${parts[0]}.${expiresAt}`;
+  const expected = await hmac(payload, getSecret());
   if (expected.length !== signature.length) return false;
 
   // Comparación en tiempo constante.
@@ -57,6 +66,11 @@ export async function verifySessionToken(
     mismatch |= expected.charCodeAt(i) ^ signature.charCodeAt(i);
   }
   return mismatch === 0;
+}
+
+export async function getAdminSessionUserId(token: string | undefined): Promise<string | null> {
+  if (!token || token.split(".").length !== 3 || !(await verifySessionToken(token))) return null;
+  return token.split(".")[0] || null;
 }
 
 export function isValidAdminPassword(password: string): boolean {

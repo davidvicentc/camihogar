@@ -3,10 +3,9 @@
 import Link from "next/link";
 import Image from "next/image";
 import { motion, type Variants } from "framer-motion";
-import { ArrowRight, MapPin, Star, Wand2 } from "lucide-react";
+import { ArrowRight, MapPin, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LogoMark } from "@/components/brand/logo";
-import { BRAND } from "@/lib/constants";
 
 const container: Variants = {
   hidden: {},
@@ -118,9 +117,8 @@ export function Hero() {
             variants={item}
             className="max-w-xl text-pretty text-base leading-relaxed tracking-tight text-brand-bg/70 md:text-lg"
           >
-            En {BRAND.name} diseñamos y fabricamos piezas cálidas para cada rincón
-            de tu casa: elige la tela, el acabado y las medidas, y nosotros nos
-            encargamos de que se sienta como hogar.
+            Explora nuestro catálogo de piezas cálidas para cada rincón de tu casa.
+            Elige tu producto, revisa sus variantes y consúltanos directamente.
           </motion.p>
 
           <motion.div variants={item} className="flex flex-col gap-3 pt-1 sm:flex-row">
@@ -129,13 +127,6 @@ export function Hero() {
                 Ver catálogo
                 <ArrowRight aria-hidden="true" />
               </Link>
-            </Button>
-            <Button
-              asChild
-              variant="glass"
-              size="lg"
-            >
-              <Link href="/personalizar">Personaliza el tuyo</Link>
             </Button>
           </motion.div>
 
@@ -197,23 +188,6 @@ export function Hero() {
               </span>
             </div>
           </div>
-
-          {/* Chip flotante: Personalizable */}
-          <motion.div
-            initial={{ opacity: 0, y: -12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.65 }}
-            className="absolute right-5 top-5"
-          >
-            <motion.span
-              animate={{ y: [0, -6, 0] }}
-              transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut", delay: 1.2 }}
-              className="inline-flex items-center gap-1.5 rounded-full border border-white/20 px-3.5 py-1.5 text-xs font-medium tracking-tight text-brand-bg shadow-warm-sm glass-dark"
-            >
-              <Wand2 className="h-3.5 w-3.5 text-brand-accent" aria-hidden="true" />
-              Personalizable
-            </motion.span>
-          </motion.div>
 
           {/* Mini-tarjeta glass flotante: rating */}
           <motion.div

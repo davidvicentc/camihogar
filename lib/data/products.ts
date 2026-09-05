@@ -1,8 +1,11 @@
 import { connectDB } from "@/lib/mongodb";
 import ProductModel from "@/lib/models/Product";
+import BrandModel from "@/lib/models/Brand";
+import CategoryModel from "@/lib/models/Category";
 import type { CatalogFilters, ProductDTO } from "@/lib/types";
 import type { FilterQuery } from "mongoose";
 import type { Product } from "@/lib/models/Product";
+import { normalizeImageUrl } from "@/lib/utils";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export function serializeProduct(doc: any): ProductDTO {
@@ -11,9 +14,23 @@ export function serializeProduct(doc: any): ProductDTO {
     title: doc.title,
     slug: doc.slug,
     description: doc.description ?? "",
+    brand: doc.brand ?? "",
+    brandId: doc.brandId ? String(doc.brandId) : undefined,
+    categoryId: doc.categoryId ? String(doc.categoryId) : undefined,
+    collection: doc.collection ?? "",
+    variantName: doc.variantName ?? "",
+    sku: doc.sku ?? "",
     category: doc.category,
     basePrice: doc.basePrice,
-    images: doc.images ?? [],
+    variants: Array.isArray(doc.variants)
+      ? doc.variants.map((variant: any) => ({
+          name: variant.name ?? "",
+          price: Number(variant.price ?? 0),
+          sku: variant.sku ?? "",
+          isDefault: Boolean(variant.isDefault),
+        }))
+      : [],
+    images: (doc.images ?? []).map((image: string) => normalizeImageUrl(image)).filter(Boolean),
     dimensions: {
       width: doc.dimensions?.width ?? 0,
       height: doc.dimensions?.height ?? 0,
@@ -110,7 +127,16 @@ export async function getProductById(id: string): Promise<ProductDTO | null> {
   try {
     await connectDB();
     const doc = await ProductModel.findById(id).lean();
-    return doc ? serializeProduct(doc) : null;
+    if (!doc) return null;
+    const [brand, category] = await Promise.all([
+      doc.brandId ? null : BrandModel.findOne({ name: doc.brand }).lean(),
+      doc.categoryId ? null : CategoryModel.findOne({ name: doc.category }).lean(),
+    ]);
+    return serializeProduct({
+      ...doc,
+      brandId: doc.brandId ?? brand?._id,
+      categoryId: doc.categoryId ?? category?._id,
+    });
   } catch (error) {
     console.error("[data/products] getProductById:", error);
     return null;

@@ -3,12 +3,17 @@
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Heart, Star, Wand2 } from "lucide-react";
+import { Heart, Star } from "lucide-react";
+import { SiWhatsapp } from "@icons-pack/react-simple-icons";
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { LogoMark } from "@/components/brand/logo";
 import { useFavoritesStore } from "@/store/favorites-store";
 import { cn, formatPrice } from "@/lib/utils";
+import { productInquiryLink } from "@/lib/whatsapp";
+import { trackEvent } from "@/lib/track";
 import type { ProductDTO } from "@/lib/types";
+import { useWhatsAppNumber } from "@/components/layout/whatsapp-settings-provider";
 
 interface ProductCardProps {
   product: ProductDTO;
@@ -20,24 +25,30 @@ interface ProductCardProps {
 export function ProductCard({ product, priority = false, className }: ProductCardProps) {
   const isFavorite = useFavoritesStore((s) => s.isFavorite(product._id));
   const toggleFavorite = useFavoritesStore((s) => s.toggle);
+  const whatsappNumber = useWhatsAppNumber();
 
-  const isCustomizable =
-    product.customizationOptions.fabrics.length > 0 ||
-    product.customizationOptions.finishes.length > 0 ||
-    product.customizationOptions.configurations.length > 0;
+  const [selectedVariantIndex, setSelectedVariantIndex] = useState(() => {
+    const index = product.variants?.findIndex((variant) => variant.isDefault) ?? -1;
+    return index >= 0 ? index : 0;
+  });
+
+  const activeVariant = product.variants?.[selectedVariantIndex];
+
+  const visiblePrice =
+    activeVariant?.price ?? product.basePrice;
 
   return (
     <motion.article
       whileHover={{ y: -6 }}
       transition={{ type: "spring", stiffness: 300, damping: 24 }}
       className={cn(
-        "group relative overflow-hidden rounded-[1.5rem] border border-brand-dark/[0.06] bg-brand-card shadow-warm-sm transition-all duration-300 hover:border-brand-accent/20 hover:shadow-warm",
+        "group relative flex h-full flex-col overflow-hidden rounded-[1.5rem] border border-brand-dark/[0.06] bg-brand-card shadow-warm-sm transition-all duration-300 hover:border-brand-accent/20 hover:shadow-warm",
         className
       )}
     >
       <Link
         href={`/producto/${product.slug}`}
-        className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="block flex-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <div className="warm-glow relative aspect-[4/3] overflow-hidden bg-brand-sand">
           {product.images[0] ? (
@@ -60,11 +71,8 @@ export function ProductCard({ product, priority = false, className }: ProductCar
           <div className="absolute left-3 top-3 flex flex-col items-start gap-1.5">
             {product.isFeatured && <Badge variant="accent">Destacado</Badge>}
             {!product.inStock && <Badge variant="muted">Agotado</Badge>}
-            {isCustomizable && (
-              <Badge variant="glass">
-                <Wand2 className="h-3 w-3" />
-                Personalizable
-              </Badge>
+            {product.variants && product.variants.length > 1 && (
+              <Badge variant="glass">{product.variants.length} opciones</Badge>
             )}
           </div>
         </div>
@@ -76,10 +84,20 @@ export function ProductCard({ product, priority = false, className }: ProductCar
           <h3 className="line-clamp-2 font-display text-[0.95rem] font-semibold leading-snug tracking-tight text-brand-dark">
             {product.title}
           </h3>
+          <p className="line-clamp-2 min-h-8 text-xs leading-relaxed text-brand-taupe">
+            {product.description || "Producto disponible para consultar por WhatsApp."}
+          </p>
           <div className="flex items-center justify-between pt-1.5">
-            <p className="tabular text-lg font-semibold tracking-tight text-brand-dark">
-              {formatPrice(product.basePrice)}
-            </p>
+            <div className="flex min-w-0 flex-col">
+              <p className="tabular text-lg font-semibold tracking-tight text-brand-dark">
+                {formatPrice(visiblePrice)}
+              </p>
+              {product.variants && product.variants.length > 1 && (
+                <span className="text-[0.6rem] uppercase tracking-[0.12em] text-brand-taupe">
+                  desde
+                </span>
+              )}
+            </div>
             <span className="flex items-center gap-1 text-xs tracking-tight text-brand-taupe">
               <Star className="h-3.5 w-3.5 fill-brand-accent text-brand-accent" />
               <span className="tabular">{product.rating.toFixed(1)}</span>
@@ -90,6 +108,55 @@ export function ProductCard({ product, priority = false, className }: ProductCar
           </div>
         </div>
       </Link>
+
+      <div className="min-h-[112px] space-y-2 px-4 pb-3 pt-1">
+        {product.variants && product.variants.length > 1 ? (
+          <>
+          <p className="text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-brand-taupe">
+            Elige tu medida
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            {product.variants.map((variant, index) => (
+              <button
+                key={`${variant.name}-${index}`}
+                type="button"
+                onClick={() => setSelectedVariantIndex(index)}
+                aria-pressed={selectedVariantIndex === index}
+                className={cn(
+                  "min-h-14 rounded-xl border px-3 py-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent",
+                  selectedVariantIndex === index
+                    ? "border-brand-accent bg-brand-accent/10 text-brand-dark"
+                    : "border-brand-dark/10 bg-brand-bg text-brand-dark hover:border-brand-accent/50"
+                )}
+              >
+                <span className="block truncate text-xs font-semibold">{variant.name}</span>
+                <span className="mt-0.5 block text-sm font-bold tabular-nums text-brand-accent">
+                  {formatPrice(variant.price)}
+                </span>
+              </button>
+            ))}
+          </div>
+          </>
+        ) : (
+          <div className="flex h-full min-h-[86px] items-center rounded-xl border border-dashed border-brand-dark/10 bg-brand-bg/60 px-3">
+            <div>
+              <p className="text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-brand-taupe">Precio único</p>
+              <p className="mt-1 text-xs text-brand-taupe">Disponible para consultar</p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <a
+        href={productInquiryLink(product, activeVariant, whatsappNumber)}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={() => trackEvent(product._id, "WHATSAPP_CLICK")}
+        className="mx-4 mb-4 flex h-9 items-center justify-center gap-2 rounded-xl bg-[#25D366] px-3 text-xs font-semibold text-white transition-colors hover:bg-[#1fb958]"
+      >
+        <SiWhatsapp className="h-4 w-4" aria-hidden="true" />
+        Consultar por WhatsApp
+      </a>
 
       <button
         type="button"

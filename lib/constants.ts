@@ -1,12 +1,11 @@
 import type { Category, ConfigurationOption, FabricOption, FinishOption } from "@/lib/types";
 
-/** Categorías con metadatos de presentación para carruseles y filtros. */
-export const CATEGORY_META: {
-  label: Category;
-  slug: string;
-  description: string;
-  image: string;
-}[] = [
+/**
+ * Configuración central de marca y categorías del e-commerce.
+ * Aquí puedes ajustar el nombre de la marca, la categoría principal y la
+ * información visible en la tienda sin tocar cada vista individual.
+ */
+export const PRODUCT_CATEGORY_OPTIONS = [
   {
     label: "Salas",
     slug: "salas",
@@ -43,7 +42,17 @@ export const CATEGORY_META: {
     description: "Detalles que convierten tu casa en hogar",
     image: "/categories/decoracion.jpg",
   },
-];
+] as const;
+
+export const CATEGORY_META: {
+  label: Category;
+  slug: string;
+  description: string;
+  image: string;
+}[] = PRODUCT_CATEGORY_OPTIONS.map((category) => ({
+  ...category,
+  label: category.label,
+}));
 
 export function categoryFromSlug(slug: string): Category | undefined {
   return CATEGORY_META.find((c) => c.slug === slug)?.label;
@@ -79,8 +88,14 @@ export const CONFIGURATION_PRESETS: ConfigurationOption[] = [
 
 export const BRAND = {
   name: "CamiHogar",
+  legalName: "CamiHogar Muebles",
   tagline: "Muebles que abrazan tu hogar",
   instagram: "https://instagram.com/camihogar",
   warranty: "Garantía CamiHogar de 2 años",
   delivery: "Entrega e instalación en toda Venezuela",
-};
+  email: "hola@camihogar.com",
+  phone: "+58 412-000-0000",
+  location: "Valencia, Venezuela",
+} as const;
+
+export const BRAND_CONFIG = BRAND;

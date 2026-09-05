@@ -3,9 +3,9 @@
 import { useState, useTransition } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { AlertCircle, Check, ImageOff, Pencil, Star, Trash2, X } from "lucide-react";
+import { AlertCircle, ImageOff, Pencil, Star, Trash2, X } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import {
   Table,
@@ -27,7 +27,6 @@ import {
   deleteProduct,
   toggleFeatured,
   toggleStock,
-  updatePrice,
 } from "@/lib/actions/products";
 import type { ActionResult } from "@/lib/actions/products";
 import { cn, formatPrice } from "@/lib/utils";
@@ -40,7 +39,6 @@ export function ProductsTable({ products }: { products: ProductDTO[] }) {
   const [isPending, startTransition] = useTransition();
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [editing, setEditing] = useState<{ id: string; value: string } | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ProductDTO | null>(null);
 
   const busy = (id: string) => isPending && pendingId === id;
@@ -56,17 +54,6 @@ export function ProductsTable({ products }: { products: ProductDTO[] }) {
       setPendingId(null);
       router.refresh();
     });
-  }
-
-  function savePrice(product: ProductDTO) {
-    if (!editing || editing.id !== product._id) return;
-    const price = Number(editing.value);
-    if (!Number.isFinite(price) || price <= 0) {
-      setError("El precio debe ser un número mayor a cero.");
-      return;
-    }
-    setEditing(null);
-    run(product._id, () => updatePrice(product._id, price));
   }
 
   function confirmDelete() {
@@ -152,60 +139,7 @@ export function ProductsTable({ products }: { products: ProductDTO[] }) {
                 </div>
               </TableCell>
 
-              <TableCell>
-                {editing?.id === product._id ? (
-                  <div className="flex items-center gap-1">
-                    <Input
-                      type="number"
-                      min={0}
-                      step="0.01"
-                      autoFocus
-                      value={editing.value}
-                      onChange={(e) => setEditing({ id: product._id, value: e.target.value })}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") savePrice(product);
-                        if (e.key === "Escape") setEditing(null);
-                      }}
-                      aria-label={`Nuevo precio de ${product.title}`}
-                      className="h-8 w-24 rounded-lg px-2"
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      aria-label="Guardar precio"
-                      disabled={busy(product._id)}
-                      onClick={() => savePrice(product)}
-                    >
-                      <Check aria-hidden="true" />
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      aria-label="Cancelar edición de precio"
-                      onClick={() => setEditing(null)}
-                    >
-                      <X aria-hidden="true" />
-                    </Button>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setEditing({ id: product._id, value: String(product.basePrice) })}
-                    className="group flex items-center gap-1.5 rounded-lg px-1.5 py-0.5 font-semibold text-brand-dark transition-colors hover:bg-brand-accent/10 hover:text-brand-accent"
-                    aria-label={`Editar precio de ${product.title}`}
-                  >
-                    {formatPrice(product.basePrice)}
-                    <Pencil
-                      className="h-3 w-3 text-brand-taupe/50 transition-colors group-hover:text-brand-accent"
-                      aria-hidden="true"
-                    />
-                  </button>
-                )}
-              </TableCell>
+              <TableCell><span className="font-semibold text-brand-dark">{formatPrice(product.basePrice)}</span>{product.variants && product.variants.length > 1 && <span className="ml-2 text-xs text-brand-taupe">{product.variants.length} variantes</span>}</TableCell>
 
               <TableCell className="text-right tabular-nums text-brand-taupe">
                 {numberFormat.format(product.metrics.viewsCount)}
@@ -226,6 +160,7 @@ export function ProductsTable({ products }: { products: ProductDTO[] }) {
               </TableCell>
 
               <TableCell>
+                <Button asChild type="button" variant="ghost" size="icon" className="h-9 w-9" aria-label={`Editar ${product.title}`}><Link href={`/admin/productos/${product._id}/editar`}><Pencil aria-hidden="true" /></Link></Button>
                 <Button
                   type="button"
                   variant="ghost"
