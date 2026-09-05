@@ -33,8 +33,19 @@ export async function getCategories(includeInactive = false): Promise<CatalogOpt
     await connectDB();
     const query = includeInactive ? {} : { isActive: true };
     const docs = await CategoryModel.find(query).sort({ name: 1 }).lean();
+
     if (docs.length > 0) return docs.map(serialize);
-    return PRODUCT_CATEGORY_OPTIONS.map((category, index) => ({ _id: `default-${index}`, name: category.label, slug: category.slug, isActive: true, description: category.description, image: category.image }));
+
+    if (includeInactive) return [];
+
+    return PRODUCT_CATEGORY_OPTIONS.map((category, index) => ({
+      _id: `default-${index}`,
+      name: category.label,
+      slug: category.slug,
+      isActive: true,
+      description: category.description,
+      image: category.image,
+    }));
   } catch (error) {
     console.error("[data/catalog] getCategories:", error);
     return [];
