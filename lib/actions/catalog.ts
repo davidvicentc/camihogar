@@ -9,7 +9,7 @@ import CategoryModel from "@/lib/models/Category";
 import ProductModel from "@/lib/models/Product";
 import type { ActionResult } from "@/lib/actions/products";
 import { slugify } from "@/lib/utils";
-import type { Model } from "mongoose";
+import mongoose, { type Model } from "mongoose";
 
 async function requireAdmin(permission: "brands.manage" | "categories.manage") {
   const token = (await cookies()).get(ADMIN_COOKIE)?.value;
@@ -67,6 +67,11 @@ export async function updateCategory(id: string, name: string, description = "",
 export async function deleteBrand(id: string): Promise<ActionResult> {
   try {
     await requireAdmin("brands.manage");
+    if (!mongoose.isValidObjectId(id)) {
+      refreshCatalog();
+      return { ok: true };
+    }
+
     await connectDB();
     if (await ProductModel.exists({ brandId: id })) return { ok: false, error: "No puedes borrar una marca usada por productos." };
     await BrandModel.findByIdAndDelete(id);
@@ -86,6 +91,11 @@ export async function deleteBrand(id: string): Promise<ActionResult> {
 export async function deleteCategory(id: string): Promise<ActionResult> {
   try {
     await requireAdmin("categories.manage");
+    if (!mongoose.isValidObjectId(id)) {
+      refreshCatalog();
+      return { ok: true };
+    }
+
     await connectDB();
     if (await ProductModel.exists({ categoryId: id })) return { ok: false, error: "No puedes borrar una categoría usada por productos." };
     await CategoryModel.findByIdAndDelete(id);
