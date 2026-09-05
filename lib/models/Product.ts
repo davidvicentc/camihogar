@@ -78,7 +78,7 @@ const ProductSchema = new Schema(
     isFeatured: { type: Boolean, default: false, index: true },
     inStock: { type: Boolean, default: true, index: true },
   },
-  { timestamps: true }
+  { timestamps: true, suppressReservedKeysWarning: true }
 );
 
 // Autogenera el slug a partir del título y garantiza unicidad con sufijo corto.
