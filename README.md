@@ -35,7 +35,8 @@ Abre <http://localhost:3000> (tienda) y <http://localhost:3000/admin> (panel, pr
 | `NEXT_PUBLIC_WHATSAPP_NUMBER` | Número WhatsApp Business en formato internacional sin `+` (ej. `58412…`) |
 | `ADMIN_PASSWORD` | Clave de acceso al panel `/admin` |
 | `AUTH_SECRET` | Secreto largo aleatorio para firmar las cookies de sesión, tanto la del panel como la de los operarios del taller (`openssl rand -hex 32`) |
-| `NEXT_PUBLIC_SITE_URL` | URL pública del sitio (en Vercel: `https://tudominio.com`). Si se omite, se usa el dominio del deploy de Vercel; en local, `http://localhost:3000` |
+| `SITE_URL` | URL pública del sitio (en Vercel: `https://tudominio.com`). Si se omite, se usa el dominio del deploy de Vercel; en local, `http://localhost:3000` |
+| `NEXT_PUBLIC_GA_MEASUREMENT_ID` | ID de medición de Google Analytics 4 (`G-XXXXXXXXXX`). Si se omite, GA queda desactivado |
 | `NEXT_PUBLIC_FABRICA_SEGUIMIENTO_PUBLICO` | `"true"` enciende el seguimiento público del mueble para clientes en `/seguimiento/COD-XXXXXX`. Apagado por defecto ([ver abajo](#seguimiento-para-el-cliente-apagado-por-defecto)) |
 
 > Sin `MONGODB_URI` el sitio arranca igualmente con estados vacíos elegantes; sin Cloudinary, el wizard del admin acepta URLs de imagen manuales.
@@ -113,7 +114,7 @@ middleware.ts          # Protección de /admin y /fabrica con cookie firmada
 
    Es idempotente: salta los productos cuyo título ya existe, así que volver a correrlo no duplica nada.
 
-6. Al conectar un dominio propio, actualiza `NEXT_PUBLIC_SITE_URL` y vuelve a desplegar: ese valor se hornea en el build y es el que viaja en los enlaces de WhatsApp, `robots.txt` y `sitemap.xml`. Si no la configuras, el sitio cae al dominio `*.vercel.app` del deploy.
+6. Al conectar un dominio propio, actualiza `SITE_URL` y vuelve a desplegar: ese valor se usa en el servidor para metadatos, seguimiento y enlaces generados fuera del navegador. Los botones de WhatsApp del sitio usan automáticamente el dominio que está visitando el cliente. Si no configuras `SITE_URL`, el sitio cae al dominio `*.vercel.app` del deploy.
 
 ## Scripts
 

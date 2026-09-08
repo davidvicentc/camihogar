@@ -70,7 +70,7 @@ if (!/_test(\?|$)/.test(URI_PRUEBAS)) {
 
 process.env.MONGODB_URI = URI_PRUEBAS;
 process.env.AUTH_SECRET = process.env.AUTH_SECRET ?? "secreto-de-pruebas-camihogar";
-process.env.NEXT_PUBLIC_SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+process.env.SITE_URL = process.env.SITE_URL ?? "http://localhost:3000";
 // El seguimiento público arranca APAGADO: el caso 15 lo enciende a mano.
 process.env.NEXT_PUBLIC_FABRICA_SEGUIMIENTO_PUBLICO = "false";
 

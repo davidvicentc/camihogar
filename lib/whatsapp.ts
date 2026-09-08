@@ -1,6 +1,10 @@
 import { formatPrice, getSiteUrl } from "@/lib/utils";
 import type { ProductDTO, ProductVariant } from "@/lib/types";
 
+function getLinkSiteUrl(): string {
+  return typeof window === "undefined" ? getSiteUrl() : window.location.origin;
+}
+
 function getWhatsAppNumber(): string {
   return process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "584120000000";
 }
@@ -19,7 +23,7 @@ export function productInquiryLink(
   variant?: ProductVariant,
   whatsappNumber?: string | null
 ): string {
-  const url = `${getSiteUrl()}/producto/${product.slug}`;
+  const url = `${getLinkSiteUrl()}/producto/${product.slug}`;
   const price = variant?.price ?? product.basePrice;
   const variantLine = variant ? `\n- Variante: ${variant.name}` : "";
   const message = `¡Hola CamiHogar! Estoy interesado en *${product.title}*.${variantLine}\n- Precio: ${formatPrice(
@@ -39,7 +43,7 @@ export interface CustomizationSummary {
 
 /** CTA del personalizador con el desglose de la configuración elegida. */
 export function customOrderLink(summary: CustomizationSummary): string {
-  const url = `${getSiteUrl()}/personalizar/${summary.slug}`;
+  const url = `${getLinkSiteUrl()}/personalizar/${summary.slug}`;
   const lines = [
     "¡Hola CamiHogar! Personalicé un mueble en su web:",
     `- Mueble: ${summary.productTitle}`,
