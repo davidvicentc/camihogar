@@ -313,3 +313,21 @@ Al terminar, el seed imprime los códigos y las URLs listas para abrir. El PIN d
 | `/admin/fabricacion/auditoria` | Historial de cambios |
 | `/admin/fabricacion/etiquetas/COD-XXXXXX` | Etiqueta imprimible 10×15 (`?copias=N`) |
 | `/seguimiento/COD-XXXXXX` | Vista del cliente (sólo si está encendida) |
+
+### Incorporación del equipo y tutorial interno
+
+En `/admin/usuarios`, el responsable escribe nombre y correo, selecciona **Administración completa**, **Editor de catálogo** o **Solo lectura**, y genera una invitación. El enlace se copia para enviarlo manualmente; no requiere un proveedor de correo ni envía mensajes automáticamente. La persona abre `/admin/activar`, define una contraseña de 12 a 128 caracteres e inicia sesión con su correo.
+
+Las invitaciones vencen en 48 horas, se guardan como un hash y se consumen de forma atómica. **Nuevo enlace de acceso** invalida el anterior y las sesiones previas, y sirve también para recuperar contraseñas. La cuenta debe estar activa. Editar una cuenta revoca sus sesiones existentes; desactivar o eliminar bloquea inmediatamente el acceso a las operaciones protegidas. El propietario conserva su acceso mediante `ADMIN_PASSWORD` sin correo; una cuenta con correo nunca puede recurrir a esa clave como alternativa.
+
+Administración completa abarca los siete permisos de la tienda. Los roles del taller se gestionan por separado: una cuenta de tienda no se convierte automáticamente en administrador del taller. El propietario mantiene acceso completo al taller.
+
+El tutorial aparece al entrar al panel y explica categorías, marcas, productos, variantes, publicación e invitaciones. Se adapta a los permisos, permite abrir las pantallas correspondientes y se puede pausar o repetir. El avance se conserva por usuario en el navegador; avanzar en la guía no crea datos ni guarda formularios.
+
+### Verificación y despliegue en Vercel
+
+Ejecuta `npm run lint`, `npm run typecheck`, `npm run test:auth` y `npm run build` antes de desplegar. El proyecto usa el preset Next.js de Vercel. Configura las variables de `.env.example` en el entorno correspondiente, especialmente `MONGODB_URI`, `AUTH_SECRET` (secreto aleatorio), `ADMIN_PASSWORD` y `SITE_URL` con el dominio HTTPS definitivo. Mantén secretos diferentes entre pruebas y producción; nunca uses el prefijo `NEXT_PUBLIC_` para credenciales. Las variables de Cloudinary son necesarias si se usan cargas firmadas.
+
+MongoDB debe permitir conexiones desde las funciones de Vercel y la cuenta debe poder crear las colecciones e índices del proyecto. `AuthAttempt` mantiene un límite compartido de 20 intentos por IP cada 15 minutos, con caducidad mediante índice TTL; no se usan contadores en memoria. Los campos nuevos de `AdminUser` tienen valores predeterminados y admiten cuentas previas, sin ejecutar un seed sobre producción.
+
+Después del despliegue, valida con una cuenta de prueba: invitación → activación → login → tutorial → creación de categoría/marca/producto; prueba también enlace usado/vencido, perfil de solo lectura, revocación y cierre de sesión. `npm run test:admin-flow` prueba el flujo HTTP contra el build de producción, con MongoDB y una base temporal que elimina al terminar (puerto 3003 libre). Incluye cuentas con permisos completos, creación de categoría/marca/producto y rechazo de operaciones para solo lectura. No sustituye la comprobación visual y del dominio final.

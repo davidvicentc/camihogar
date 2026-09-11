@@ -1,26 +1,14 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
+import { requireAdminPermission as requireAdmin } from "@/lib/admin-session";
 import { connectDB } from "@/lib/mongodb";
-import { ADMIN_COOKIE, getAdminSessionUserId, verifySessionToken } from "@/lib/auth";
 import BrandModel from "@/lib/models/Brand";
 import CategoryModel from "@/lib/models/Category";
 import ProductModel from "@/lib/models/Product";
 import type { ActionResult } from "@/lib/actions/products";
 import { slugify } from "@/lib/utils";
 import mongoose, { type Model } from "mongoose";
-
-async function requireAdmin(permission: "brands.manage" | "categories.manage") {
-  const token = (await cookies()).get(ADMIN_COOKIE)?.value;
-  if (!(await verifySessionToken(token))) throw new Error("No autorizado");
-  const userId = await getAdminSessionUserId(token);
-  if (userId) {
-    await connectDB();
-    const user = await (await import("@/lib/models/AdminUser")).default.findById(userId).lean();
-    if (!user?.active || !user.permissions.includes(permission)) throw new Error("No autorizado");
-  }
-}
 
 function refreshCatalog() {
   revalidatePath("/");

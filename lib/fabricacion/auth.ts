@@ -20,7 +20,7 @@
  * nadie tenga que volver a entrar.
  */
 
-import { ADMIN_COOKIE, verifySessionToken } from "@/lib/auth";
+
 import { CAPACIDADES, type Capacidad, type SesionOperario } from "@/lib/types/fabricacion";
 
 /** Cookie propia del taller, aparte de la del admin (`camihogar_admin`). */
@@ -264,7 +264,9 @@ export async function getSesionOperario(): Promise<SesionOperario | null> {
         // el dueño no se queda fuera por haber borrado su usuario de taller.
       }
 
-      if (await verifySessionToken(almacen.get(ADMIN_COOKIE)?.value)) {
+      const { getAdminSession } = await import("@/lib/admin-session");
+      const admin = await getAdminSession();
+      if (admin?.master) {
         return sesionAdminVirtual();
       }
     } catch (error) {

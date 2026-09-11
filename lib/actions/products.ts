@@ -1,13 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
+import { requireAdminPermission as requireAdmin } from "@/lib/admin-session";
 import { connectDB } from "@/lib/mongodb";
 import ProductModel from "@/lib/models/Product";
 import { serializeProduct } from "@/lib/data/products";
-import { ADMIN_COOKIE, getAdminSessionUserId, verifySessionToken } from "@/lib/auth";
-import AdminUserModel from "@/lib/models/AdminUser";
-import type { AdminPermission } from "@/lib/types";
 import type { ProductDTO, ProductInput } from "@/lib/types";
 import BrandModel from "@/lib/models/Brand";
 import CategoryModel from "@/lib/models/Category";
@@ -17,19 +14,6 @@ export interface ActionResult<T = undefined> {
   ok: boolean;
   error?: string;
   data?: T;
-}
-
-async function requireAdmin(permission: AdminPermission = "products.write"): Promise<void> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get(ADMIN_COOKIE)?.value;
-  if (!(await verifySessionToken(token))) {
-    throw new Error("No autorizado");
-  }
-  const userId = await getAdminSessionUserId(token);
-  if (userId) {
-    const user = await AdminUserModel.findById(userId).lean();
-    if (!user?.active || !user.permissions.includes(permission)) throw new Error("No autorizado");
-  }
 }
 
 function revalidatePublicPages(slug?: string) {

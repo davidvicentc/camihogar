@@ -1,3 +1,4 @@
+import { requireAdminPage } from "@/lib/admin-session";
 import { notFound } from "next/navigation";
 import { ProductEditor } from "@/components/admin/product-editor";
 import { getBrands, getCategories } from "@/lib/data/catalog";
@@ -6,6 +7,7 @@ import { getProductById } from "@/lib/data/products";
 export const dynamic = "force-dynamic";
 
 export default async function EditarProductoPage({ params }: { params: Promise<{ id: string }> }) {
+  await requireAdminPage("products.write");
   const { id } = await params;
   const [product, brands, categories] = await Promise.all([getProductById(id), getBrands(), getCategories()]);
   if (!product) notFound();

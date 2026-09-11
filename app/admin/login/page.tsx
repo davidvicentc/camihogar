@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LogoLockup } from "@/components/brand/logo";
+import { safeAdminDestination } from "@/lib/admin-validation";
 import { BRAND } from "@/lib/constants";
 
 function LoginForm() {
@@ -14,14 +15,14 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (loading) return;
     setLoading(true);
-    setError(false);
+    setError(null);
     try {
       const res = await fetch("/api/admin/login", {
         method: "POST",
@@ -29,13 +30,14 @@ function LoginForm() {
         body: JSON.stringify({ email: email.trim() || undefined, password }),
       });
       if (res.ok) {
-        router.push(searchParams.get("from") ?? "/admin");
+        router.push(safeAdminDestination(searchParams.get("from")));
         router.refresh();
         return; // mantiene el estado de carga mientras navega
       }
-      setError(true);
+      const data = await res.json();
+      setError(data.error ?? "No se pudo iniciar sesión.");
     } catch {
-      setError(true);
+      setError("No se pudo conectar. Inténtalo de nuevo.");
     }
     setLoading(false);
   }
@@ -65,7 +67,7 @@ function LoginForm() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="admin-email">Correo (usuarios)</Label>
+            <Label htmlFor="admin-email">Correo de tu cuenta</Label>
             <Input id="admin-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="tu@correo.com" autoComplete="username" />
           </div>
           <div className="space-y-2">
@@ -87,7 +89,7 @@ function LoginForm() {
               role="alert"
               className="rounded-xl bg-red-50 px-3 py-2 text-sm font-medium text-red-600"
             >
-              Clave incorrecta. Inténtalo de nuevo.
+              {error}
             </p>
           )}
 
@@ -103,6 +105,7 @@ function LoginForm() {
           </Button>
         </form>
 
+        <p className="mt-4 text-xs text-brand-taupe">¿Olvidaste tu contraseña? Pide al responsable de usuarios un nuevo enlace de acceso. El propietario puede entrar sin correo con su clave maestra.</p>
         <p className="mt-6 text-center text-xs text-brand-taupe/70">{BRAND.tagline}</p>
       </div>
     </main>

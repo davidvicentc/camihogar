@@ -40,9 +40,9 @@ export async function createSessionToken(): Promise<string> {
   return `${expiresAt}.${signature}`;
 }
 
-export async function createUserSessionToken(userId: string): Promise<string> {
+export async function createUserSessionToken(userId: string, version = 0): Promise<string> {
   const expiresAt = Date.now() + SESSION_HOURS * 60 * 60 * 1000;
-  const payload = `${userId}.${expiresAt}`;
+  const payload = `${userId}:${version}.${expiresAt}`;
   return `${payload}.${await hmac(payload, getSecret())}`;
 }
 
@@ -51,10 +51,12 @@ export async function verifySessionToken(
 ): Promise<boolean> {
   if (!token) return false;
   const parts = token.split(".");
+  if (parts.length !== 2 && parts.length !== 3) return false;
+  if (parts.length === 3 && !/^[a-f\d]{24}(?::\d+)?$/i.test(parts[0])) return false;
   const expiresAt = parts.length === 2 ? parts[0] : parts[1];
   const signature = parts.length === 2 ? parts[1] : parts[2];
   if (!expiresAt || !signature) return false;
-  if (Number(expiresAt) < Date.now()) return false;
+  if (!/^\d+$/.test(expiresAt) || !Number.isSafeInteger(Number(expiresAt)) || Number(expiresAt) <= Date.now()) return false;
 
   const payload = parts.length === 2 ? expiresAt : `${parts[0]}.${expiresAt}`;
   const expected = await hmac(payload, getSecret());
@@ -70,7 +72,7 @@ export async function verifySessionToken(
 
 export async function getAdminSessionUserId(token: string | undefined): Promise<string | null> {
   if (!token || token.split(".").length !== 3 || !(await verifySessionToken(token))) return null;
-  return token.split(".")[0] || null;
+  return token.split(".")[0].split(":")[0] || null;
 }
 
 export function isValidAdminPassword(password: string): boolean {

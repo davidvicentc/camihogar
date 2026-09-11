@@ -1,8 +1,10 @@
+import { requireAdminPage } from "@/lib/admin-session";
 import { Eye, Package, Percent } from "lucide-react";
 import { SiWhatsapp } from "@icons-pack/react-simple-icons";
 import { getDashboardSummary } from "@/lib/data/analytics";
 import { StatCard } from "@/components/admin/stat-card";
 import { DashboardCharts } from "@/components/admin/dashboard-charts";
+import { ActiveVisitorsCard } from "@/components/admin/active-visitors-card";
 
 export const dynamic = "force-dynamic";
 
@@ -10,6 +12,7 @@ const numberFormat = new Intl.NumberFormat("es-VE");
 const percentFormat = new Intl.NumberFormat("es-VE", { maximumFractionDigits: 1 });
 
 export default async function AdminDashboardPage() {
+  await requireAdminPage();
   const summary = await getDashboardSummary();
 
   return (
@@ -46,6 +49,7 @@ export default async function AdminDashboardPage() {
           icon={<Percent className="h-5 w-5" />}
           hint="Clics a WhatsApp entre vistas totales"
         />
+        <ActiveVisitorsCard />
       </div>
 
       <DashboardCharts

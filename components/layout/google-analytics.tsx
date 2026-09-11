@@ -14,6 +14,7 @@ declare global {
 const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
 function sendPageview(url: string) {
+  if (!measurementId) return;
   window.gtag("config", measurementId, { page_path: url });
 }
 

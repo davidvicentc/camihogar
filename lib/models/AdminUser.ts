@@ -8,6 +8,10 @@ const AdminUserSchema = new Schema(
     passwordSalt: { type: String, required: true },
     permissions: { type: [String], default: [] },
     active: { type: Boolean, default: true, index: true },
+    sessionVersion: { type: Number, default: 0 },
+    invitationHash: { type: String, default: null, select: false },
+    invitationExpiresAt: { type: Date, default: null },
+    invitationPending: { type: Boolean, default: false },
     lastLoginAt: { type: Date, default: null },
   },
   { timestamps: true }

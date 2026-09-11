@@ -34,7 +34,7 @@ import type { ProductDTO } from "@/lib/types";
 
 const numberFormat = new Intl.NumberFormat("es-VE");
 
-export function ProductsTable({ products }: { products: ProductDTO[] }) {
+export function ProductsTable({ products, canWrite = false, canDelete = false }: { products: ProductDTO[]; canWrite?: boolean; canDelete?: boolean }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [pendingId, setPendingId] = useState<string | null>(null);
@@ -151,7 +151,7 @@ export function ProductsTable({ products }: { products: ProductDTO[] }) {
               <TableCell>
                 <Switch
                   checked={product.inStock}
-                  disabled={busy(product._id)}
+                  disabled={!canWrite || busy(product._id)}
                   onCheckedChange={(checked) =>
                     run(product._id, () => toggleStock(product._id, checked))
                   }
@@ -160,8 +160,8 @@ export function ProductsTable({ products }: { products: ProductDTO[] }) {
               </TableCell>
 
               <TableCell>
-                <Button asChild type="button" variant="ghost" size="icon" className="h-9 w-9" aria-label={`Editar ${product.title}`}><Link href={`/admin/productos/${product._id}/editar`}><Pencil aria-hidden="true" /></Link></Button>
-                <Button
+                {canWrite && <Button asChild type="button" variant="ghost" size="icon" className="h-9 w-9" aria-label={`Editar ${product.title}`}><Link href={`/admin/productos/${product._id}/editar`}><Pencil aria-hidden="true" /></Link></Button>}
+                {canWrite && <Button
                   type="button"
                   variant="ghost"
                   size="icon"
@@ -184,11 +184,11 @@ export function ProductsTable({ products }: { products: ProductDTO[] }) {
                     )}
                     aria-hidden="true"
                   />
-                </Button>
+                </Button>}
               </TableCell>
 
               <TableCell>
-                <Button
+                {canDelete && <Button
                   type="button"
                   variant="ghost"
                   size="icon"
@@ -198,7 +198,7 @@ export function ProductsTable({ products }: { products: ProductDTO[] }) {
                   onClick={() => setDeleteTarget(product)}
                 >
                   <Trash2 aria-hidden="true" />
-                </Button>
+                </Button>}
               </TableCell>
             </TableRow>
           ))}

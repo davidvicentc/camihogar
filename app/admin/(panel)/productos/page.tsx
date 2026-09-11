@@ -1,3 +1,4 @@
+import { requireAdminPage } from "@/lib/admin-session";
 import Link from "next/link";
 import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,6 +8,7 @@ import { ProductsTable } from "@/components/admin/products-table";
 export const dynamic = "force-dynamic";
 
 export default async function AdminProductosPage() {
+  const session = await requireAdminPage("products.read");
   // Sin filtros: trae todo el inventario, incluidos los agotados
   // (inStock indefinido no filtra por disponibilidad).
   const products = await getProducts({});
@@ -24,15 +26,15 @@ export default async function AdminProductosPage() {
               : `${products.length} muebles publicados`}
           </p>
         </div>
-        <Button asChild variant="accent">
+        {session.permissions.includes("products.write") && <Button asChild variant="accent">
           <Link href="/admin/productos/nuevo">
             <PlusCircle aria-hidden="true" />
             Agregar producto
           </Link>
-        </Button>
+        </Button>}
       </header>
 
-      <ProductsTable products={products} />
+      <ProductsTable products={products} canWrite={session.permissions.includes("products.write")} canDelete={session.permissions.includes("products.delete")} />
     </div>
   );
 }

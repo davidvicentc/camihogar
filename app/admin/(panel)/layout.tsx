@@ -12,10 +12,11 @@ import {
   UserRound,
   type LucideIcon,
 } from "lucide-react";
+import { GuidedTutorial } from "@/components/admin/guided-tutorial";
 import { LogoutButton } from "@/components/admin/logout-button";
 import { Logo, LogoMark } from "@/components/brand/logo";
-import { getSesionOperario } from "@/lib/fabricacion/auth";
-import type { Capacidad, SesionOperario } from "@/lib/types/fabricacion";
+import { requireAdminPage } from "@/lib/admin-session";
+import type { Capacidad } from "@/lib/types/fabricacion";
 import type { AdminPermission } from "@/lib/types";
 import { BRAND } from "@/lib/constants";
 
@@ -44,10 +45,10 @@ const NAV_LINKS: readonly GrupoNav[] = [
     titulo: "Tienda",
     enlaces: [
       { href: "/admin", label: "Dashboard", icon: BarChart3 },
-      { href: "/admin/productos", label: "Productos", icon: Package },
-      { href: "/admin/productos/nuevo", label: "Nuevo producto", icon: PlusCircle },
-      { href: "/admin/categorias", label: "Categorías", icon: Tags },
-      { href: "/admin/marcas", label: "Marcas", icon: BadgeCheck },
+      { href: "/admin/productos", label: "Productos", icon: Package, capacidades: ["products.read"] },
+      { href: "/admin/productos/nuevo", label: "Nuevo producto", icon: PlusCircle, capacidades: ["products.write"] },
+      { href: "/admin/categorias", label: "Categorías", icon: Tags, capacidades: ["categories.manage"] },
+      { href: "/admin/marcas", label: "Marcas", icon: BadgeCheck, capacidades: ["brands.manage"] },
       { href: "/admin/configuracion", label: "Configuración", icon: Settings, capacidades: ["settings.manage"] },
       { href: "/admin/usuarios", label: "Usuarios", icon: UserRound, capacidades: ["users.manage"] },
     ],
@@ -60,22 +61,13 @@ const CLASES_ENLACE_ESCRITORIO =
 const CLASES_ENLACE_MOVIL =
   "flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-medium text-brand-bg/70 transition-colors hover:bg-white/10 hover:text-brand-bg";
 
-/**
- * ¿Se le enseña este enlace a quien está mirando?
- *
- * Si no se pudo resolver la sesión (`null`) se enseñan todos: quien llega aquí
- * ya pasó el portero de `/admin`, así que es un fallo pasajero y esconder el
- * menú entero haría creer que el panel se rompió. Cada página vuelve a
- * comprobar la capacidad y muestra su aviso si no la tiene.
- */
-function puedeVer(enlace: EnlaceNav, sesion: SesionOperario | null): boolean {
+function puedeVer(enlace: EnlaceNav, sesion: Awaited<ReturnType<typeof requireAdminPage>>): boolean {
   if (!enlace.capacidades) return true;
-  if (!sesion) return true;
-  if (sesion.esAdmin) return true;
-  return enlace.capacidades.some((capacidad) => sesion.capacidades.includes(capacidad as Capacidad));
+  if (sesion.master) return true;
+  return enlace.capacidades.some((capacidad) => sesion.permissions.includes(capacidad));
 }
 
-function gruposVisibles(sesion: SesionOperario | null): GrupoNav[] {
+function gruposVisibles(sesion: Awaited<ReturnType<typeof requireAdminPage>>): GrupoNav[] {
   return NAV_LINKS.map((grupo) => ({
     titulo: grupo.titulo,
     enlaces: grupo.enlaces.filter((enlace) => puedeVer(enlace, sesion)),
@@ -83,7 +75,7 @@ function gruposVisibles(sesion: SesionOperario | null): GrupoNav[] {
 }
 
 export default async function AdminPanelLayout({ children }: { children: ReactNode }) {
-  const sesion = await getSesionOperario();
+  const sesion = await requireAdminPage();
   const grupos = gruposVisibles(sesion);
 
   return (
@@ -166,6 +158,7 @@ export default async function AdminPanelLayout({ children }: { children: ReactNo
 
       <div className="lg:pl-64">
         <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
+          <GuidedTutorial userId={sesion.id ?? "owner"} permissions={sesion.permissions} />
           {children}
         </main>
       </div>

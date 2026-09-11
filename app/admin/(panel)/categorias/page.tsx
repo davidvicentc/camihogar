@@ -1,9 +1,11 @@
+import { requireAdminPage } from "@/lib/admin-session";
 import { CatalogOptionsManager } from "@/components/admin/catalog-options-manager";
 import { getCategories } from "@/lib/data/catalog";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminCategoriasPage() {
+  await requireAdminPage("categories.manage");
   const categories = await getCategories(true);
   return (
     <div className="max-w-2xl space-y-6">

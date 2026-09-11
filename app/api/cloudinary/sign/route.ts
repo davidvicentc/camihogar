@@ -1,18 +1,14 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
+import { requireAdminPermission } from "@/lib/admin-session";
 import { signUploadParams } from "@/lib/cloudinary";
-import { ADMIN_COOKIE, verifySessionToken } from "@/lib/auth";
 
 /**
  * Firma las cargas del Cloudinary Upload Widget (modo firmado).
  * Solo accesible con sesión de admin activa.
  */
 export async function POST(request: Request) {
-  const cookieStore = await cookies();
-  const token = cookieStore.get(ADMIN_COOKIE)?.value;
-  if (!(await verifySessionToken(token))) {
-    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-  }
+  try { await requireAdminPermission("products.write"); }
+  catch { return NextResponse.json({ error: "No autorizado" }, { status: 401 }); }
 
   try {
     const { paramsToSign } = (await request.json()) as {

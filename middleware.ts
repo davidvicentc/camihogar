@@ -30,7 +30,7 @@ import { OPERARIO_COOKIE, verificarTokenOperario } from "@/lib/fabricacion/auth"
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  if (pathname.startsWith("/admin") && !pathname.startsWith("/admin/login")) {
+  if (pathname.startsWith("/admin") && pathname !== "/admin/login" && pathname !== "/admin/activar") {
     const token = request.cookies.get(ADMIN_COOKIE)?.value;
     const valid = await verifySessionToken(token);
     if (!valid) {

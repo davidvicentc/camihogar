@@ -1,9 +1,11 @@
+import { requireAdminPage } from "@/lib/admin-session";
 import { ProductEditor } from "@/components/admin/product-editor";
 import { getBrands, getCategories } from "@/lib/data/catalog";
 
 export const dynamic = "force-dynamic";
 
 export default async function NuevoProductoPage() {
+  await requireAdminPage("products.write");
   const [brands, categories] = await Promise.all([getBrands(), getCategories()]);
   return (
     <div className="space-y-6">

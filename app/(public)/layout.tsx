@@ -4,6 +4,7 @@ import { Footer } from "@/components/layout/footer";
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { FavoritesHydration } from "@/components/layout/favorites-hydration";
 import { GoogleAnalytics } from "@/components/layout/google-analytics";
+import { VisitorPresenceTracker } from "@/components/layout/visitor-presence-tracker";
 import { WhatsAppSettingsProvider } from "@/components/layout/whatsapp-settings-provider";
 
 export default function PublicLayout({
@@ -14,6 +15,7 @@ export default function PublicLayout({
       <Suspense fallback={null}>
         <GoogleAnalytics />
       </Suspense>
+      <VisitorPresenceTracker />
       <div className="flex min-h-screen flex-col">
       <FavoritesHydration />
       <Navbar />
