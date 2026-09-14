@@ -16,6 +16,12 @@ export const CATEGORIES = [
 export type Category = string;
 
 export type AnalyticsEventType = "VIEW" | "WHATSAPP_CLICK" | "CUSTOMIZER_OPEN";
+export type HomeProductSort = "price-asc" | "price-desc" | "popular" | "recent" | "manual";
+
+export interface HomeSectionOrder {
+  sort: HomeProductSort;
+  productIds: string[];
+}
 
 export const ADMIN_PERMISSIONS = [
   "products.read", "products.write", "products.delete",
@@ -56,10 +62,10 @@ export interface CustomizationOptions {
 }
 
 export interface MattressFeatures {
-  model: "Ortopédico" | "Semi Ortopédico";
-  pillow: "Sin Pillow" | "1 Pillow" | "2 Pillow";
+  model: string;
+  pillow: string;
   warrantyYears: number;
-  composition: "Resortes" | "Goma";
+  composition: string;
 }
 
 export interface ProductMetrics {

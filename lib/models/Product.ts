@@ -31,10 +31,10 @@ const ConfigurationSchema = new Schema(
 
 const MattressFeaturesSchema = new Schema(
   {
-    model: { type: String, enum: ["Ortopédico", "Semi Ortopédico"] },
-    pillow: { type: String, enum: ["Sin Pillow", "1 Pillow", "2 Pillow"] },
+    model: { type: String, trim: true },
+    pillow: { type: String, trim: true },
     warrantyYears: { type: Number, min: 2, max: 12 },
-    composition: { type: String, enum: ["Resortes", "Goma"] },
+    composition: { type: String, trim: true },
   },
   { _id: false }
 );

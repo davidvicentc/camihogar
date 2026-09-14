@@ -51,7 +51,8 @@ export function ProductInfo({ product }: { product: ProductDTO }) {
     product.variants && product.variants.length > 0
       ? product.variants[selectedVariantIndex] ?? product.variants[0]
       : null;
-  const isMattress = Boolean(product.variants?.some((variant) => variant.mattressFeatures) || product.mattressFeatures);
+  const hasProductConfiguration = Boolean(product.mattressFeatures);
+  const isLegacyMattress = !hasProductConfiguration && Boolean(product.variants?.some((variant) => variant.mattressFeatures));
   const mattressSizes = (product.variants ?? []).reduce<string[]>((sizes, variant) => {
     const size = variant.name.trim();
     return !size || sizes.some((item) => item.toLocaleLowerCase("es") === size.toLocaleLowerCase("es")) ? sizes : [...sizes, size];
@@ -81,7 +82,7 @@ export function ProductInfo({ product }: { product: ProductDTO }) {
         {product.title}
       </motion.h1>
 
-      {product.variants && product.variants.length > 0 && isMattress && (
+      {product.variants && product.variants.length > 0 && isLegacyMattress && (
         <motion.div variants={fadeUp} className="space-y-5">
           <fieldset className="space-y-3">
             <legend className="text-base font-semibold text-brand-dark">1. Elige la medida</legend>
@@ -98,10 +99,10 @@ export function ProductInfo({ product }: { product: ProductDTO }) {
         </motion.div>
       )}
 
-      {product.variants && product.variants.length > 0 && !isMattress && (
+      {product.variants && product.variants.length > 0 && !isLegacyMattress && (
         <motion.div variants={fadeUp} className="space-y-3">
           <div>
-            <p className="text-base font-semibold text-brand-dark">Elige una variante</p>
+            <p className="text-base font-semibold text-brand-dark">{hasProductConfiguration ? "Elige la medida" : "Elige una variante"}</p>
             <p className="text-sm text-brand-taupe">Cada opción tiene su propio precio.</p>
           </div>
           <div className="grid max-h-[268px] grid-cols-2 gap-3 overflow-y-auto pr-1 sm:grid-cols-3">
@@ -181,7 +182,7 @@ export function ProductInfo({ product }: { product: ProductDTO }) {
 
       {(activeVariant?.mattressFeatures ?? product.mattressFeatures) && (
         <motion.section variants={fadeUp} aria-labelledby="mattress-features" className="space-y-3 rounded-2xl border border-brand-dark/10 bg-brand-card p-4">
-          <h2 id="mattress-features" className="font-semibold text-brand-dark">Características de esta variante</h2>
+          <h2 id="mattress-features" className="font-semibold text-brand-dark">{product.mattressFeatures ? "Características del colchón" : "Características de esta variante"}</h2>
           <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
             <div><dt className="text-brand-taupe">Tipo</dt><dd className="font-semibold text-brand-dark">{(activeVariant?.mattressFeatures ?? product.mattressFeatures)!.model}</dd></div>
             <div><dt className="text-brand-taupe">Pillow</dt><dd className="font-semibold text-brand-dark">{(activeVariant?.mattressFeatures ?? product.mattressFeatures)!.pillow}</dd></div>

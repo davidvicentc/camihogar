@@ -92,7 +92,7 @@ export function ProductCard({ product, priority = false, className }: ProductCar
               <p className="tabular text-lg font-semibold tracking-tight text-brand-dark">
                 {formatPrice(visiblePrice)}
               </p>
-              {activeVariant?.mattressFeatures && <span className="max-w-[150px] truncate text-[0.65rem] text-brand-taupe">{activeVariant.mattressFeatures.model} · {activeVariant.mattressFeatures.pillow}</span>}
+              {(product.mattressFeatures ?? activeVariant?.mattressFeatures) && <span className="max-w-[150px] truncate text-[0.65rem] text-brand-taupe">{(product.mattressFeatures ?? activeVariant?.mattressFeatures)!.model} · {(product.mattressFeatures ?? activeVariant?.mattressFeatures)!.pillow}</span>}
               {product.variants && product.variants.length > 1 && (
                 <span className="text-[0.6rem] uppercase tracking-[0.12em] text-brand-taupe">
                   desde
@@ -134,7 +134,7 @@ export function ProductCard({ product, priority = false, className }: ProductCar
                 )}
               >
                 <span className="block truncate text-xs font-semibold">{variant.name}</span>
-                {variant.mattressFeatures && <span className="block truncate text-[0.65rem] text-brand-taupe">{variant.mattressFeatures.pillow}</span>}
+                {!product.mattressFeatures && variant.mattressFeatures && <span className="block truncate text-[0.65rem] text-brand-taupe">{variant.mattressFeatures.pillow}</span>}
                 <span className="mt-0.5 block text-sm font-bold tabular-nums text-brand-accent">
                   {formatPrice(variant.price)}
                 </span>

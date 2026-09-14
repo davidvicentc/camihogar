@@ -10,6 +10,16 @@ const SiteSettingsSchema = new Schema(
     warrantyText: { type: String, default: "" },
     deliveryText: { type: String, default: "" },
     email: { type: String, default: "" },
+    homeProductOrder: {
+      bestsellers: {
+        sort: { type: String, enum: ["price-asc", "price-desc", "popular", "recent", "manual"], default: "price-asc" },
+        productIds: { type: [String], default: [] },
+      },
+      featured: {
+        sort: { type: String, enum: ["price-asc", "price-desc", "popular", "recent", "manual"], default: "price-asc" },
+        productIds: { type: [String], default: [] },
+      },
+    },
   },
   { timestamps: true }
 );

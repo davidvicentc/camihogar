@@ -43,10 +43,18 @@ function validateVariants(input: Pick<ProductInput, "variants">): string | null 
   for (const variant of variants) {
     const features = variant.mattressFeatures;
     if (!features) continue;
-    if (!["Ortopédico", "Semi Ortopédico"].includes(features.model) || !["Sin Pillow", "1 Pillow", "2 Pillow"].includes(features.pillow) || !["Resortes", "Goma"].includes(features.composition) || !Number.isInteger(features.warrantyYears) || features.warrantyYears < 2 || features.warrantyYears > 12) {
+    if (!features.model.trim() || !features.pillow.trim() || !features.composition.trim() || !Number.isInteger(features.warrantyYears) || features.warrantyYears < 2 || features.warrantyYears > 12) {
       return `Revisa las características de la variante ${variant.name}.`;
     }
   }
+  return null;
+}
+
+function validateMattressFeatures(input: Pick<ProductInput, "mattressFeatures">): string | null {
+  const features = input.mattressFeatures;
+  if (!features) return null;
+  if (!features.model.trim() || !features.pillow.trim() || !features.composition.trim()) return "Completa tipo, pillow y composición del colchón.";
+  if (!Number.isInteger(features.warrantyYears) || features.warrantyYears < 2 || features.warrantyYears > 12) return "La garantía debe estar entre 2 y 12 años.";
   return null;
 }
 
@@ -68,6 +76,8 @@ export async function createProduct(
     if (!input.title.trim()) return { ok: false, error: "El producto necesita un nombre." };
     const variantsError = validateVariants(input);
     if (variantsError) return { ok: false, error: variantsError };
+    const mattressError = validateMattressFeatures(input);
+    if (mattressError) return { ok: false, error: mattressError };
     await connectDB();
     const [brand, category] = await Promise.all([
       input.brandId ? BrandModel.findById(input.brandId) : null,
@@ -104,6 +114,10 @@ export async function updateProduct(
     if (input.variants) {
       const variantsError = validateVariants({ variants: input.variants });
       if (variantsError) return { ok: false, error: variantsError };
+    }
+    if (input.mattressFeatures) {
+      const mattressError = validateMattressFeatures({ mattressFeatures: input.mattressFeatures });
+      if (mattressError) return { ok: false, error: mattressError };
     }
     const [brand, category] = await Promise.all([
       BrandModel.findById(input.brandId),

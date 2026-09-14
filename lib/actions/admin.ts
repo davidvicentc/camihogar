@@ -8,7 +8,7 @@ import { connectDB } from "@/lib/mongodb";
 import AdminUserModel from "@/lib/models/AdminUser";
 import SiteSettingsModel from "@/lib/models/SiteSettings";
 import { hashAdminPassword } from "@/lib/admin-users";
-import { ADMIN_PERMISSIONS, type AdminPermission } from "@/lib/types";
+import { ADMIN_PERMISSIONS, type AdminPermission, type HomeProductSort } from "@/lib/types";
 
 export interface AdminActionResult<T = undefined> { ok: boolean; error?: string; data?: T }
 
@@ -34,6 +34,22 @@ export async function saveSiteSettings(input: { whatsappNumber: string; instagra
     revalidatePath("/"); revalidatePath("/catalogo"); revalidatePath("/admin/configuracion");
     return { ok: true };
   } catch (error) { return { ok: false, error: error instanceof Error ? error.message : "No se pudo guardar." }; }
+}
+
+export async function saveHomeProductOrder(input: { bestsellers: { sort: HomeProductSort; productIds: string[] }; featured: { sort: HomeProductSort; productIds: string[] } }): Promise<AdminActionResult> {
+  try {
+    await requirePermission("settings.manage");
+    const allowed: HomeProductSort[] = ["price-asc", "price-desc", "popular", "recent", "manual"];
+    if (!allowed.includes(input.bestsellers.sort) || !allowed.includes(input.featured.sort)) return { ok: false, error: "Selecciona un tipo de orden válido." };
+    const clean = {
+      bestsellers: { sort: input.bestsellers.sort, productIds: [...new Set(input.bestsellers.productIds.map(String))] },
+      featured: { sort: input.featured.sort, productIds: [...new Set(input.featured.productIds.map(String))] },
+    };
+    await connectDB();
+    await SiteSettingsModel.findOneAndUpdate({ key: "main" }, { $set: { homeProductOrder: clean } }, { upsert: true, runValidators: true });
+    revalidatePath("/"); revalidatePath("/admin/configuracion");
+    return { ok: true };
+  } catch (error) { return { ok: false, error: error instanceof Error ? error.message : "No se pudo guardar el orden del home." }; }
 }
 
 export async function createAdminUser(input: { name: string; email: string; password: string; permissions: string[] }): Promise<AdminActionResult> {

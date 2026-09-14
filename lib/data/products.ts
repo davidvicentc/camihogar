@@ -2,7 +2,7 @@ import { connectDB } from "@/lib/mongodb";
 import ProductModel from "@/lib/models/Product";
 import BrandModel from "@/lib/models/Brand";
 import CategoryModel from "@/lib/models/Category";
-import type { CatalogFilters, ProductDTO } from "@/lib/types";
+import type { CatalogFilters, HomeSectionOrder, ProductDTO } from "@/lib/types";
 import type { FilterQuery } from "mongoose";
 import type { Product } from "@/lib/models/Product";
 import { normalizeImageUrl } from "@/lib/utils";
@@ -29,20 +29,8 @@ export function serializeProduct(doc: any): ProductDTO {
           sku: variant.sku ?? "",
           isDefault: Boolean(variant.isDefault),
           mattressFeatures: variant.mattressFeatures
-            ? {
-                model: variant.mattressFeatures.model,
-                pillow: variant.mattressFeatures.pillow,
-                warrantyYears: Number(variant.mattressFeatures.warrantyYears),
-                composition: variant.mattressFeatures.composition,
-              }
-            : doc.mattressFeatures
-              ? {
-                  model: doc.mattressFeatures.model,
-                  pillow: doc.mattressFeatures.pillow,
-                  warrantyYears: Number(doc.mattressFeatures.warrantyYears),
-                  composition: doc.mattressFeatures.composition,
-                }
-              : undefined,
+            ? { model: variant.mattressFeatures.model, pillow: variant.mattressFeatures.pillow, warrantyYears: Number(variant.mattressFeatures.warrantyYears), composition: variant.mattressFeatures.composition }
+            : undefined,
         }))
       : [],
     images: (doc.images ?? []).map((image: string) => normalizeImageUrl(image)).filter(Boolean),
@@ -91,6 +79,30 @@ export function serializeProduct(doc: any): ProductDTO {
     createdAt: doc.createdAt ? new Date(doc.createdAt).toISOString() : "",
     updatedAt: doc.updatedAt ? new Date(doc.updatedAt).toISOString() : "",
   };
+}
+
+export function getProductStartingPrice(product: ProductDTO): number {
+  const prices = (product.variants ?? []).map((variant) => variant.price).filter((price) => Number.isFinite(price) && price > 0);
+  return prices.length ? Math.min(...prices) : product.basePrice;
+}
+
+export function orderHomeProducts(products: ProductDTO[], order: HomeSectionOrder): ProductDTO[] {
+  const items = [...products];
+  if (order.sort === "manual") {
+    const positions = new Map(order.productIds.map((id, index) => [id, index]));
+    return items.sort((a, b) => {
+      const aPosition = positions.get(a._id);
+      const bPosition = positions.get(b._id);
+      if (aPosition !== undefined && bPosition !== undefined) return aPosition - bPosition;
+      if (aPosition !== undefined) return -1;
+      if (bPosition !== undefined) return 1;
+      return getProductStartingPrice(a) - getProductStartingPrice(b);
+    });
+  }
+  if (order.sort === "price-desc") return items.sort((a, b) => getProductStartingPrice(b) - getProductStartingPrice(a));
+  if (order.sort === "popular") return items.sort((a, b) => b.metrics.whatsappClicksCount - a.metrics.whatsappClicksCount || b.metrics.viewsCount - a.metrics.viewsCount);
+  if (order.sort === "recent") return items.sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
+  return items.sort((a, b) => getProductStartingPrice(a) - getProductStartingPrice(b));
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
 

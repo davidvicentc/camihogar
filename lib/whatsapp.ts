@@ -26,7 +26,7 @@ export function productInquiryLink(
   const url = `${getLinkSiteUrl()}/producto/${product.slug}`;
   const price = variant?.price ?? product.basePrice;
   const variantLine = variant ? `\n- Variante: ${variant.name}` : "";
-  const features = variant?.mattressFeatures;
+  const features = product.mattressFeatures ?? variant?.mattressFeatures;
   const featuresLines = features
     ? `\n- Tipo: ${features.model}\n- Pillow: ${features.pillow}\n- Composición: ${features.composition}\n- Garantía: ${features.warrantyYears} años`
     : "";
