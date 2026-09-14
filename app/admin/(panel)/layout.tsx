@@ -10,6 +10,8 @@ import {
   BadgeCheck,
   Settings,
   UserRound,
+  CircleHelp,
+  Images,
   type LucideIcon,
 } from "lucide-react";
 import { GuidedTutorial } from "@/components/admin/guided-tutorial";
@@ -47,10 +49,12 @@ const NAV_LINKS: readonly GrupoNav[] = [
       { href: "/admin", label: "Dashboard", icon: BarChart3 },
       { href: "/admin/productos", label: "Productos", icon: Package, capacidades: ["products.read"] },
       { href: "/admin/productos/nuevo", label: "Nuevo producto", icon: PlusCircle, capacidades: ["products.write"] },
+      { href: "/admin/imagenes", label: "Almacenamiento", icon: Images, capacidades: ["products.read"] },
       { href: "/admin/categorias", label: "Categorías", icon: Tags, capacidades: ["categories.manage"] },
       { href: "/admin/marcas", label: "Marcas", icon: BadgeCheck, capacidades: ["brands.manage"] },
       { href: "/admin/configuracion", label: "Configuración", icon: Settings, capacidades: ["settings.manage"] },
       { href: "/admin/usuarios", label: "Usuarios", icon: UserRound, capacidades: ["users.manage"] },
+      { href: "/admin/ayuda/productos", label: "Ayuda de productos", icon: CircleHelp, capacidades: ["products.read"] },
     ],
   },
 ] as const;

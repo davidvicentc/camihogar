@@ -55,6 +55,13 @@ export interface CustomizationOptions {
   configurations: ConfigurationOption[];
 }
 
+export interface MattressFeatures {
+  model: "Ortopédico" | "Semi Ortopédico";
+  pillow: "Sin Pillow" | "1 Pillow" | "2 Pillow";
+  warrantyYears: number;
+  composition: "Resortes" | "Goma";
+}
+
 export interface ProductMetrics {
   viewsCount: number;
   whatsappClicksCount: number;
@@ -65,6 +72,7 @@ export interface ProductVariant {
   price: number;
   sku?: string;
   isDefault?: boolean;
+  mattressFeatures?: MattressFeatures;
 }
 
 export interface ProductDTO {
@@ -84,6 +92,8 @@ export interface ProductDTO {
   images: string[];
   dimensions: Dimensions;
   customizationOptions: CustomizationOptions;
+  /** Compatibilidad con productos antiguos; los nuevos guardan esto por variante. */
+  mattressFeatures?: MattressFeatures;
   metrics: ProductMetrics;
   rating: number;
   reviewsCount: number;
@@ -109,6 +119,7 @@ export interface ProductInput {
   images: string[];
   dimensions: Dimensions;
   customizationOptions: CustomizationOptions;
+  mattressFeatures?: MattressFeatures;
   isFeatured?: boolean;
   inStock?: boolean;
 }

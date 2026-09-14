@@ -92,6 +92,7 @@ export function ProductCard({ product, priority = false, className }: ProductCar
               <p className="tabular text-lg font-semibold tracking-tight text-brand-dark">
                 {formatPrice(visiblePrice)}
               </p>
+              {activeVariant?.mattressFeatures && <span className="max-w-[150px] truncate text-[0.65rem] text-brand-taupe">{activeVariant.mattressFeatures.model} · {activeVariant.mattressFeatures.pillow}</span>}
               {product.variants && product.variants.length > 1 && (
                 <span className="text-[0.6rem] uppercase tracking-[0.12em] text-brand-taupe">
                   desde
@@ -109,11 +110,11 @@ export function ProductCard({ product, priority = false, className }: ProductCar
         </div>
       </Link>
 
-      <div className="h-[112px] shrink-0 space-y-2 overflow-hidden px-4 pb-3 pt-1">
+      <div className="h-[128px] shrink-0 space-y-2 overflow-hidden px-4 pb-3 pt-1">
         {product.variants && product.variants.length > 1 ? (
           <>
           <p className="text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-brand-taupe">
-            Elige tu medida
+            Elige tu opción
           </p>
           <div
             className="scrollbar-hide flex gap-2 overflow-x-auto overscroll-x-contain pb-1"
@@ -126,13 +127,14 @@ export function ProductCard({ product, priority = false, className }: ProductCar
                 onClick={() => setSelectedVariantIndex(index)}
                 aria-pressed={selectedVariantIndex === index}
                 className={cn(
-                  "min-h-14 w-[112px] shrink-0 snap-start rounded-xl border px-3 py-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent",
+                  "min-h-16 w-[132px] shrink-0 snap-start rounded-xl border px-3 py-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent",
                   selectedVariantIndex === index
                     ? "border-brand-accent bg-brand-accent/10 text-brand-dark"
                     : "border-brand-dark/10 bg-brand-bg text-brand-dark hover:border-brand-accent/50"
                 )}
               >
                 <span className="block truncate text-xs font-semibold">{variant.name}</span>
+                {variant.mattressFeatures && <span className="block truncate text-[0.65rem] text-brand-taupe">{variant.mattressFeatures.pillow}</span>}
                 <span className="mt-0.5 block text-sm font-bold tabular-nums text-brand-accent">
                   {formatPrice(variant.price)}
                 </span>

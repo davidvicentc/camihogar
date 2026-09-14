@@ -1,0 +1,31 @@
+import Link from "next/link";
+import { ArrowRight, BadgeDollarSign, CheckCircle2, Eye, Layers3, PackagePlus } from "lucide-react";
+import { requireAdminPage } from "@/lib/admin-session";
+import { Button } from "@/components/ui/button";
+
+export const dynamic = "force-dynamic";
+
+const fields = [
+  ["Nombre del producto", "El nombre general que verá el cliente. Ejemplo: Colchón Confort Imperial."],
+  ["Marca", "Fabricante o marca comercial responsable del producto."],
+  ["Categoría", "Define el tipo de producto. Al elegir Colchones aparecen los campos especiales."],
+  ["Modelo comercial", "Nombre de la línea o familia. No es la medida ni el tipo ortopédico."],
+  ["Fotos", "Selecciona hasta 8 imágenes. La primera es la portada; las demás forman la galería pública."],
+  ["Descripción", "Explica beneficios generales que comparten todas las variantes."],
+  ["Medidas generales", "Úsalas solo si todas las variantes comparten las mismas dimensiones físicas."],
+  ["Variante", "Una opción que el cliente puede comprar y que tiene precio y características propias."],
+  ["SKU", "Código interno único para identificar inventario. Ejemplo: CIC-MAT-2P."],
+] as const;
+
+export default async function AyudaProductosPage() {
+  await requireAdminPage("products.read");
+  return <div className="space-y-10">
+    <header className="max-w-3xl"><p className="text-sm font-semibold text-brand-accent">Manual de productos</p><h1 className="mt-1 text-balance font-display text-3xl font-semibold tracking-tight text-brand-dark sm:text-4xl">Cómo publicar un producto correctamente</h1><p className="mt-3 leading-relaxed text-brand-taupe">Esta guía explica qué colocar en cada campo y cómo crear colchones con precios distintos para Individual, Matrimonial, Queen o King.</p><Button asChild variant="accent" className="mt-5"><Link href="/admin/productos/nuevo"><PackagePlus aria-hidden="true"/>Crear un producto</Link></Button></header>
+
+    <section className="grid gap-4 md:grid-cols-3"><div className="rounded-2xl border border-brand-dark/10 bg-brand-card p-5"><PackagePlus className="h-5 w-5 text-brand-accent"/><h2 className="mt-3 font-semibold text-brand-dark">1. Datos generales</h2><p className="mt-1 text-sm leading-relaxed text-brand-taupe">Nombre, marca, categoría, modelo, fotografía y descripción identifican el producto.</p></div><div className="rounded-2xl border border-brand-dark/10 bg-brand-card p-5"><Layers3 className="h-5 w-5 text-brand-accent"/><h2 className="mt-3 font-semibold text-brand-dark">2. Variantes</h2><p className="mt-1 text-sm leading-relaxed text-brand-taupe">Crea una variante por cada combinación que tenga precio o características diferentes.</p></div><div className="rounded-2xl border border-brand-dark/10 bg-brand-card p-5"><Eye className="h-5 w-5 text-brand-accent"/><h2 className="mt-3 font-semibold text-brand-dark">3. Vista previa</h2><p className="mt-1 text-sm leading-relaxed text-brand-taupe">Selecciona cada variante en la vista previa y confirma que cambien precio y detalles.</p></div></section>
+
+    <section className="space-y-4"><div><h2 className="font-display text-2xl font-semibold text-brand-dark">Ejemplo completo de un colchón</h2><p className="text-sm text-brand-taupe">Un mismo producto puede ofrecer opciones distintas. Cada fila de abajo debe crearse como una variante.</p></div><div className="overflow-x-auto rounded-2xl border border-brand-dark/10 bg-brand-card"><table className="w-full min-w-[760px] text-left text-sm"><thead className="bg-secondary/60 text-brand-dark"><tr><th className="p-4">Variante</th><th className="p-4">Precio</th><th className="p-4">Tipo</th><th className="p-4">Pillow</th><th className="p-4">Composición</th><th className="p-4">Garantía</th></tr></thead><tbody className="divide-y divide-brand-dark/10"><tr><td className="p-4 font-semibold">Individual</td><td className="p-4">$180</td><td className="p-4">Ortopédico</td><td className="p-4">Sin Pillow</td><td className="p-4">Resortes</td><td className="p-4">5 años</td></tr><tr><td className="p-4 font-semibold">Matrimonial</td><td className="p-4">$260</td><td className="p-4">Ortopédico</td><td className="p-4">1 Pillow</td><td className="p-4">Resortes</td><td className="p-4">8 años</td></tr><tr><td className="p-4 font-semibold">King</td><td className="p-4">$420</td><td className="p-4">Semi Ortopédico</td><td className="p-4">2 Pillow</td><td className="p-4">Goma</td><td className="p-4">12 años</td></tr></tbody></table></div></section>
+
+    <section className="grid gap-6 lg:grid-cols-[1fr_0.9fr]"><div><h2 className="font-display text-2xl font-semibold text-brand-dark">Para qué sirve cada campo</h2><dl className="mt-4 divide-y divide-brand-dark/10 rounded-2xl border border-brand-dark/10 bg-brand-card px-5">{fields.map(([name, description]) => <div key={name} className="py-4"><dt className="font-semibold text-brand-dark">{name}</dt><dd className="mt-1 text-sm leading-relaxed text-brand-taupe">{description}</dd></div>)}</dl></div><aside className="space-y-5"><div className="rounded-2xl bg-brand-dark p-6 text-brand-bg"><BadgeDollarSign className="h-6 w-6 text-brand-accent"/><h2 className="mt-3 font-display text-xl font-semibold">Regla más importante</h2><p className="mt-2 text-sm leading-relaxed text-brand-bg/70">Si cambia el precio, el tipo, el pillow, la composición o la garantía, crea otra variante. No escribas esas diferencias únicamente en la descripción.</p></div><div className="rounded-2xl border border-brand-accent/25 bg-brand-accent/5 p-6"><h2 className="font-semibold text-brand-dark">Antes de guardar</h2><ul className="mt-3 space-y-3 text-sm text-brand-taupe">{["La imagen corresponde al producto.", "Cada variante tiene nombre y precio.", "Solo una variante está marcada como principal.", "La vista previa cambia al seleccionar variantes.", "Los SKU no se repiten."].map(item => <li key={item} className="flex gap-2"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-brand-accent" aria-hidden="true"/>{item}</li>)}</ul></div><Link href="/admin/productos" className="inline-flex items-center gap-2 text-sm font-semibold text-brand-accent">Volver al inventario <ArrowRight className="h-4 w-4" aria-hidden="true"/></Link></aside></section>
+  </div>;
+}

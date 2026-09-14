@@ -51,6 +51,13 @@ export function ProductInfo({ product }: { product: ProductDTO }) {
     product.variants && product.variants.length > 0
       ? product.variants[selectedVariantIndex] ?? product.variants[0]
       : null;
+  const isMattress = Boolean(product.variants?.some((variant) => variant.mattressFeatures) || product.mattressFeatures);
+  const mattressSizes = (product.variants ?? []).reduce<string[]>((sizes, variant) => {
+    const size = variant.name.trim();
+    return !size || sizes.some((item) => item.toLocaleLowerCase("es") === size.toLocaleLowerCase("es")) ? sizes : [...sizes, size];
+  }, []);
+  const activeSize = activeVariant?.name ?? mattressSizes[0] ?? "";
+  const configurationsForSize = (product.variants ?? []).map((variant, index) => ({ variant, index })).filter(({ variant }) => variant.name.trim().toLocaleLowerCase("es") === activeSize.trim().toLocaleLowerCase("es"));
 
   return (
     <motion.div
@@ -74,7 +81,24 @@ export function ProductInfo({ product }: { product: ProductDTO }) {
         {product.title}
       </motion.h1>
 
-      {product.variants && product.variants.length > 0 && (
+      {product.variants && product.variants.length > 0 && isMattress && (
+        <motion.div variants={fadeUp} className="space-y-5">
+          <fieldset className="space-y-3">
+            <legend className="text-base font-semibold text-brand-dark">1. Elige la medida</legend>
+            <div className="flex flex-wrap gap-2">
+              {mattressSizes.map((size) => <button key={size} type="button" onClick={() => { const index = product.variants!.findIndex((variant) => variant.name.trim().toLocaleLowerCase("es") === size.trim().toLocaleLowerCase("es")); setSelectedVariantIndex(Math.max(0, index)); }} aria-pressed={activeSize.toLocaleLowerCase("es") === size.toLocaleLowerCase("es")} className={cn("min-h-11 rounded-xl border px-4 py-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent", activeSize.toLocaleLowerCase("es") === size.toLocaleLowerCase("es") ? "border-brand-accent bg-brand-accent/10 text-brand-dark" : "border-brand-dark/15 bg-brand-card text-brand-dark hover:border-brand-accent/50")}>{size}</button>)}
+            </div>
+          </fieldset>
+          <fieldset className="space-y-3">
+            <legend className="text-base font-semibold text-brand-dark">2. Elige la configuración</legend>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {configurationsForSize.map(({ variant, index }) => { const features = variant.mattressFeatures ?? product.mattressFeatures; return <button key={`${variant.name}-${index}`} type="button" onClick={() => setSelectedVariantIndex(index)} aria-pressed={selectedVariantIndex === index} className={cn("min-h-[94px] rounded-2xl border px-4 py-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent", selectedVariantIndex === index ? "border-brand-accent bg-brand-accent/10 shadow-warm-sm" : "border-brand-dark/15 bg-brand-card hover:border-brand-accent/50")}><span className="flex items-start justify-between gap-3"><span><span className="block font-semibold text-brand-dark">{features?.pillow ?? "Configuración estándar"}</span><span className="mt-1 block text-xs leading-relaxed text-brand-taupe">{features ? `${features.model} · ${features.composition} · ${features.warrantyYears} años` : variant.sku || "Disponible"}</span></span><span className="shrink-0 font-bold tabular-nums text-brand-accent">{formatPrice(variant.price)}</span></span></button>; })}
+            </div>
+          </fieldset>
+        </motion.div>
+      )}
+
+      {product.variants && product.variants.length > 0 && !isMattress && (
         <motion.div variants={fadeUp} className="space-y-3">
           <div>
             <p className="text-base font-semibold text-brand-dark">Elige una variante</p>
@@ -153,6 +177,18 @@ export function ProductInfo({ product }: { product: ProductDTO }) {
         >
           {product.description}
         </motion.p>
+      )}
+
+      {(activeVariant?.mattressFeatures ?? product.mattressFeatures) && (
+        <motion.section variants={fadeUp} aria-labelledby="mattress-features" className="space-y-3 rounded-2xl border border-brand-dark/10 bg-brand-card p-4">
+          <h2 id="mattress-features" className="font-semibold text-brand-dark">Características de esta variante</h2>
+          <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+            <div><dt className="text-brand-taupe">Tipo</dt><dd className="font-semibold text-brand-dark">{(activeVariant?.mattressFeatures ?? product.mattressFeatures)!.model}</dd></div>
+            <div><dt className="text-brand-taupe">Pillow</dt><dd className="font-semibold text-brand-dark">{(activeVariant?.mattressFeatures ?? product.mattressFeatures)!.pillow}</dd></div>
+            <div><dt className="text-brand-taupe">Garantía</dt><dd className="font-semibold text-brand-dark">{(activeVariant?.mattressFeatures ?? product.mattressFeatures)!.warrantyYears} años</dd></div>
+            <div><dt className="text-brand-taupe">Composición interna</dt><dd className="font-semibold text-brand-dark">{(activeVariant?.mattressFeatures ?? product.mattressFeatures)!.composition}</dd></div>
+          </dl>
+        </motion.section>
       )}
 
       {/* CTAs */}

@@ -29,12 +29,23 @@ const ConfigurationSchema = new Schema(
   { _id: false }
 );
 
+const MattressFeaturesSchema = new Schema(
+  {
+    model: { type: String, enum: ["Ortopédico", "Semi Ortopédico"] },
+    pillow: { type: String, enum: ["Sin Pillow", "1 Pillow", "2 Pillow"] },
+    warrantyYears: { type: Number, min: 2, max: 12 },
+    composition: { type: String, enum: ["Resortes", "Goma"] },
+  },
+  { _id: false }
+);
+
 const VariantSchema = new Schema(
   {
     name: { type: String, required: true, trim: true },
     price: { type: Number, required: true, min: 0 },
     sku: { type: String, default: "", trim: true, uppercase: true },
     isDefault: { type: Boolean, default: false },
+    mattressFeatures: { type: MattressFeaturesSchema },
   },
   { _id: false }
 );
@@ -69,6 +80,7 @@ const ProductSchema = new Schema(
       finishes: { type: [FinishSchema], default: [] },
       configurations: { type: [ConfigurationSchema], default: [] },
     },
+    mattressFeatures: { type: MattressFeaturesSchema },
     metrics: {
       viewsCount: { type: Number, default: 0 },
       whatsappClicksCount: { type: Number, default: 0 },

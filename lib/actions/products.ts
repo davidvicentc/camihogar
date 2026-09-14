@@ -9,11 +9,45 @@ import type { ProductDTO, ProductInput } from "@/lib/types";
 import BrandModel from "@/lib/models/Brand";
 import CategoryModel from "@/lib/models/Category";
 import { normalizeImageUrl } from "@/lib/utils";
+import { deleteProductImage, productImageKeyFromUrl } from "@/lib/r2";
 
 export interface ActionResult<T = undefined> {
   ok: boolean;
   error?: string;
   data?: T;
+}
+
+function validateVariants(input: Pick<ProductInput, "variants">): string | null {
+  const variants = input.variants ?? [];
+  if (!variants.length) return "Agrega al menos una variante con nombre y precio.";
+  if (variants.some((variant) => !variant.name.trim() || !Number.isFinite(variant.price) || variant.price <= 0)) {
+    return "Cada variante debe tener nombre y precio mayor a cero.";
+  }
+  if (variants.filter((variant) => variant.isDefault).length !== 1) {
+    return "Marca exactamente una variante como principal.";
+  }
+  const skus = variants.map((variant) => variant.sku?.trim()).filter(Boolean);
+  if (new Set(skus).size !== skus.length) return "Los códigos SKU no pueden repetirse.";
+  const combinations = variants.map((variant) => {
+    const features = variant.mattressFeatures;
+    return [variant.name, features?.model, features?.pillow, features?.composition, features?.warrantyYears]
+      .filter((value) => value !== undefined)
+      .join("|")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase();
+  });
+  if (new Set(combinations).size !== combinations.length) {
+    return "Hay dos variantes con la misma medida y características. Cambia la configuración o elimina la repetida.";
+  }
+  for (const variant of variants) {
+    const features = variant.mattressFeatures;
+    if (!features) continue;
+    if (!["Ortopédico", "Semi Ortopédico"].includes(features.model) || !["Sin Pillow", "1 Pillow", "2 Pillow"].includes(features.pillow) || !["Resortes", "Goma"].includes(features.composition) || !Number.isInteger(features.warrantyYears) || features.warrantyYears < 2 || features.warrantyYears > 12) {
+      return `Revisa las características de la variante ${variant.name}.`;
+    }
+  }
+  return null;
 }
 
 function revalidatePublicPages(slug?: string) {
@@ -32,9 +66,8 @@ export async function createProduct(
   try {
     await requireAdmin("products.write");
     if (!input.title.trim()) return { ok: false, error: "El producto necesita un nombre." };
-    if (input.variants?.some((variant) => !variant.name.trim() || variant.price <= 0)) {
-      return { ok: false, error: "Cada variante debe tener nombre y precio mayor a cero." };
-    }
+    const variantsError = validateVariants(input);
+    if (variantsError) return { ok: false, error: variantsError };
     await connectDB();
     const [brand, category] = await Promise.all([
       input.brandId ? BrandModel.findById(input.brandId) : null,
@@ -68,14 +101,21 @@ export async function updateProduct(
     if (!input.brandId || !input.categoryId) {
       return { ok: false, error: "Selecciona una marca y categoría válidas." };
     }
+    if (input.variants) {
+      const variantsError = validateVariants({ variants: input.variants });
+      if (variantsError) return { ok: false, error: variantsError };
+    }
     const [brand, category] = await Promise.all([
       BrandModel.findById(input.brandId),
       CategoryModel.findById(input.categoryId),
     ]);
     if (!brand || !category) return { ok: false, error: "Selecciona una marca y categoría válidas." };
+    const previousImages = [...doc.images];
     input = { ...input, brand: brand.name, category: category.name, images: (input.images ?? []).map(normalizeImageUrl).filter(Boolean) };
     Object.assign(doc, input);
     await doc.save();
+    const currentImages = new Set(doc.images);
+    await Promise.allSettled(previousImages.filter((url) => !currentImages.has(url)).map((url) => productImageKeyFromUrl(url)).filter((key): key is string => Boolean(key)).map(deleteProductImage));
     revalidatePublicPages(doc.slug ?? undefined);
     return { ok: true, data: serializeProduct(doc.toObject()) };
   } catch (error) {
@@ -139,6 +179,7 @@ export async function deleteProduct(id: string): Promise<ActionResult> {
     await requireAdmin("products.delete");
     await connectDB();
     const doc = await ProductModel.findByIdAndDelete(id);
+    if (doc) await Promise.allSettled(doc.images.map((url) => productImageKeyFromUrl(url)).filter((key): key is string => Boolean(key)).map(deleteProductImage));
     revalidatePublicPages(doc?.slug ?? undefined);
     return { ok: true };
   } catch (error) {

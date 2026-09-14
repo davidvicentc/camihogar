@@ -28,6 +28,21 @@ export function serializeProduct(doc: any): ProductDTO {
           price: Number(variant.price ?? 0),
           sku: variant.sku ?? "",
           isDefault: Boolean(variant.isDefault),
+          mattressFeatures: variant.mattressFeatures
+            ? {
+                model: variant.mattressFeatures.model,
+                pillow: variant.mattressFeatures.pillow,
+                warrantyYears: Number(variant.mattressFeatures.warrantyYears),
+                composition: variant.mattressFeatures.composition,
+              }
+            : doc.mattressFeatures
+              ? {
+                  model: doc.mattressFeatures.model,
+                  pillow: doc.mattressFeatures.pillow,
+                  warrantyYears: Number(doc.mattressFeatures.warrantyYears),
+                  composition: doc.mattressFeatures.composition,
+                }
+              : undefined,
         }))
       : [],
     images: (doc.images ?? []).map((image: string) => normalizeImageUrl(image)).filter(Boolean),
@@ -57,6 +72,14 @@ export function serializeProduct(doc: any): ProductDTO {
         })
       ),
     },
+    mattressFeatures: doc.mattressFeatures
+      ? {
+          model: doc.mattressFeatures.model,
+          pillow: doc.mattressFeatures.pillow,
+          warrantyYears: doc.mattressFeatures.warrantyYears,
+          composition: doc.mattressFeatures.composition,
+        }
+      : undefined,
     metrics: {
       viewsCount: doc.metrics?.viewsCount ?? 0,
       whatsappClicksCount: doc.metrics?.whatsappClicksCount ?? 0,

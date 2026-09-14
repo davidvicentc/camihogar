@@ -26,7 +26,11 @@ export function productInquiryLink(
   const url = `${getLinkSiteUrl()}/producto/${product.slug}`;
   const price = variant?.price ?? product.basePrice;
   const variantLine = variant ? `\n- Variante: ${variant.name}` : "";
-  const message = `¡Hola CamiHogar! Estoy interesado en *${product.title}*.${variantLine}\n- Precio: ${formatPrice(
+  const features = variant?.mattressFeatures;
+  const featuresLines = features
+    ? `\n- Tipo: ${features.model}\n- Pillow: ${features.pillow}\n- Composición: ${features.composition}\n- Garantía: ${features.warrantyYears} años`
+    : "";
+  const message = `¡Hola CamiHogar! Estoy interesado en *${product.title}*.${variantLine}${featuresLines}\n- Precio: ${formatPrice(
     price
   )}\nVer producto: ${url}`;
   return whatsappNumber ? buildWhatsAppLinkForNumber(message, whatsappNumber) : buildWhatsAppLink(message);
