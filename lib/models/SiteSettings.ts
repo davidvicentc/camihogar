@@ -10,6 +10,16 @@ const SiteSettingsSchema = new Schema(
     warrantyText: { type: String, default: "" },
     deliveryText: { type: String, default: "" },
     email: { type: String, default: "" },
+    homeCardStyle: {
+      showBrand: { type: Boolean, default: true },
+      showCategory: { type: Boolean, default: true },
+      showDescription: { type: Boolean, default: true },
+      showRating: { type: Boolean, default: true },
+      showVariants: { type: Boolean, default: true },
+      showWhatsapp: { type: Boolean, default: true },
+      scale: { type: String, enum: ["compact", "standard", "large"], default: "standard" },
+      accentColor: { type: String, default: "#B45338" },
+    },
     homeProductOrder: {
       bestsellers: {
         sort: { type: String, enum: ["price-asc", "price-desc", "popular", "recent", "manual"], default: "price-asc" },

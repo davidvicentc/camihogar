@@ -32,12 +32,22 @@ export async function getSiteSettings() {
       warrantyText: settings?.warrantyText || "Garantía CamiHogar de 2 años",
       deliveryText: settings?.deliveryText || "Entrega e instalación en toda Venezuela",
       email: settings?.email || "hola@camihogar.com",
+      homeCardStyle: {
+        showBrand: settings?.homeCardStyle?.showBrand ?? true,
+        showCategory: settings?.homeCardStyle?.showCategory ?? true,
+        showDescription: settings?.homeCardStyle?.showDescription ?? true,
+        showRating: settings?.homeCardStyle?.showRating ?? true,
+        showVariants: settings?.homeCardStyle?.showVariants ?? true,
+        showWhatsapp: settings?.homeCardStyle?.showWhatsapp ?? true,
+        scale: settings?.homeCardStyle?.scale ?? "standard",
+        accentColor: settings?.homeCardStyle?.accentColor ?? "#B45338",
+      },
       homeProductOrder: {
         bestsellers: { sort: validSort(settings?.homeProductOrder?.bestsellers?.sort), productIds: settings?.homeProductOrder?.bestsellers?.productIds?.map(String) ?? [] },
         featured: { sort: validSort(settings?.homeProductOrder?.featured?.sort), productIds: settings?.homeProductOrder?.featured?.productIds?.map(String) ?? [] },
       },
     };
   } catch {
-    return { whatsappNumber: fallbackWhatsAppNumber(), instagramUrl: "https://instagram.com/camihogar", facebookUrl: "", tagline: "Muebles que abrazan tu hogar", warrantyText: "Garantía CamiHogar de 2 años", deliveryText: "Entrega e instalación en toda Venezuela", email: "hola@camihogar.com", homeProductOrder: { bestsellers: { sort: "price-asc" as const, productIds: [] }, featured: { sort: "price-asc" as const, productIds: [] } } };
+    return { whatsappNumber: fallbackWhatsAppNumber(), instagramUrl: "https://instagram.com/camihogar", facebookUrl: "", tagline: "Muebles que abrazan tu hogar", warrantyText: "Garantía CamiHogar de 2 años", deliveryText: "Entrega e instalación en toda Venezuela", email: "hola@camihogar.com", homeCardStyle: { showBrand: true, showCategory: true, showDescription: true, showRating: true, showVariants: true, showWhatsapp: true, scale: "standard" as const, accentColor: "#B45338" }, homeProductOrder: { bestsellers: { sort: "price-asc" as const, productIds: [] }, featured: { sort: "price-asc" as const, productIds: [] } } };
   }
 }

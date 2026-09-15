@@ -52,6 +52,17 @@ export async function saveHomeProductOrder(input: { bestsellers: { sort: HomePro
   } catch (error) { return { ok: false, error: error instanceof Error ? error.message : "No se pudo guardar el orden del home." }; }
 }
 
+export async function saveHomeCardStyle(input: { showBrand: boolean; showCategory: boolean; showDescription: boolean; showRating: boolean; showVariants: boolean; showWhatsapp: boolean; scale: "compact" | "standard" | "large"; accentColor: string }): Promise<AdminActionResult> {
+  try {
+    await requirePermission("settings.manage");
+    if (!/^#[0-9a-f]{6}$/i.test(input.accentColor)) return { ok: false, error: "El color debe estar en formato hexadecimal." };
+    await connectDB();
+    await SiteSettingsModel.findOneAndUpdate({ key: "main" }, { $set: { homeCardStyle: input } }, { upsert: true, runValidators: true });
+    revalidatePath("/"); revalidatePath("/admin/configuracion");
+    return { ok: true };
+  } catch (error) { return { ok: false, error: error instanceof Error ? error.message : "No se pudo guardar el diseño." }; }
+}
+
 export async function createAdminUser(input: { name: string; email: string; password: string; permissions: string[] }): Promise<AdminActionResult> {
   try {
     await requirePermission("users.manage");

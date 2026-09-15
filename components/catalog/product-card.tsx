@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Heart, Star } from "lucide-react";
 import { SiWhatsapp } from "@icons-pack/react-simple-icons";
 import { useState } from "react";
+import type { CSSProperties } from "react";
 import { Badge } from "@/components/ui/badge";
 import { LogoMark } from "@/components/brand/logo";
 import { useFavoritesStore } from "@/store/favorites-store";
@@ -20,9 +21,11 @@ interface ProductCardProps {
   /** Prioriza la carga de la imagen (para las primeras tarjetas above-the-fold). */
   priority?: boolean;
   className?: string;
+  cardStyle?: { showBrand?: boolean; showCategory?: boolean; showDescription?: boolean; showRating?: boolean; showVariants?: boolean; showWhatsapp?: boolean; scale?: "compact" | "standard" | "large"; accentColor?: string };
 }
 
-export function ProductCard({ product, priority = false, className }: ProductCardProps) {
+export function ProductCard({ product, priority = false, className, cardStyle }: ProductCardProps) {
+  const style = { showBrand: true, showCategory: true, showDescription: true, showRating: true, showVariants: true, showWhatsapp: true, scale: "standard" as const, accentColor: "#B45338", ...cardStyle };
   const isFavorite = useFavoritesStore((s) => s.isFavorite(product._id));
   const toggleFavorite = useFavoritesStore((s) => s.toggle);
   const whatsappNumber = useWhatsAppNumber();
@@ -41,6 +44,7 @@ export function ProductCard({ product, priority = false, className }: ProductCar
     <motion.article
       whileHover={{ y: -6 }}
       transition={{ type: "spring", stiffness: 300, damping: 24 }}
+      style={{ "--card-accent": style.accentColor } as CSSProperties}
       className={cn(
         "group relative flex h-full flex-col overflow-hidden rounded-[1.5rem] border border-brand-dark/[0.06] bg-brand-card shadow-warm-sm transition-all duration-300 hover:border-brand-accent/20 hover:shadow-warm",
         className
@@ -50,7 +54,7 @@ export function ProductCard({ product, priority = false, className }: ProductCar
         href={`/producto/${product.slug}`}
         className="block flex-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
-        <div className="warm-glow relative aspect-[4/3] overflow-hidden bg-brand-sand">
+        <div className={cn("warm-glow relative overflow-hidden bg-brand-sand", style.scale === "compact" ? "aspect-[5/3]" : style.scale === "large" ? "aspect-[4/4]" : "aspect-[4/3]")}>
           {product.images[0] ? (
             <Image
               src={product.images[0]}
@@ -78,18 +82,18 @@ export function ProductCard({ product, priority = false, className }: ProductCar
         </div>
 
         <div className="space-y-1.5 p-4">
-          <p className="truncate text-xl font-bold leading-tight tracking-tight text-brand-accent sm:text-2xl">
+          {style.showBrand && <p style={{ color: "var(--card-accent)" }} className={cn("truncate font-bold leading-tight tracking-tight", style.scale === "large" ? "text-2xl sm:text-3xl" : "text-xl sm:text-2xl")}>
             {product.brand || "Marca CamiHogar"}
-          </p>
-          <p className="truncate text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-brand-taupe">
+          </p>}
+          {style.showCategory && <p className="truncate text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-brand-taupe">
             {product.category}
-          </p>
+          </p>}
           <h3 className="line-clamp-2 font-display text-[0.95rem] font-semibold leading-snug tracking-tight text-brand-dark">
             {product.title}
           </h3>
-          <p className="line-clamp-2 min-h-8 text-xs leading-relaxed text-brand-taupe">
+          {style.showDescription && <p className="line-clamp-2 min-h-8 text-xs leading-relaxed text-brand-taupe">
             {product.description || "Producto disponible para consultar por WhatsApp."}
-          </p>
+          </p>}
           <div className="flex items-center justify-between pt-1.5">
             <div className="flex min-w-0 flex-col">
               <p className="tabular text-lg font-semibold tracking-tight text-brand-dark">
@@ -102,18 +106,18 @@ export function ProductCard({ product, priority = false, className }: ProductCar
                 </span>
               )}
             </div>
-            <span className="flex items-center gap-1 text-xs tracking-tight text-brand-taupe">
+            {style.showRating && <span className="flex items-center gap-1 text-xs tracking-tight text-brand-taupe">
               <Star className="h-3.5 w-3.5 fill-brand-accent text-brand-accent" />
               <span className="tabular">{product.rating.toFixed(1)}</span>
               {product.reviewsCount > 0 && (
                 <span className="tabular">({product.reviewsCount})</span>
               )}
-            </span>
+            </span>}
           </div>
         </div>
       </Link>
 
-      <div className="h-[128px] shrink-0 space-y-2 overflow-hidden px-4 pb-3 pt-1">
+      {style.showVariants && <div className="h-[128px] shrink-0 space-y-2 overflow-hidden px-4 pb-3 pt-1">
         {product.variants && product.variants.length > 1 ? (
           <>
           <p className="text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-brand-taupe">
@@ -153,9 +157,9 @@ export function ProductCard({ product, priority = false, className }: ProductCar
             </div>
           </div>
         )}
-      </div>
+      </div>}
 
-      <a
+      {style.showWhatsapp && <a
         href={productInquiryLink(product, activeVariant, whatsappNumber)}
         target="_blank"
         rel="noopener noreferrer"
@@ -164,7 +168,7 @@ export function ProductCard({ product, priority = false, className }: ProductCar
       >
         <SiWhatsapp className="h-4 w-4" aria-hidden="true" />
         Consultar por WhatsApp
-      </a>
+      </a>}
 
       <button
         type="button"
