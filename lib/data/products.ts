@@ -23,7 +23,9 @@ export function serializeProduct(doc: any): ProductDTO {
     category: doc.category,
     basePrice: doc.basePrice,
     variants: Array.isArray(doc.variants)
-      ? doc.variants.map((variant: any) => ({
+      ? [...doc.variants]
+          .sort((a: any, b: any) => Number(a.price ?? 0) - Number(b.price ?? 0))
+          .map((variant: any) => ({
           name: variant.name ?? "",
           price: Number(variant.price ?? 0),
           sku: variant.sku ?? "",
@@ -31,7 +33,7 @@ export function serializeProduct(doc: any): ProductDTO {
           mattressFeatures: variant.mattressFeatures
             ? { model: variant.mattressFeatures.model, pillow: variant.mattressFeatures.pillow, warrantyYears: Number(variant.mattressFeatures.warrantyYears), composition: variant.mattressFeatures.composition }
             : undefined,
-        }))
+          }))
       : [],
     images: (doc.images ?? []).map((image: string) => normalizeImageUrl(image)).filter(Boolean),
     dimensions: {
@@ -86,22 +88,13 @@ export function getProductStartingPrice(product: ProductDTO): number {
   return prices.length ? Math.min(...prices) : product.basePrice;
 }
 
+function sortByStartingPrice(products: ProductDTO[]): ProductDTO[] {
+  return [...products].sort((a, b) => getProductStartingPrice(a) - getProductStartingPrice(b));
+}
+
 export function orderHomeProducts(products: ProductDTO[], order: HomeSectionOrder): ProductDTO[] {
   const items = [...products];
-  if (order.sort === "manual") {
-    const positions = new Map(order.productIds.map((id, index) => [id, index]));
-    return items.sort((a, b) => {
-      const aPosition = positions.get(a._id);
-      const bPosition = positions.get(b._id);
-      if (aPosition !== undefined && bPosition !== undefined) return aPosition - bPosition;
-      if (aPosition !== undefined) return -1;
-      if (bPosition !== undefined) return 1;
-      return getProductStartingPrice(a) - getProductStartingPrice(b);
-    });
-  }
-  if (order.sort === "price-desc") return items.sort((a, b) => getProductStartingPrice(b) - getProductStartingPrice(a));
-  if (order.sort === "popular") return items.sort((a, b) => b.metrics.whatsappClicksCount - a.metrics.whatsappClicksCount || b.metrics.viewsCount - a.metrics.viewsCount);
-  if (order.sort === "recent") return items.sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
+  void order;
   return items.sort((a, b) => getProductStartingPrice(a) - getProductStartingPrice(b));
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
@@ -130,17 +123,10 @@ export async function getProducts(
       query.title = { $regex: filters.search, $options: "i" };
     }
 
-    const sort: Record<string, 1 | -1> =
-      filters.sort === "price-asc"
-        ? { basePrice: 1 }
-        : filters.sort === "price-desc"
-          ? { basePrice: -1 }
-          : filters.sort === "popular"
-            ? { "metrics.viewsCount": -1 }
-            : { createdAt: -1 };
+    const sort: Record<string, 1 | -1> = { basePrice: 1 };
 
     const docs = await ProductModel.find(query).sort(sort).limit(100).lean();
-    return docs.map(serializeProduct);
+    return sortByStartingPrice(docs.map(serializeProduct));
   } catch (error) {
     console.error("[data/products] getProducts:", error);
     return [];
@@ -185,7 +171,7 @@ export async function getFeaturedProducts(limit = 6): Promise<ProductDTO[]> {
       .sort({ createdAt: -1 })
       .limit(limit)
       .lean();
-    return docs.map(serializeProduct);
+    return sortByStartingPrice(docs.map(serializeProduct));
   } catch (error) {
     console.error("[data/products] getFeaturedProducts:", error);
     return [];
@@ -200,7 +186,7 @@ export async function getBestsellers(limit = 8): Promise<ProductDTO[]> {
       .sort({ "metrics.whatsappClicksCount": -1, "metrics.viewsCount": -1 })
       .limit(limit)
       .lean();
-    return docs.map(serializeProduct);
+    return sortByStartingPrice(docs.map(serializeProduct));
   } catch (error) {
     console.error("[data/products] getBestsellers:", error);
     return [];
@@ -219,10 +205,10 @@ export async function getCustomizableProducts(limit = 24): Promise<ProductDTO[]>
         { "customizationOptions.configurations.0": { $exists: true } },
       ],
     })
-      .sort({ isFeatured: -1, createdAt: -1 })
+      .sort({ basePrice: 1 })
       .limit(limit)
       .lean();
-    return docs.map(serializeProduct);
+    return sortByStartingPrice(docs.map(serializeProduct));
   } catch (error) {
     console.error("[data/products] getCustomizableProducts:", error);
     return [];
@@ -240,10 +226,10 @@ export async function getRelatedProducts(
       _id: { $ne: product._id },
       inStock: true,
     })
-      .sort({ "metrics.viewsCount": -1 })
+      .sort({ basePrice: 1 })
       .limit(limit)
       .lean();
-    return docs.map(serializeProduct);
+    return sortByStartingPrice(docs.map(serializeProduct));
   } catch (error) {
     console.error("[data/products] getRelatedProducts:", error);
     return [];

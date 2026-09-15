@@ -1,5 +1,4 @@
 import { getProducts, orderHomeProducts } from "@/lib/data/products";
-import { getSiteSettings } from "@/lib/data/settings";
 import { getCategories } from "@/lib/data/catalog";
 import { LogoMark } from "@/components/brand/logo";
 import { Hero } from "@/components/home/hero";
@@ -29,13 +28,13 @@ function EmptyCatalog() {
 }
 
 export default async function HomePage() {
-  const [products, categories, settings] = await Promise.all([
+  const [products, categories] = await Promise.all([
     getProducts({ inStock: true }),
     getCategories(),
-    getSiteSettings(),
   ]);
-  const bestsellers = orderHomeProducts(products, settings.homeProductOrder.bestsellers).slice(0, 8);
-  const featured = orderHomeProducts(products.filter((product) => product.isFeatured), settings.homeProductOrder.featured).slice(0, 6);
+  const priceOrder = { sort: "price-asc" as const, productIds: [] };
+  const bestsellers = orderHomeProducts(products, priceOrder).slice(0, 8);
+  const featured = orderHomeProducts(products.filter((product) => product.isFeatured), priceOrder).slice(0, 6);
 
   const storeIsEmpty = featured.length === 0 && bestsellers.length === 0;
 

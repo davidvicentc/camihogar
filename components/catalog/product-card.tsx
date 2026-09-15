@@ -78,7 +78,10 @@ export function ProductCard({ product, priority = false, className }: ProductCar
         </div>
 
         <div className="space-y-1.5 p-4">
-          <p className="truncate text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-brand-accent">
+          <p className="truncate text-xl font-bold leading-tight tracking-tight text-brand-accent sm:text-2xl">
+            {product.brand || "Marca CamiHogar"}
+          </p>
+          <p className="truncate text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-brand-taupe">
             {product.category}
           </p>
           <h3 className="line-clamp-2 font-display text-[0.95rem] font-semibold leading-snug tracking-tight text-brand-dark">
