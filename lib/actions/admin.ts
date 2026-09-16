@@ -9,6 +9,7 @@ import AdminUserModel from "@/lib/models/AdminUser";
 import SiteSettingsModel from "@/lib/models/SiteSettings";
 import { hashAdminPassword } from "@/lib/admin-users";
 import { ADMIN_PERMISSIONS, type AdminPermission, type HomeProductSort } from "@/lib/types";
+import { CARD_PROFILE_OPTIONS, type CardProfileKey, type CardStyle } from "@/lib/card-style";
 
 export interface AdminActionResult<T = undefined> { ok: boolean; error?: string; data?: T }
 
@@ -47,18 +48,27 @@ export async function saveHomeProductOrder(input: { bestsellers: { sort: HomePro
     };
     await connectDB();
     await SiteSettingsModel.findOneAndUpdate({ key: "main" }, { $set: { homeProductOrder: clean } }, { upsert: true, runValidators: true });
-    revalidatePath("/"); revalidatePath("/admin/configuracion");
+    revalidatePath("/"); revalidatePath("/catalogo"); revalidatePath("/admin/configuracion");
     return { ok: true };
   } catch (error) { return { ok: false, error: error instanceof Error ? error.message : "No se pudo guardar el orden del home." }; }
 }
 
-export async function saveHomeCardStyle(input: { showBrand: boolean; showCategory: boolean; showDescription: boolean; showRating: boolean; showVariants: boolean; showWhatsapp: boolean; scale: "compact" | "standard" | "large"; accentColor: string }): Promise<AdminActionResult> {
+export async function saveHomeCardStyle(profile: CardProfileKey, input: CardStyle): Promise<AdminActionResult> {
   try {
     await requirePermission("settings.manage");
-    if (!/^#[0-9a-f]{6}$/i.test(input.accentColor)) return { ok: false, error: "El color debe estar en formato hexadecimal." };
+    if (!CARD_PROFILE_OPTIONS.some((item) => item.key === profile)) return { ok: false, error: "Selecciona una familia válida." };
+    for (const key of ["accentColor", "cardBackground", "textColor", "mutedColor", "borderColor"] as const) if (typeof input[key] !== "string" || !/^#[0-9a-f]{6}$/i.test(input[key])) return { ok: false, error: "Revisa los colores de la tarjeta." };
     await connectDB();
-    await SiteSettingsModel.findOneAndUpdate({ key: "main" }, { $set: { homeCardStyle: input } }, { upsert: true, runValidators: true });
-    revalidatePath("/"); revalidatePath("/admin/configuracion");
+    const settings = await SiteSettingsModel.findOne({ key: "main" });
+    if (settings) {
+      const current = (settings.categoryCardStyles ?? {}) as Record<string, CardStyle>;
+      settings.categoryCardStyles = { ...current, [profile]: input };
+      settings.markModified("categoryCardStyles");
+      await settings.save();
+    } else {
+      await SiteSettingsModel.create({ key: "main", categoryCardStyles: { [profile]: input } });
+    }
+    revalidatePath("/"); revalidatePath("/catalogo"); revalidatePath("/admin/configuracion");
     return { ok: true };
   } catch (error) { return { ok: false, error: error instanceof Error ? error.message : "No se pudo guardar el diseño." }; }
 }

@@ -44,6 +44,14 @@ export const PRODUCT_CATEGORY_OPTIONS = [
   },
 ] as const;
 
+/** Categorías mínimas que necesita el formulario de productos. Sus slugs son estables. */
+export const PRODUCT_FORM_CATEGORIES = [
+  { name: "Muebles, sofás cama y comedores", slug: "muebles-sofas-cama-comedores", description: "Muebles, sofás cama y comedores" },
+  { name: "Camas", slug: "camas", description: "Camas y bases para dormitorio" },
+  { name: "Closets, centros de TV, zapateras y gaveteros", slug: "closets-centros-tv-zapateras-gaveteros", description: "Muebles auxiliares de almacenamiento" },
+  { name: "Colchones", slug: "colchones", description: "Colchones y opciones de descanso" },
+] as const;
+
 export const CATEGORY_META: {
   label: Category;
   slug: string;

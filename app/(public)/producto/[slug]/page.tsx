@@ -8,6 +8,7 @@ import { ProductInfo } from "@/components/product/product-info";
 import { DimensionsCard } from "@/components/product/dimensions-card";
 import { ViewTracker } from "@/components/product/view-tracker";
 import { ProductCard } from "@/components/catalog/product-card";
+import { getSiteSettings } from "@/lib/data/settings";
 
 export const dynamic = "force-dynamic";
 
@@ -50,7 +51,7 @@ export default async function ProductPage({ params }: PageProps) {
 
   if (!product) notFound();
 
-  const related = await getRelatedProducts(product, 4);
+  const [related, settings] = await Promise.all([getRelatedProducts(product, 4), getSiteSettings()]);
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 md:py-10 lg:px-8">
@@ -103,7 +104,7 @@ export default async function ProductPage({ params }: PageProps) {
           </h2>
           <div className="grid grid-cols-2 gap-4 md:gap-6 lg:grid-cols-4">
             {related.map((item) => (
-              <ProductCard key={item._id} product={item} />
+              <ProductCard key={item._id} product={item} cardStyles={settings.categoryCardStyles} />
             ))}
           </div>
         </section>

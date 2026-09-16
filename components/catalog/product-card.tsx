@@ -15,17 +15,20 @@ import { productInquiryLink } from "@/lib/whatsapp";
 import { trackEvent } from "@/lib/track";
 import type { ProductDTO } from "@/lib/types";
 import { useWhatsAppNumber } from "@/components/layout/whatsapp-settings-provider";
+import { cardProfileForCategory, DEFAULT_CARD_STYLE, type CardProfileKey, type CardStyle } from "@/lib/card-style";
 
 interface ProductCardProps {
   product: ProductDTO;
   /** Prioriza la carga de la imagen (para las primeras tarjetas above-the-fold). */
   priority?: boolean;
   className?: string;
-  cardStyle?: { showBrand?: boolean; showCategory?: boolean; showDescription?: boolean; showRating?: boolean; showVariants?: boolean; showWhatsapp?: boolean; scale?: "compact" | "standard" | "large"; accentColor?: string };
+  cardStyle?: { showBrand?: boolean; showCategory?: boolean; showDescription?: boolean; showRating?: boolean; showVariants?: boolean; showWhatsapp?: boolean; scale?: "compact" | "standard" | "large"; accentColor?: string; imageRatio?: "portrait" | "square" | "landscape"; titleSize?: "small" | "medium" | "large"; priceSize?: "small" | "medium" | "large"; cardBackground?: string; textColor?: string; mutedColor?: string; borderColor?: string; radius?: "small" | "medium" | "large"; imageHeight?: number; cardPadding?: number; titleFontSize?: number; priceFontSize?: number; bodyFontSize?: number; variantsHeight?: number; variantsFontSize?: number; variantsGap?: number; buttonHeight?: number };
+  cardStyles?: Partial<Record<CardProfileKey, CardStyle>>;
 }
 
-export function ProductCard({ product, priority = false, className, cardStyle }: ProductCardProps) {
-  const style = { showBrand: true, showCategory: true, showDescription: true, showRating: true, showVariants: true, showWhatsapp: true, scale: "standard" as const, accentColor: "#B45338", ...cardStyle };
+export function ProductCard({ product, priority = false, className, cardStyle, cardStyles }: ProductCardProps) {
+  const categoryStyle = cardStyles?.[cardProfileForCategory(product.category)];
+  const style = { ...DEFAULT_CARD_STYLE, ...categoryStyle, ...cardStyle };
   const isFavorite = useFavoritesStore((s) => s.isFavorite(product._id));
   const toggleFavorite = useFavoritesStore((s) => s.toggle);
   const whatsappNumber = useWhatsAppNumber();
@@ -44,9 +47,10 @@ export function ProductCard({ product, priority = false, className, cardStyle }:
     <motion.article
       whileHover={{ y: -6 }}
       transition={{ type: "spring", stiffness: 300, damping: 24 }}
-      style={{ "--card-accent": style.accentColor } as CSSProperties}
+      style={{ "--card-accent": style.accentColor, backgroundColor: style.cardBackground, color: style.textColor, borderColor: style.borderColor } as CSSProperties}
       className={cn(
-        "group relative flex h-full flex-col overflow-hidden rounded-[1.5rem] border border-brand-dark/[0.06] bg-brand-card shadow-warm-sm transition-all duration-300 hover:border-brand-accent/20 hover:shadow-warm",
+        "group relative flex h-full flex-col overflow-hidden border shadow-warm-sm transition-all duration-300 hover:shadow-warm",
+        style.radius === "small" ? "rounded-lg" : style.radius === "medium" ? "rounded-2xl" : "rounded-[1.5rem]",
         className
       )}
     >
@@ -54,7 +58,7 @@ export function ProductCard({ product, priority = false, className, cardStyle }:
         href={`/producto/${product.slug}`}
         className="block flex-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
-        <div className={cn("warm-glow relative overflow-hidden bg-brand-sand", style.scale === "compact" ? "aspect-[5/3]" : style.scale === "large" ? "aspect-[4/4]" : "aspect-[4/3]")}>
+        <div className="warm-glow relative overflow-hidden bg-brand-sand" style={{ height: style.imageHeight }}>
           {product.images[0] ? (
             <Image
               src={product.images[0]}
@@ -81,22 +85,22 @@ export function ProductCard({ product, priority = false, className, cardStyle }:
           </div>
         </div>
 
-        <div className="space-y-1.5 p-4">
-          {style.showBrand && <p style={{ color: "var(--card-accent)" }} className={cn("truncate font-bold leading-tight tracking-tight", style.scale === "large" ? "text-2xl sm:text-3xl" : "text-xl sm:text-2xl")}>
-            {product.brand || "Marca CamiHogar"}
+        <div className="space-y-1.5" style={{ padding: style.cardPadding }}>
+          {style.showBrand && <p style={{ color: "var(--card-accent)", fontSize: style.brandFontSize }} className="truncate font-bold leading-tight tracking-tight">
+            {style.brandText || product.brand || "CamiHogar"}
           </p>}
-          {style.showCategory && <p className="truncate text-[0.65rem] font-semibold uppercase tracking-[0.16em] text-brand-taupe">
+          {style.showCategory && <p className="truncate font-semibold uppercase tracking-[0.16em]" style={{ color: style.mutedColor, fontSize: style.categoryFontSize }}>
             {product.category}
           </p>}
-          <h3 className="line-clamp-2 font-display text-[0.95rem] font-semibold leading-snug tracking-tight text-brand-dark">
+          <h3 className="line-clamp-2 font-display font-semibold leading-snug tracking-tight" style={{ color: style.textColor, fontSize: style.titleFontSize }}>
             {product.title}
           </h3>
-          {style.showDescription && <p className="line-clamp-2 min-h-8 text-xs leading-relaxed text-brand-taupe">
+          {style.showDescription && <p className="line-clamp-2 min-h-8 leading-relaxed" style={{ color: style.mutedColor, fontSize: style.bodyFontSize }}>
             {product.description || "Producto disponible para consultar por WhatsApp."}
           </p>}
           <div className="flex items-center justify-between pt-1.5">
             <div className="flex min-w-0 flex-col">
-              <p className="tabular text-lg font-semibold tracking-tight text-brand-dark">
+              <p className="tabular font-semibold tracking-tight" style={{ color: style.textColor, fontSize: style.priceFontSize }}>
                 {formatPrice(visiblePrice)}
               </p>
               {(product.mattressFeatures ?? activeVariant?.mattressFeatures) && <span className="max-w-[150px] truncate text-[0.65rem] text-brand-taupe">{(product.mattressFeatures ?? activeVariant?.mattressFeatures)!.model} · {(product.mattressFeatures ?? activeVariant?.mattressFeatures)!.pillow}</span>}
@@ -106,7 +110,7 @@ export function ProductCard({ product, priority = false, className, cardStyle }:
                 </span>
               )}
             </div>
-            {style.showRating && <span className="flex items-center gap-1 text-xs tracking-tight text-brand-taupe">
+            {style.showRating && <span className="flex items-center gap-1 tracking-tight" style={{ color: style.mutedColor, fontSize: style.ratingFontSize }}>
               <Star className="h-3.5 w-3.5 fill-brand-accent text-brand-accent" />
               <span className="tabular">{product.rating.toFixed(1)}</span>
               {product.reviewsCount > 0 && (
@@ -117,14 +121,15 @@ export function ProductCard({ product, priority = false, className, cardStyle }:
         </div>
       </Link>
 
-      {style.showVariants && <div className="h-[128px] shrink-0 space-y-2 overflow-hidden px-4 pb-3 pt-1">
+      {style.showVariants && <div className="shrink-0 space-y-2 overflow-hidden px-4 pb-3 pt-1" style={{ height: style.variantsHeight }}>
         {product.variants && product.variants.length > 1 ? (
           <>
           <p className="text-[0.65rem] font-semibold uppercase tracking-[0.14em] text-brand-taupe">
             Elige tu opción
           </p>
           <div
-            className="scrollbar-hide flex gap-2 overflow-x-auto overscroll-x-contain pb-1"
+            className="scrollbar-hide flex overflow-x-auto overscroll-x-contain pb-1"
+            style={{ gap: style.variantsGap, fontSize: style.variantsFontSize }}
             aria-label={`Variantes de ${product.title}`}
           >
             {product.variants.map((variant, index) => (
@@ -140,9 +145,9 @@ export function ProductCard({ product, priority = false, className, cardStyle }:
                     : "border-brand-dark/10 bg-brand-bg text-brand-dark hover:border-brand-accent/50"
                 )}
               >
-                <span className="block truncate text-xs font-semibold">{variant.name}</span>
-                {!product.mattressFeatures && variant.mattressFeatures && <span className="block truncate text-[0.65rem] text-brand-taupe">{variant.mattressFeatures.pillow}</span>}
-                <span className="mt-0.5 block text-sm font-bold tabular-nums text-brand-accent">
+                <span className="block truncate font-semibold" style={{ fontSize: style.variantsFontSize }}>{variant.name}</span>
+                {!product.mattressFeatures && variant.mattressFeatures && <span className="block truncate text-brand-taupe" style={{ fontSize: Math.max(9, style.variantsFontSize - 2) }}>{variant.mattressFeatures.pillow}</span>}
+                <span className="mt-0.5 block font-bold tabular-nums text-brand-accent" style={{ fontSize: style.variantsFontSize }}>
                   {formatPrice(variant.price)}
                 </span>
               </button>
@@ -164,10 +169,11 @@ export function ProductCard({ product, priority = false, className, cardStyle }:
         target="_blank"
         rel="noopener noreferrer"
         onClick={() => trackEvent(product._id, "WHATSAPP_CLICK")}
-        className="mx-4 mb-4 flex h-9 items-center justify-center gap-2 rounded-xl bg-[#25D366] px-3 text-xs font-semibold text-white transition-colors hover:bg-[#1fb958]"
+        className="mx-4 mb-4 flex items-center justify-center gap-2 rounded-xl bg-[#25D366] px-3 font-semibold text-white transition-colors hover:bg-[#1fb958]"
+        style={{ height: style.buttonHeight, fontSize: style.buttonFontSize }}
       >
         <SiWhatsapp className="h-4 w-4" aria-hidden="true" />
-        Consultar por WhatsApp
+        {style.buttonText || "Consultar por WhatsApp"}
       </a>}
 
       <button

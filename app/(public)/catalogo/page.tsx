@@ -5,6 +5,7 @@ import { CatalogGrid } from "@/components/catalog/catalog-grid";
 import { categoryFromSlug } from "@/lib/constants";
 import { getPriceRange, getProducts } from "@/lib/data/products";
 import { getCategories } from "@/lib/data/catalog";
+import { getSiteSettings } from "@/lib/data/settings";
 import type { CatalogFilters as Filters } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -43,9 +44,10 @@ export default async function CatalogoPage({
     search: sp.q?.trim() || undefined,
   };
 
-  const [products, priceRange] = await Promise.all([
+  const [products, priceRange, settings] = await Promise.all([
     getProducts(filters),
     getPriceRange(),
+    getSiteSettings(),
   ]);
 
   return (
@@ -70,7 +72,7 @@ export default async function CatalogoPage({
         </Suspense>
       </div>
 
-      <CatalogGrid products={products} />
+      <CatalogGrid products={products} cardStyles={settings.categoryCardStyles} />
     </section>
   );
 }

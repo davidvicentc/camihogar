@@ -94,6 +94,7 @@ export interface ProductDTO {
   sku: string;
   category: Category;
   basePrice: number;
+  warrantyYears?: number;
   variants?: ProductVariant[];
   images: string[];
   dimensions: Dimensions;
@@ -121,6 +122,7 @@ export interface ProductInput {
   sku: string;
   category: Category;
   basePrice: number;
+  warrantyYears?: number;
   variants?: ProductVariant[];
   images: string[];
   dimensions: Dimensions;

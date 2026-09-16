@@ -36,11 +36,12 @@ const EMPTY_VARIANT: VariantDraft = { name: "", price: "", sku: "", isDefault: f
 
 function draftVariants(product?: ProductDTO): VariantDraft[] {
   if (product?.variants?.length) return product.variants.map((variant) => ({ name: variant.name, price: String(variant.price), sku: variant.sku ?? "", isDefault: variant.isDefault ?? false }));
-  return [{ ...EMPTY_VARIANT, isDefault: true }];
+  return [];
 }
 
-function ProductPreview({ title, category, imageUrl, variants, selectedIndex, onSelect, isMattress, features }: { title: string; category: string; imageUrl: string; variants: VariantDraft[]; selectedIndex: number; onSelect: (index: number) => void; isMattress: boolean; features: { model: string; pillow: string; composition: string; warrantyYears: string } }) {
+function ProductPreview({ title, category, imageUrl, variants, selectedIndex, onSelect, isMattress, features, basePrice }: { title: string; category: string; imageUrl: string; variants: VariantDraft[]; selectedIndex: number; onSelect: (index: number) => void; isMattress: boolean; features: { model: string; pillow: string; composition: string; warrantyYears: string }; basePrice: string }) {
   const active = variants[selectedIndex] ?? variants[0];
+  const previewPrice = active?.price || basePrice;
 
   return <section className="space-y-5 rounded-3xl border border-brand-accent/25 bg-brand-card p-5 shadow-warm-sm sm:p-7">
     <div className="flex items-center gap-2"><Eye className="h-5 w-5 text-brand-accent" aria-hidden="true"/><div><h2 className="font-display text-xl font-semibold text-brand-dark">Vista previa del cliente</h2><p className="text-sm text-brand-taupe">Prueba cada medida y configuración antes de publicar.</p></div></div>
@@ -49,7 +50,7 @@ function ProductPreview({ title, category, imageUrl, variants, selectedIndex, on
       <div className="min-w-0 space-y-4"><div><p className="text-xs font-semibold text-brand-accent">{category || "Categoría"}</p><h3 className="font-display text-xl font-semibold text-brand-dark">{title || "Nombre del producto"}</h3></div>
         {isMattress && <p className="rounded-xl bg-secondary/60 p-3 text-sm text-brand-taupe"><strong className="text-brand-dark">{features.pillow}</strong> · {features.model} · {features.composition} · {features.warrantyYears} años de garantía</p>}
         <div className="space-y-2"><p className="text-sm font-semibold text-brand-dark">{isMattress ? "Elige la medida" : "Elige una variante"}</p><div className="flex flex-wrap gap-2">{variants.map((variant, index) => <button key={index} type="button" onClick={() => onSelect(index)} className={`rounded-xl border px-3 py-2 text-left text-sm ${selectedIndex === index ? "border-brand-accent bg-brand-accent/10" : "border-brand-dark/10"}`}><strong className="block">{variant.name || `Variante ${index + 1}`}</strong>{variant.price ? formatPrice(Number(variant.price)) : "Sin precio"}</button>)}</div></div>
-        {active && <p className="text-2xl font-bold text-brand-dark">{active.price ? formatPrice(Number(active.price)) : "Precio pendiente"}</p>}
+        <p className="text-2xl font-bold text-brand-dark">{previewPrice ? formatPrice(Number(previewPrice)) : "Precio pendiente"}</p>
       </div>
     </div>
   </section>;
@@ -76,7 +77,7 @@ export function ProductEditor({
   const [unit, setUnit] = useState(product?.dimensions.unit || "cm");
   const [brandId, setBrandId] = useState(product?.brandId ?? (brands.length === 1 ? brands[0]._id : ""));
   const [categoryId, setCategoryId] = useState(product?.categoryId ?? (categories.length === 1 ? categories[0]._id : ""));
-  const [brandOptions, setBrandOptions] = useState(brands);
+  const [, setBrandOptions] = useState(brands);
   const [categoryOptions, setCategoryOptions] = useState(categories);
   const selectedCategoryName = categoryOptions.find((item) => item._id === categoryId)?.name ?? "";
   const isMattress = selectedCategoryName
@@ -84,6 +85,10 @@ export function ProductEditor({
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .includes("colchon");
+  const normalizedCategory = selectedCategoryName.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  const isBed = normalizedCategory === "camas";
+  const isColorProduct = normalizedCategory.startsWith("closets") || normalizedCategory.includes("centro de tv") || normalizedCategory.includes("zapatera") || normalizedCategory.includes("gaveter");
+  const usesSizes = isMattress || isBed;
   const legacyFeatures = product?.mattressFeatures ?? product?.variants?.find((variant) => variant.isDefault)?.mattressFeatures ?? product?.variants?.[0]?.mattressFeatures;
   const [sizeOptions, setSizeOptions] = useState(mattressOptions.sizes);
   const [pillowOptions, setPillowOptions] = useState(mattressOptions.pillows);
@@ -93,6 +98,8 @@ export function ProductEditor({
   const [mattressPillow, setMattressPillow] = useState(legacyFeatures?.pillow ?? mattressOptions.pillows[0]?.name ?? "Sin Pillow");
   const [mattressComposition, setMattressComposition] = useState(legacyFeatures?.composition ?? mattressOptions.compositions[0]?.name ?? "Resortes");
   const [mattressWarranty, setMattressWarranty] = useState(String(legacyFeatures?.warrantyYears ?? 2));
+  const [warranty, setWarranty] = useState(String(product?.warrantyYears ?? 2));
+  const [basePrice, setBasePrice] = useState(String(product?.basePrice ?? ""));
   const [quickCreate, setQuickCreate] = useState<QuickCreateKind | null>(null);
   const [quickName, setQuickName] = useState("");
   const [quickConfirm, setQuickConfirm] = useState(false);
@@ -103,6 +110,20 @@ export function ProductEditor({
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
+  function selectCategory(nextId: string) {
+    setCategoryId(nextId);
+    if (product) return;
+    const nextName = categoryOptions.find((item) => item._id === nextId)?.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase() ?? "";
+    if (nextName === "camas") {
+      setVariants(["Individual", "Matrimonial", "Queen", "King"].map((size, index) => ({ ...EMPTY_VARIANT, name: size, isDefault: index === 0 })));
+    } else if (nextName.includes("colchon")) {
+      setVariants([{ ...EMPTY_VARIANT, isDefault: true }]);
+    } else {
+      setVariants([]);
+    }
+    setPreviewVariant(0);
+  }
+
   function updateVariant(index: number, field: keyof VariantDraft, value: string | boolean) {
     setVariants((current) => current.map((variant, itemIndex) => itemIndex === index ? { ...variant, [field]: value } : variant));
   }
@@ -111,7 +132,7 @@ export function ProductEditor({
     setPreviewVariant(0);
     setVariants((current) => {
       const next = current.filter((_, itemIndex) => itemIndex !== index);
-      if (!next.length) return [{ ...EMPTY_VARIANT, isDefault: true }];
+      if (!next.length) return usesSizes ? [{ ...EMPTY_VARIANT, isDefault: true }] : [];
       if (!next.some((variant) => variant.isDefault)) next[0].isDefault = true;
       return next;
     });
@@ -132,34 +153,39 @@ export function ProductEditor({
       depth: Number(depth),
       unit,
     };
-    if (!name.trim() || !model.trim() || !brandId || !categoryId) {
-      setError("Completa nombre, marca, modelo y categoría.");
+    if (!name.trim() || !categoryId) {
+      setError("Completa nombre y categoría.");
       return;
     }
     if (hasDimensions && ![dimensions.width, dimensions.height, dimensions.depth].every((value) => Number.isFinite(value) && value > 0)) {
       setError("Completa ancho, alto y profundidad con valores mayores a cero.");
       return;
     }
-    if (cleanVariants.some((variant) => !variant.name || !Number.isFinite(variant.price) || variant.price <= 0)) {
+    if (!usesSizes && (!Number.isFinite(Number(basePrice)) || Number(basePrice) <= 0)) {
+      setError("Indica un precio mayor a cero.");
+      return;
+    }
+    if (usesSizes && cleanVariants.some((variant) => !variant.name || !Number.isFinite(variant.price) || variant.price <= 0)) {
       setError("Cada variante necesita nombre y precio mayor a cero.");
       return;
     }
-    const defaultPrice = cleanVariants.find((variant) => variant.isDefault)?.price ?? cleanVariants[0].price;
+    const defaultPrice = cleanVariants.find((variant) => variant.isDefault)?.price ?? cleanVariants[0]?.price ?? 0;
     const input: ProductInput = {
       title: name.trim(),
-      collection: model.trim(),
+      collection: isMattress ? model.trim() : "",
       brand: "",
-      brandId,
+      brandId: isMattress ? brandId : undefined,
       category: "",
       categoryId,
       description: description.trim(),
       variantName: "",
-      sku: cleanVariants[0].sku ?? "",
-      basePrice: defaultPrice,
-      variants: cleanVariants,
+      sku: cleanVariants[0]?.sku ?? "",
+      basePrice: usesSizes ? defaultPrice : Number(basePrice),
+      variants: usesSizes || (!isColorProduct && cleanVariants.some((v) => v.name || v.price)) ? cleanVariants.filter((v) => v.name || v.price) : [],
       images,
       dimensions: hasDimensions ? dimensions : { width: 0, height: 0, depth: 0, unit },
       customizationOptions: product?.customizationOptions ?? { fabrics: [], finishes: [], configurations: [] },
+      warrantyYears: Number(warranty),
       mattressFeatures: isMattress ? { model: mattressModel, pillow: mattressPillow, warrantyYears: Number(mattressWarranty), composition: mattressComposition } : undefined,
       isFeatured: product?.isFeatured ?? false,
       inStock: product?.inStock ?? true,
@@ -194,13 +220,17 @@ export function ProductEditor({
 
   return (
     <form onSubmit={submit} className="max-w-3xl space-y-6">
+      <div className="flex items-center gap-2 overflow-x-auto rounded-2xl border border-brand-dark/10 bg-brand-card p-2 text-sm"><span className="rounded-xl bg-brand-accent px-3 py-2 font-semibold text-white">1 · Familia</span><span className={categoryId ? "rounded-xl bg-brand-accent/10 px-3 py-2 font-semibold text-brand-dark" : "px-3 py-2 text-brand-taupe"}>2 · Información</span><span className={name && (basePrice || usesSizes) ? "rounded-xl bg-brand-accent/10 px-3 py-2 font-semibold text-brand-dark" : "px-3 py-2 text-brand-taupe"}>3 · Venta</span><span className="px-3 py-2 text-brand-taupe">4 · Revisar</span></div>
       <div className="grid gap-5 rounded-3xl border border-brand-dark/10 bg-brand-card p-5 shadow-warm-sm sm:grid-cols-2 sm:p-7">
-        <div className="space-y-2 sm:col-span-2"><Label htmlFor="product-name">Nombre del producto *</Label><Input id="product-name" value={name} onChange={(event) => setName(event.target.value)} placeholder="Colchón Ortopédico" autoComplete="off" /></div>
-        <div className="space-y-2"><Label htmlFor="product-brand">Marca *</Label><div className="flex gap-2"><select id="product-brand" value={brandId} onChange={(event) => setBrandId(event.target.value)} className="h-11 min-w-0 flex-1 rounded-2xl border border-input bg-background px-3 text-sm text-foreground outline-none focus:border-brand-accent"><option value="">Selecciona una marca</option>{brandOptions.map((brand) => <option key={brand._id} value={brand._id}>{brand.name}</option>)}</select><Button type="button" variant="outline" size="icon" aria-label="Crear marca" onClick={() => setQuickCreate("brand")}><Plus /></Button></div></div>
-        <div className="space-y-2"><Label htmlFor="product-category">Categoría *</Label><div className="flex gap-2"><select id="product-category" value={categoryId} onChange={(event) => setCategoryId(event.target.value)} className="h-11 min-w-0 flex-1 rounded-2xl border border-input bg-background px-3 text-sm text-foreground outline-none focus:border-brand-accent"><option value="">Selecciona una categoría</option>{categoryOptions.map((category) => <option key={category._id} value={category._id}>{category.name}</option>)}</select><Button type="button" variant="outline" size="icon" aria-label="Crear categoría" onClick={() => setQuickCreate("category")}><Plus /></Button></div></div>
-        <div className="space-y-2 sm:col-span-2"><Label htmlFor="product-model">Modelo comercial *</Label><Input id="product-model" list={isMattress ? "mattress-model-suggestions" : undefined} value={model} onChange={(event) => setModel(event.target.value)} placeholder={isMattress ? "Ej. Colchón Ortopédico" : "Ej. Línea Oslo"} autoComplete="off" />{isMattress && <datalist id="mattress-model-suggestions"><option value="Colchón Ortopédico" /><option value="Colchón Semi Ortopédico" /></datalist>}</div>
+        <div className="space-y-3 sm:col-span-2"><div><Label>1. Selecciona la familia del producto *</Label><p className="mt-1 text-xs text-brand-taupe">Esto configura automáticamente precios, medidas, variantes y colores.</p></div><div className="grid gap-2 sm:grid-cols-2">{categoryOptions.map((category) => <button key={category._id} type="button" onClick={() => selectCategory(category._id)} className={`min-h-16 rounded-2xl border px-4 py-3 text-left transition-colors ${categoryId === category._id ? "border-brand-accent bg-brand-accent/10 ring-1 ring-brand-accent" : "border-brand-dark/10 bg-brand-bg hover:border-brand-accent/50"}`}><span className="block text-sm font-semibold text-brand-dark">{category.name}</span><span className="mt-1 block text-xs text-brand-taupe">{category.description || "Configurar producto"}</span></button>)}</div><Button type="button" variant="ghost" className="px-0 text-brand-accent" onClick={() => setQuickCreate("category")}><Plus />Crear otra categoría</Button></div>
+        {categoryId && <>
+        <div className="space-y-2 sm:col-span-2"><Label htmlFor="product-name">Nombre del producto *</Label><Input id="product-name" value={name} onChange={(event) => setName(event.target.value)} placeholder="Ej. Cama Oslo" autoComplete="off" /></div>
+        {isMattress && <div className="space-y-2 sm:col-span-2"><Label htmlFor="product-model">Modelo comercial</Label><Input id="product-model" value={model} onChange={(event) => setModel(event.target.value)} placeholder="Ej. Colchón Ortopédico" autoComplete="off" /></div>}
         <div className="sm:col-span-2"><ProductImageUploader images={images} onChange={setImages}/></div>
         <div className="space-y-2 sm:col-span-2"><Label htmlFor="product-description">Características o descripción</Label><Textarea id="product-description" value={description} onChange={(event) => setDescription(event.target.value)} placeholder="Describe materiales, medidas, firmeza, colores o cualquier detalle importante..." rows={4} /><p className="text-xs text-brand-taupe">Aparecerá debajo del nombre en la tarjeta y en la ficha del producto.</p></div>
+        {!usesSizes && <div className="space-y-2"><Label htmlFor="base-price">Precio *</Label><Input id="base-price" type="number" min="0.01" step="0.01" value={basePrice} onChange={(event) => setBasePrice(event.target.value)} placeholder="0.00" /></div>}
+        <div className="space-y-2"><Label htmlFor="product-warranty">Garantía</Label><select id="product-warranty" value={warranty} onChange={(event) => setWarranty(event.target.value)} className="h-11 w-full rounded-2xl border border-input bg-background px-3 text-sm"><option value="0">Sin garantía indicada</option>{Array.from({ length: 11 }, (_, index) => <option key={index + 2} value={index + 2}>{index + 2} años</option>)}</select></div>
+        </>}
       </div>
 
       {isMattress && <section className="space-y-5 rounded-3xl border border-brand-accent/25 bg-brand-accent/5 p-5 shadow-warm-sm sm:p-7"><div><p className="text-xs font-semibold text-brand-accent">Configuración general</p><h2 className="mt-1 font-display text-xl font-semibold text-brand-dark">Características del colchón</h2><p className="mt-1 text-sm leading-relaxed text-brand-taupe">Estas características pertenecen a todo el colchón. Las variantes de abajo solo cambian medida y precio.</p></div><div className="grid gap-4 sm:grid-cols-2"><div className="space-y-2"><Label htmlFor="mattress-model">Tipo de colchón</Label><div className="flex gap-2"><select id="mattress-model" value={mattressModel} onChange={(event) => setMattressModel(event.target.value)} className="h-11 min-w-0 flex-1 rounded-xl border border-input bg-background px-3 text-sm">{modelOptions.map((option) => <option key={option._id} value={option.name}>{option.name}</option>)}</select><Button type="button" variant="outline" size="icon" onClick={() => setQuickCreate("model")} aria-label="Crear tipo de colchón"><Plus/></Button></div></div><div className="space-y-2"><Label htmlFor="mattress-pillow">Pillow</Label><div className="flex gap-2"><select id="mattress-pillow" value={mattressPillow} onChange={(event) => setMattressPillow(event.target.value)} className="h-11 min-w-0 flex-1 rounded-xl border border-input bg-background px-3 text-sm">{pillowOptions.map((option) => <option key={option._id} value={option.name}>{option.name}</option>)}</select><Button type="button" variant="outline" size="icon" onClick={() => setQuickCreate("pillow")} aria-label="Crear pillow"><Plus/></Button></div></div><div className="space-y-2"><Label htmlFor="mattress-composition">Composición interna</Label><div className="flex gap-2"><select id="mattress-composition" value={mattressComposition} onChange={(event) => setMattressComposition(event.target.value)} className="h-11 min-w-0 flex-1 rounded-xl border border-input bg-background px-3 text-sm">{compositionOptions.map((option) => <option key={option._id} value={option.name}>{option.name}</option>)}</select><Button type="button" variant="outline" size="icon" onClick={() => setQuickCreate("composition")} aria-label="Crear composición"><Plus/></Button></div></div><div className="space-y-2"><Label htmlFor="mattress-warranty">Garantía</Label><select id="mattress-warranty" value={mattressWarranty} onChange={(event) => setMattressWarranty(event.target.value)} className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm">{Array.from({ length: 11 }, (_, index) => <option key={index + 2} value={index + 2}>{index + 2} años</option>)}</select></div></div></section>}
@@ -215,14 +245,14 @@ export function ProductEditor({
         </div>}
       </section>}
 
-      <section className="space-y-4 rounded-3xl border border-brand-dark/10 bg-brand-card p-5 shadow-warm-sm sm:p-7">
-        <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="font-display text-xl font-semibold text-brand-dark">Medidas y precios</h2><p className="text-sm text-brand-taupe">Agrega cada medida en la que se vende este producto y coloca su precio.</p></div><Button type="button" variant="outline" onClick={() => setVariants((current) => [...current, { ...EMPTY_VARIANT }])}><Plus aria-hidden="true" />Agregar medida</Button></div>
+      {!isColorProduct && <section className="space-y-4 rounded-3xl border border-brand-dark/10 bg-brand-card p-5 shadow-warm-sm sm:p-7">
+        <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="font-display text-xl font-semibold text-brand-dark">{usesSizes ? "Medidas y precios" : "Variantes opcionales"}</h2><p className="text-sm text-brand-taupe">{usesSizes ? "Cada medida tiene su propio precio." : "Puedes agregar una variante con nombre y precio, si aplica."}</p></div><Button type="button" variant="outline" onClick={() => setVariants((current) => [...current, { ...EMPTY_VARIANT }])}><Plus aria-hidden="true" />{usesSizes ? "Agregar medida" : "Agregar variante"}</Button></div>
         <div className="space-y-3">
           {variants.map((variant, index) => <article key={index} className="space-y-4 rounded-2xl border border-brand-dark/10 bg-secondary/30 p-4"><div className="flex items-center justify-between"><h3 className="font-semibold text-brand-dark">{isMattress ? `Medida ${index + 1}` : `Variante ${index + 1}`}</h3><Button type="button" variant="ghost" size="icon" className="text-red-600" onClick={() => removeVariant(index)} aria-label={`Eliminar ${isMattress ? "medida" : "variante"} ${index + 1}`}><Trash2 aria-hidden="true" /></Button></div><div className="grid gap-3 sm:grid-cols-3"><div className="space-y-1"><Label htmlFor={`variant-name-${index}`}>{isMattress ? "Medida" : "Nombre"}</Label>{isMattress ? <div className="flex gap-2"><select id={`variant-name-${index}`} value={variant.name} onChange={(event) => updateVariant(index, "name", event.target.value)} className="h-11 min-w-0 flex-1 rounded-xl border border-input bg-background px-3 text-sm"><option value="">Selecciona una medida</option>{sizeOptions.map((option) => <option key={option._id} value={option.name}>{option.name}</option>)}</select><Button type="button" variant="outline" size="icon" onClick={() => setQuickCreate("size")} aria-label="Crear medida"><Plus/></Button></div> : <Input id={`variant-name-${index}`} value={variant.name} onChange={(event) => updateVariant(index, "name", event.target.value)} placeholder="Individual" autoComplete="off" />}</div><div className="space-y-1"><Label htmlFor={`variant-price-${index}`}>Precio</Label><Input id={`variant-price-${index}`} type="number" min="0.01" step="0.01" value={variant.price} onChange={(event) => updateVariant(index, "price", event.target.value)} placeholder="0.00" /></div><div className="space-y-1"><Label htmlFor={`variant-sku-${index}`}>SKU</Label><Input id={`variant-sku-${index}`} value={variant.sku} onChange={(event) => updateVariant(index, "sku", event.target.value)} placeholder="Ej. COL-MAT-01" autoComplete="off" /></div></div><label className="inline-flex items-center gap-2 text-sm font-medium text-brand-dark"><input type="radio" name="default-variant" checked={variant.isDefault} onChange={() => setVariants((current) => current.map((item, itemIndex) => ({ ...item, isDefault: itemIndex === index })))} />Mostrar esta {isMattress ? "medida" : "variante"} primero</label></article>)}
         </div>
-      </section>
+      </section>}
 
-      <ProductPreview title={name} category={selectedCategoryName} imageUrl={images[0] ?? ""} variants={variants} selectedIndex={previewVariant} onSelect={setPreviewVariant} isMattress={isMattress} features={{ model: mattressModel, pillow: mattressPillow, composition: mattressComposition, warrantyYears: mattressWarranty }} />
+      <ProductPreview title={name} category={selectedCategoryName} imageUrl={images[0] ?? ""} variants={variants} selectedIndex={previewVariant} onSelect={setPreviewVariant} isMattress={isMattress} features={{ model: mattressModel, pillow: mattressPillow, composition: mattressComposition, warrantyYears: mattressWarranty }} basePrice={basePrice} />
 
       {error && <p role="alert" className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
       <div className="flex flex-wrap justify-between gap-3"><Button type="button" variant="ghost" onClick={() => router.push("/admin/productos")}><ArrowLeft aria-hidden="true" />Cancelar</Button><Button type="submit" variant="accent" disabled={pending}>{pending && <Loader2 className="animate-spin" aria-hidden="true" />}{pending ? "Guardando..." : product ? "Guardar cambios" : "Crear producto"}</Button></div>

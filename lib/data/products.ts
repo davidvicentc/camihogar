@@ -22,6 +22,7 @@ export function serializeProduct(doc: any): ProductDTO {
     sku: doc.sku ?? "",
     category: doc.category,
     basePrice: doc.basePrice,
+    warrantyYears: doc.warrantyYears ?? 0,
     variants: Array.isArray(doc.variants)
       ? [...doc.variants]
           .sort((a: any, b: any) => Number(a.price ?? 0) - Number(b.price ?? 0))

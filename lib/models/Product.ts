@@ -67,6 +67,7 @@ const ProductSchema = new Schema(
     },
     categoryId: { type: Schema.Types.ObjectId, ref: "Category", index: true },
     basePrice: { type: Number, required: true, min: 0 },
+    warrantyYears: { type: Number, min: 0, max: 99, default: 0 },
     variants: { type: [VariantSchema], default: [] },
     images: { type: [String], default: [] },
     dimensions: {

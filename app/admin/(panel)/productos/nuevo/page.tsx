@@ -17,9 +17,9 @@ export default async function NuevoProductoPage() {
         <p className="mt-1 text-sm text-brand-taupe">Registra solo la información necesaria para venderlo en el catálogo.</p></div>
         <Link href="/admin/ayuda/productos" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-brand-dark/10 bg-brand-card px-4 text-sm font-semibold text-brand-dark hover:border-brand-accent"><CircleHelp className="h-4 w-4" aria-hidden="true"/>Ver guía</Link>
       </header>
-      {brands.length === 0 || categories.length === 0 ? (
+      {categories.length === 0 ? (
         <div className="max-w-3xl rounded-2xl border border-brand-accent/20 bg-brand-accent/5 p-5 text-sm text-brand-dark">
-          Antes de crear un producto necesitas registrar al menos una marca y una categoría desde el panel.
+          Antes de crear un producto necesitas registrar al menos una categoría desde el panel.
         </div>
       ) : <ProductEditor brands={brands} categories={categories} mattressOptions={mattressOptions} />}
     </div>

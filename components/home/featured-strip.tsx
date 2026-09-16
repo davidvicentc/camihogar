@@ -22,7 +22,7 @@ const item: Variants = {
   },
 };
 
-export function FeaturedStrip({ products, cardStyle }: { products: ProductDTO[]; cardStyle?: Parameters<typeof ProductCard>[0]["cardStyle"] }) {
+export function FeaturedStrip({ products, cardStyles }: { products: ProductDTO[]; cardStyles?: Parameters<typeof ProductCard>[0]["cardStyles"] }) {
   if (products.length === 0) return null;
 
   return (
@@ -49,7 +49,7 @@ export function FeaturedStrip({ products, cardStyle }: { products: ProductDTO[];
             variants={item}
             className="w-[260px] min-w-[260px] shrink-0 snap-start"
           >
-            <ProductCard product={product} className="h-full" cardStyle={cardStyle} />
+            <ProductCard product={product} className="h-full" cardStyles={cardStyles} />
           </motion.div>
         ))}
       </motion.div>

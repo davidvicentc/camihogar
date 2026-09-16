@@ -49,8 +49,8 @@ export default async function HomePage() {
           <EmptyCatalog />
         ) : (
           <>
-            <Bestsellers products={bestsellers} cardStyle={settings.homeCardStyle} />
-            <FeaturedStrip products={featured} cardStyle={settings.homeCardStyle} />
+            <Bestsellers products={bestsellers} cardStyles={settings.categoryCardStyles} />
+            <FeaturedStrip products={featured} cardStyles={settings.categoryCardStyles} />
           </>
         )}
         <TrustBadges />

@@ -19,11 +19,11 @@ export interface ActionResult<T = undefined> {
 
 function validateVariants(input: Pick<ProductInput, "variants">): string | null {
   const variants = input.variants ?? [];
-  if (!variants.length) return "Agrega al menos una variante con nombre y precio.";
+  if (!variants.length) return null;
   if (variants.some((variant) => !variant.name.trim() || !Number.isFinite(variant.price) || variant.price <= 0)) {
     return "Cada variante debe tener nombre y precio mayor a cero.";
   }
-  if (variants.filter((variant) => variant.isDefault).length !== 1) {
+  if (variants.length && variants.filter((variant) => variant.isDefault).length !== 1) {
     return "Marca exactamente una variante como principal.";
   }
   const skus = variants.map((variant) => variant.sku?.trim()).filter(Boolean);
@@ -108,8 +108,8 @@ export async function updateProduct(
     await connectDB();
     const doc = await ProductModel.findById(id);
     if (!doc) return { ok: false, error: "Producto no encontrado" };
-    if (!input.brandId || !input.categoryId) {
-      return { ok: false, error: "Selecciona una marca y categoría válidas." };
+    if (!input.categoryId) {
+      return { ok: false, error: "Selecciona una categoría válida." };
     }
     if (input.variants) {
       const variantsError = validateVariants({ variants: input.variants });
@@ -123,9 +123,9 @@ export async function updateProduct(
       BrandModel.findById(input.brandId),
       CategoryModel.findById(input.categoryId),
     ]);
-    if (!brand || !category) return { ok: false, error: "Selecciona una marca y categoría válidas." };
+    if (!category) return { ok: false, error: "Selecciona una categoría válida." };
     const previousImages = [...doc.images];
-    input = { ...input, brand: brand.name, category: category.name, images: (input.images ?? []).map(normalizeImageUrl).filter(Boolean) };
+    input = { ...input, brand: brand?.name ?? "", category: category.name, images: (input.images ?? []).map(normalizeImageUrl).filter(Boolean) };
     Object.assign(doc, input);
     await doc.save();
     const currentImages = new Set(doc.images);
