@@ -1,0 +1,5 @@
+#!/bin/sh
+set -e
+
+echo "Ejecutando validaciones antes del commit..."
+npm run check

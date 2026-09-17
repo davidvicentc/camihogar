@@ -10,6 +10,7 @@ import BrandModel from "@/lib/models/Brand";
 import CategoryModel from "@/lib/models/Category";
 import { normalizeImageUrl } from "@/lib/utils";
 import { deleteProductImage, productImageKeyFromUrl } from "@/lib/r2";
+import { validateProductReferences } from "@/lib/product-validation";
 
 export interface ActionResult<T = undefined> {
   ok: boolean;
@@ -78,6 +79,8 @@ export async function createProduct(
     if (variantsError) return { ok: false, error: variantsError };
     const mattressError = validateMattressFeatures(input);
     if (mattressError) return { ok: false, error: mattressError };
+    const referencesError = validateProductReferences(input);
+    if (referencesError) return { ok: false, error: referencesError };
     await connectDB();
     const [brand, category] = await Promise.all([
       input.brandId ? BrandModel.findById(input.brandId) : null,
@@ -108,9 +111,8 @@ export async function updateProduct(
     await connectDB();
     const doc = await ProductModel.findById(id);
     if (!doc) return { ok: false, error: "Producto no encontrado" };
-    if (!input.categoryId) {
-      return { ok: false, error: "Selecciona una categoría válida." };
-    }
+    const referencesError = validateProductReferences(input);
+    if (referencesError) return { ok: false, error: referencesError };
     if (input.variants) {
       const variantsError = validateVariants({ variants: input.variants });
       if (variantsError) return { ok: false, error: variantsError };
@@ -123,7 +125,7 @@ export async function updateProduct(
       BrandModel.findById(input.brandId),
       CategoryModel.findById(input.categoryId),
     ]);
-    if (!category) return { ok: false, error: "Selecciona una categoría válida." };
+    if (!brand || !category) return { ok: false, error: "Selecciona una marca y categoría válidas." };
     const previousImages = [...doc.images];
     input = { ...input, brand: brand?.name ?? "", category: category.name, images: (input.images ?? []).map(normalizeImageUrl).filter(Boolean) };
     Object.assign(doc, input);

@@ -77,7 +77,7 @@ export function ProductEditor({
   const [unit, setUnit] = useState(product?.dimensions.unit || "cm");
   const [brandId, setBrandId] = useState(product?.brandId ?? (brands.length === 1 ? brands[0]._id : ""));
   const [categoryId, setCategoryId] = useState(product?.categoryId ?? (categories.length === 1 ? categories[0]._id : ""));
-  const [, setBrandOptions] = useState(brands);
+  const [brandOptions, setBrandOptions] = useState(brands);
   const [categoryOptions, setCategoryOptions] = useState(categories);
   const selectedCategoryName = categoryOptions.find((item) => item._id === categoryId)?.name ?? "";
   const isMattress = selectedCategoryName
@@ -153,8 +153,8 @@ export function ProductEditor({
       depth: Number(depth),
       unit,
     };
-    if (!name.trim() || !categoryId) {
-      setError("Completa nombre y categoría.");
+    if (!name.trim() || !brandId || !categoryId) {
+      setError("Completa nombre, marca y categoría.");
       return;
     }
     if (hasDimensions && ![dimensions.width, dimensions.height, dimensions.depth].every((value) => Number.isFinite(value) && value > 0)) {
@@ -174,7 +174,7 @@ export function ProductEditor({
       title: name.trim(),
       collection: isMattress ? model.trim() : "",
       brand: "",
-      brandId: isMattress ? brandId : undefined,
+      brandId,
       category: "",
       categoryId,
       description: description.trim(),
@@ -225,6 +225,7 @@ export function ProductEditor({
         <div className="space-y-3 sm:col-span-2"><div><Label>1. Selecciona la familia del producto *</Label><p className="mt-1 text-xs text-brand-taupe">Esto configura automáticamente precios, medidas, variantes y colores.</p></div><div className="grid gap-2 sm:grid-cols-2">{categoryOptions.map((category) => <button key={category._id} type="button" onClick={() => selectCategory(category._id)} className={`min-h-16 rounded-2xl border px-4 py-3 text-left transition-colors ${categoryId === category._id ? "border-brand-accent bg-brand-accent/10 ring-1 ring-brand-accent" : "border-brand-dark/10 bg-brand-bg hover:border-brand-accent/50"}`}><span className="block text-sm font-semibold text-brand-dark">{category.name}</span><span className="mt-1 block text-xs text-brand-taupe">{category.description || "Configurar producto"}</span></button>)}</div><Button type="button" variant="ghost" className="px-0 text-brand-accent" onClick={() => setQuickCreate("category")}><Plus />Crear otra categoría</Button></div>
         {categoryId && <>
         <div className="space-y-2 sm:col-span-2"><Label htmlFor="product-name">Nombre del producto *</Label><Input id="product-name" value={name} onChange={(event) => setName(event.target.value)} placeholder="Ej. Cama Oslo" autoComplete="off" /></div>
+        <div className="space-y-2"><Label htmlFor="product-brand">Marca *</Label><div className="flex gap-2"><select id="product-brand" value={brandId} onChange={(event) => setBrandId(event.target.value)} className="h-11 min-w-0 flex-1 rounded-2xl border border-input bg-background px-3 text-sm"><option value="">Selecciona una marca</option>{brandOptions.map((brand) => <option key={brand._id} value={brand._id}>{brand.name}</option>)}</select><Button type="button" variant="outline" size="icon" onClick={() => setQuickCreate("brand")} aria-label="Crear marca"><Plus /></Button></div></div>
         {isMattress && <div className="space-y-2 sm:col-span-2"><Label htmlFor="product-model">Modelo comercial</Label><Input id="product-model" value={model} onChange={(event) => setModel(event.target.value)} placeholder="Ej. Colchón Ortopédico" autoComplete="off" /></div>}
         <div className="sm:col-span-2"><ProductImageUploader images={images} onChange={setImages}/></div>
         <div className="space-y-2 sm:col-span-2"><Label htmlFor="product-description">Características o descripción</Label><Textarea id="product-description" value={description} onChange={(event) => setDescription(event.target.value)} placeholder="Describe materiales, medidas, firmeza, colores o cualquier detalle importante..." rows={4} /><p className="text-xs text-brand-taupe">Aparecerá debajo del nombre en la tarjeta y en la ficha del producto.</p></div>
