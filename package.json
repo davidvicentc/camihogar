@@ -15,7 +15,7 @@
     "seed": "tsx scripts/seed.ts",
     "seed:fabrica": "tsx scripts/seed-fabricacion.ts",
     "test:fabrica": "tsx scripts/test-fabricacion.ts"
-    ,"test:products": "tsx --test scripts/test-products.ts"
+    ,"test:products": "tsx --test scripts/test-products.ts scripts/test-product-serialization.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1131.0",

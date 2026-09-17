@@ -14,7 +14,7 @@ export function serializeProduct(doc: any): ProductDTO {
     title: doc.title,
     slug: doc.slug,
     description: doc.description ?? "",
-    brand: doc.brand ?? "",
+    brand: typeof doc.brandId === "object" && doc.brandId?.name ? doc.brandId.name : doc.brand ?? "",
     brandId: doc.brandId ? String(doc.brandId) : undefined,
     categoryId: doc.categoryId ? String(doc.categoryId) : undefined,
     collection: doc.collection ?? "",
@@ -126,7 +126,7 @@ export async function getProducts(
 
     const sort: Record<string, 1 | -1> = { basePrice: 1 };
 
-    const docs = await ProductModel.find(query).sort(sort).limit(100).lean();
+    const docs = await ProductModel.find(query).populate("brandId", "name").sort(sort).limit(100).lean();
     return sortByStartingPrice(docs.map(serializeProduct));
   } catch (error) {
     console.error("[data/products] getProducts:", error);
@@ -137,7 +137,7 @@ export async function getProducts(
 export async function getProductBySlug(slug: string): Promise<ProductDTO | null> {
   try {
     await connectDB();
-    const doc = await ProductModel.findOne({ slug }).lean();
+    const doc = await ProductModel.findOne({ slug }).populate("brandId", "name").lean();
     return doc ? serializeProduct(doc) : null;
   } catch (error) {
     console.error("[data/products] getProductBySlug:", error);

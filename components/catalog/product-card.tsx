@@ -87,7 +87,7 @@ export function ProductCard({ product, priority = false, className, cardStyle, c
 
         <div className="space-y-1.5" style={{ padding: style.cardPadding }}>
           {style.showBrand && <p style={{ color: "var(--card-accent)", fontSize: style.brandFontSize }} className="truncate font-bold leading-tight tracking-tight">
-            {style.brandText || product.brand || "CamiHogar"}
+            {product.brand || style.brandText || "CamiHogar"}
           </p>}
           {style.showCategory && <p className="truncate font-semibold uppercase tracking-[0.16em]" style={{ color: style.mutedColor, fontSize: style.categoryFontSize }}>
             {product.category}
