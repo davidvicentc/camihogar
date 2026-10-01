@@ -4,12 +4,13 @@ import { getBrands, getCategories } from "@/lib/data/catalog";
 import Link from "next/link";
 import { CircleHelp } from "lucide-react";
 import { getMattressOptionGroups } from "@/lib/data/mattress-options";
+import { getColorPresets } from "@/lib/data/colors";
 
 export const dynamic = "force-dynamic";
 
 export default async function NuevoProductoPage() {
   await requireAdminPage("products.write");
-  const [brands, categories, mattressOptions] = await Promise.all([getBrands(), getCategories(), getMattressOptionGroups()]);
+  const [brands, categories, mattressOptions, colorPresets] = await Promise.all([getBrands(), getCategories(), getMattressOptionGroups(), getColorPresets()]);
   return (
     <div className="space-y-6">
       <header className="flex flex-wrap items-start justify-between gap-3">
@@ -21,7 +22,7 @@ export default async function NuevoProductoPage() {
         <div className="max-w-3xl rounded-2xl border border-brand-accent/20 bg-brand-accent/5 p-5 text-sm text-brand-dark">
           Antes de crear un producto necesitas registrar al menos una categoría desde el panel.
         </div>
-      ) : <ProductEditor brands={brands} categories={categories} mattressOptions={mattressOptions} />}
+      ) : <ProductEditor brands={brands} categories={categories} mattressOptions={mattressOptions} colorPresets={colorPresets} />}
     </div>
   );
 }

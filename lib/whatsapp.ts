@@ -1,5 +1,5 @@
 import { formatPrice, getSiteUrl } from "@/lib/utils";
-import type { ProductDTO, ProductVariant } from "@/lib/types";
+import type { ProductColorOption, ProductDTO, ProductVariant } from "@/lib/types";
 
 function getLinkSiteUrl(): string {
   return typeof window === "undefined" ? getSiteUrl() : window.location.origin;
@@ -21,16 +21,18 @@ export function buildWhatsAppLinkForNumber(message: string, number: string): str
 export function productInquiryLink(
   product: ProductDTO,
   variant?: ProductVariant,
-  whatsappNumber?: string | null
+  whatsappNumber?: string | null,
+  color?: ProductColorOption
 ): string {
   const url = `${getLinkSiteUrl()}/producto/${product.slug}`;
   const price = variant?.price ?? product.basePrice;
   const variantLine = variant ? `\n- Variante: ${variant.name}` : "";
+  const colorLine = color ? `\n- Color: ${color.name}` : "";
   const features = product.mattressFeatures ?? variant?.mattressFeatures;
   const featuresLines = features
     ? `\n- Tipo: ${features.model}\n- Pillow: ${features.pillow}\n- Composición: ${features.composition}\n- Garantía: ${features.warrantyYears} años`
     : "";
-  const message = `¡Hola CamiHogar! Estoy interesado en *${product.title}*.${variantLine}${featuresLines}\n- Precio: ${formatPrice(
+  const message = `¡Hola CamiHogar! Estoy interesado en *${product.title}*.${variantLine}${colorLine}${featuresLines}\n- Precio: ${formatPrice(
     price
   )}\nVer producto: ${url}`;
   return whatsappNumber ? buildWhatsAppLinkForNumber(message, whatsappNumber) : buildWhatsAppLink(message);

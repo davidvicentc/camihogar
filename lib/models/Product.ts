@@ -50,6 +50,16 @@ const VariantSchema = new Schema(
   { _id: false }
 );
 
+const ProductColorSchema = new Schema(
+  {
+    name: { type: String, required: true, trim: true },
+    colors: { type: [String], default: [] },
+    hex: { type: String, default: "" },
+    image: { type: String, default: "" },
+  },
+  { _id: false }
+);
+
 const ProductSchema = new Schema(
   {
     title: { type: String, required: true, trim: true },
@@ -69,6 +79,7 @@ const ProductSchema = new Schema(
     basePrice: { type: Number, required: true, min: 0 },
     warrantyYears: { type: Number, min: 0, max: 99, default: 0 },
     variants: { type: [VariantSchema], default: [] },
+    colorOptions: { type: [ProductColorSchema], default: [] },
     images: { type: [String], default: [] },
     dimensions: {
       width: { type: Number, default: 0 },

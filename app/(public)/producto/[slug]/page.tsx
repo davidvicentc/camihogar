@@ -3,8 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { getProductBySlug, getRelatedProducts } from "@/lib/data/products";
-import { ProductGallery } from "@/components/product/product-gallery";
-import { ProductInfo } from "@/components/product/product-info";
+import { ProductDetails } from "@/components/product/product-details";
 import { DimensionsCard } from "@/components/product/dimensions-card";
 import { ViewTracker } from "@/components/product/view-tracker";
 import { ProductCard } from "@/components/catalog/product-card";
@@ -83,10 +82,7 @@ export default async function ProductPage({ params }: PageProps) {
       </nav>
 
       {/* Galería + Información */}
-      <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
-        <ProductGallery images={product.images} title={product.title} />
-        <ProductInfo product={product} />
-      </div>
+      <ProductDetails product={product} />
 
       {/* Dimensiones */}
       <div className="mt-10 md:mt-14">

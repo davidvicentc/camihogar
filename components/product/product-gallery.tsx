@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 interface ProductGalleryProps {
   images: string[];
   title: string;
+  selectedImage?: string;
 }
 
 /**
@@ -17,7 +18,7 @@ interface ProductGalleryProps {
  * - Zoom tipo lupa en desktop (sigue el cursor) y toque para acercar en móvil.
  * - Tira de miniaturas y flechas de navegación.
  */
-export function ProductGallery({ images, title }: ProductGalleryProps) {
+export function ProductGallery({ images, title, selectedImage }: ProductGalleryProps) {
   const [activeIndex, setActiveIndex] = React.useState(0);
   const [zoomed, setZoomed] = React.useState(false);
   const [origin, setOrigin] = React.useState({ x: 50, y: 50 });
@@ -25,6 +26,15 @@ export function ProductGallery({ images, title }: ProductGalleryProps) {
 
   const total = images.length;
   const hasImages = total > 0;
+
+  React.useEffect(() => {
+    if (!selectedImage) return;
+    const index = images.indexOf(selectedImage);
+    if (index >= 0) {
+      setZoomed(false);
+      setActiveIndex(index);
+    }
+  }, [images, selectedImage]);
 
   const goTo = (index: number) => {
     setZoomed(false);

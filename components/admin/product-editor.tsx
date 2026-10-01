@@ -2,7 +2,7 @@
 /* eslint-disable @next/next/no-img-element -- vista previa de una URL aún no guardada */
 
 import { useState, useTransition } from "react";
-import { ArrowLeft, Check, Eye, ImageOff, Loader2, Plus, Trash2, X } from "lucide-react";
+import { ArrowLeft, Check, Eye, ImageOff, Loader2, Palette, Pencil, Plus, Search, Star, Trash2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,8 +18,11 @@ import { formatPrice, normalizeImageUrl } from "@/lib/utils";
 import { ProductImageUploader } from "@/components/admin/product-image-uploader";
 import type { MattressOptionDTO } from "@/lib/data/mattress-options";
 import type { MattressOptionKind } from "@/lib/models/MattressOption";
+import type { ColorPresetDTO } from "@/lib/data/colors";
+import { colorSwatchBackground } from "@/lib/color-swatch";
 
 type VariantDraft = { name: string; price: string; sku: string; isDefault: boolean };
+type ColorDraft = { name: string; colors: string[]; image: string };
 type QuickCreateKind = "brand" | "category" | MattressOptionKind;
 type MattressGroups = { sizes: MattressOptionDTO[]; pillows: MattressOptionDTO[]; models: MattressOptionDTO[]; compositions: MattressOptionDTO[] };
 
@@ -39,17 +42,24 @@ function draftVariants(product?: ProductDTO): VariantDraft[] {
   return [];
 }
 
-function ProductPreview({ title, category, imageUrl, variants, selectedIndex, onSelect, isMattress, features, basePrice }: { title: string; category: string; imageUrl: string; variants: VariantDraft[]; selectedIndex: number; onSelect: (index: number) => void; isMattress: boolean; features: { model: string; pillow: string; composition: string; warrantyYears: string }; basePrice: string }) {
+function draftColors(product?: ProductDTO): ColorDraft[] {
+  return (product?.colorOptions ?? []).map((color) => ({ name: color.name, colors: color.colors, image: color.image ?? "" }));
+}
+
+function ProductPreview({ title, category, imageUrl, variants, selectedIndex, onSelect, colors, selectedColorIndex, onColorSelect, isMattress, features, basePrice }: { title: string; category: string; imageUrl: string; variants: VariantDraft[]; selectedIndex: number; onSelect: (index: number) => void; colors: ColorDraft[]; selectedColorIndex: number; onColorSelect: (index: number) => void; isMattress: boolean; features: { model: string; pillow: string; composition: string; warrantyYears: string }; basePrice: string }) {
   const active = variants[selectedIndex] ?? variants[0];
+  const activeColor = colors[selectedColorIndex] ?? colors[0];
+  const previewImage = activeColor?.image || imageUrl;
   const previewPrice = active?.price || basePrice;
 
   return <section className="space-y-5 rounded-3xl border border-brand-accent/25 bg-brand-card p-5 shadow-warm-sm sm:p-7">
     <div className="flex items-center gap-2"><Eye className="h-5 w-5 text-brand-accent" aria-hidden="true"/><div><h2 className="font-display text-xl font-semibold text-brand-dark">Vista previa del cliente</h2><p className="text-sm text-brand-taupe">Prueba cada medida y configuración antes de publicar.</p></div></div>
     <div className="grid gap-5 sm:grid-cols-[160px_1fr]">
-      <div className="flex aspect-square items-center justify-center overflow-hidden rounded-2xl bg-brand-sand">{imageUrl ? <img src={normalizeImageUrl(imageUrl)} alt="Vista previa del producto" className="h-full w-full object-cover" /> : <ImageOff className="h-8 w-8 text-brand-taupe/40" aria-hidden="true" />}</div>
+      <div className="flex aspect-square items-center justify-center overflow-hidden rounded-2xl bg-brand-sand">{previewImage ? <img src={normalizeImageUrl(previewImage)} alt={activeColor ? `Vista previa en color ${activeColor.name}` : "Vista previa del producto"} className="h-full w-full object-cover" /> : <ImageOff className="h-8 w-8 text-brand-taupe/40" aria-hidden="true" />}</div>
       <div className="min-w-0 space-y-4"><div><p className="text-xs font-semibold text-brand-accent">{category || "Categoría"}</p><h3 className="font-display text-xl font-semibold text-brand-dark">{title || "Nombre del producto"}</h3></div>
         {isMattress && <p className="rounded-xl bg-secondary/60 p-3 text-sm text-brand-taupe"><strong className="text-brand-dark">{features.pillow}</strong> · {features.model} · {features.composition} · {features.warrantyYears} años de garantía</p>}
-        <div className="space-y-2"><p className="text-sm font-semibold text-brand-dark">{isMattress ? "Elige la medida" : "Elige una variante"}</p><div className="flex flex-wrap gap-2">{variants.map((variant, index) => <button key={index} type="button" onClick={() => onSelect(index)} className={`rounded-xl border px-3 py-2 text-left text-sm ${selectedIndex === index ? "border-brand-accent bg-brand-accent/10" : "border-brand-dark/10"}`}><strong className="block">{variant.name || `Variante ${index + 1}`}</strong>{variant.price ? formatPrice(Number(variant.price)) : "Sin precio"}</button>)}</div></div>
+        {variants.length > 0 && <div className="space-y-2"><p className="text-sm font-semibold text-brand-dark">{isMattress ? "Elige la medida" : "Elige una variante"}</p><div className="flex flex-wrap gap-2">{variants.map((variant, index) => <button key={index} type="button" onClick={() => onSelect(index)} className={`rounded-xl border px-3 py-2 text-left text-sm ${selectedIndex === index ? "border-brand-accent bg-brand-accent/10" : "border-brand-dark/10"}`}><strong className="block">{variant.name || `Variante ${index + 1}`}</strong>{variant.price ? formatPrice(Number(variant.price)) : "Sin precio"}</button>)}</div></div>}
+        {colors.length > 0 && <div className="space-y-2"><p className="text-sm font-semibold text-brand-dark">Color: <span className="font-normal text-brand-taupe">{activeColor?.name || "Sin nombre"}</span></p><div className="flex flex-wrap gap-2">{colors.map((color, index) => <button key={index} type="button" onClick={() => onColorSelect(index)} aria-label={`Ver ${color.name || `color ${index + 1}`}`} className={`h-9 w-9 rounded-full border-2 p-1 ${selectedColorIndex === index ? "border-brand-dark" : "border-transparent"}`}><span className="block h-full w-full rounded-full border border-black/10" style={{ background: colorSwatchBackground(color.colors) }} /></button>)}</div></div>}
         <p className="text-2xl font-bold text-brand-dark">{previewPrice ? formatPrice(Number(previewPrice)) : "Precio pendiente"}</p>
       </div>
     </div>
@@ -61,11 +71,13 @@ export function ProductEditor({
   brands,
   categories,
   mattressOptions,
+  colorPresets,
 }: {
   product?: ProductDTO;
   brands: CatalogOptionDTO[];
   categories: CatalogOptionDTO[];
   mattressOptions: MattressGroups;
+  colorPresets: ColorPresetDTO[];
 }) {
   const router = useRouter();
   const [name, setName] = useState(product?.title ?? "");
@@ -100,19 +112,26 @@ export function ProductEditor({
   const [mattressWarranty, setMattressWarranty] = useState(String(legacyFeatures?.warrantyYears ?? 2));
   const [warranty, setWarranty] = useState(String(product?.warrantyYears ?? 2));
   const [basePrice, setBasePrice] = useState(String(product?.basePrice ?? ""));
+  const [inStock, setInStock] = useState(product?.inStock ?? true);
+  const [isFeatured, setIsFeatured] = useState(product?.isFeatured ?? false);
   const [quickCreate, setQuickCreate] = useState<QuickCreateKind | null>(null);
   const [quickName, setQuickName] = useState("");
   const [quickConfirm, setQuickConfirm] = useState(false);
   const [hasDimensions, setHasDimensions] = useState(Boolean(product?.dimensions.width && product?.dimensions.height && product?.dimensions.depth));
   const [images, setImages] = useState((product?.images ?? []).map(normalizeImageUrl).filter(Boolean));
   const [variants, setVariants] = useState<VariantDraft[]>(draftVariants(product));
+  const [colors, setColors] = useState<ColorDraft[]>(draftColors(product));
+  const [activeColorIndex, setActiveColorIndex] = useState(0);
+  const [editingColorIndex, setEditingColorIndex] = useState<number | null>(null);
+  const [colorQuery, setColorQuery] = useState("");
+  const [colorPickerOpen, setColorPickerOpen] = useState(false);
   const [previewVariant, setPreviewVariant] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   function selectCategory(nextId: string) {
+    if (nextId === categoryId) return;
     setCategoryId(nextId);
-    if (product) return;
     const nextName = categoryOptions.find((item) => item._id === nextId)?.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase() ?? "";
     if (nextName === "camas") {
       setVariants(["Individual", "Matrimonial", "Queen", "King"].map((size, index) => ({ ...EMPTY_VARIANT, name: size, isDefault: index === 0 })));
@@ -122,6 +141,47 @@ export function ProductEditor({
       setVariants([]);
     }
     setPreviewVariant(0);
+  }
+
+  function addVariant() {
+    setVariants((current) => [
+      ...current,
+      { ...EMPTY_VARIANT, isDefault: current.length === 0 },
+    ]);
+  }
+
+  function updateColor(index: number, patch: Partial<ColorDraft>) {
+    setColors((current) => current.map((color, itemIndex) => itemIndex === index ? { ...color, ...patch } : color));
+  }
+
+  function removeColor(index: number) {
+    setColors((current) => current.filter((_, itemIndex) => itemIndex !== index));
+    setActiveColorIndex((current) => Math.max(0, current > index ? current - 1 : Math.min(current, colors.length - 2)));
+    setEditingColorIndex(null);
+  }
+
+  const normalizedColorQuery = colorQuery.trim().toLocaleLowerCase("es");
+  const matchingColorPresets = colorPresets.filter((preset) =>
+    preset.name.toLocaleLowerCase("es").includes(normalizedColorQuery) &&
+    !colors.some((color) => color.name.toLocaleLowerCase("es") === preset.name.toLocaleLowerCase("es"))
+  );
+
+  function addSavedColor(preset: ColorPresetDTO) {
+    setColors((current) => [...current, { name: preset.name, colors: preset.colors, image: "" }]);
+    setActiveColorIndex(colors.length);
+    setColorQuery("");
+    setColorPickerOpen(false);
+  }
+
+  function createColorFromQuery() {
+    const cleanName = colorQuery.trim();
+    if (!cleanName) return;
+    const nextIndex = colors.length;
+    setColors((current) => [...current, { name: cleanName, colors: ["#8c7a6b"], image: "" }]);
+    setActiveColorIndex(nextIndex);
+    setEditingColorIndex(nextIndex);
+    setColorQuery("");
+    setColorPickerOpen(false);
   }
 
   function updateVariant(index: number, field: keyof VariantDraft, value: string | boolean) {
@@ -182,13 +242,14 @@ export function ProductEditor({
       sku: cleanVariants[0]?.sku ?? "",
       basePrice: usesSizes ? defaultPrice : Number(basePrice),
       variants: usesSizes || (!isColorProduct && cleanVariants.some((v) => v.name || v.price)) ? cleanVariants.filter((v) => v.name || v.price) : [],
+      colorOptions: colors.map((color) => ({ name: color.name.trim(), colors: color.colors, image: color.image || undefined })),
       images,
       dimensions: hasDimensions ? dimensions : { width: 0, height: 0, depth: 0, unit },
       customizationOptions: product?.customizationOptions ?? { fabrics: [], finishes: [], configurations: [] },
       warrantyYears: Number(warranty),
       mattressFeatures: isMattress ? { model: mattressModel, pillow: mattressPillow, warrantyYears: Number(mattressWarranty), composition: mattressComposition } : undefined,
-      isFeatured: product?.isFeatured ?? false,
-      inStock: product?.inStock ?? true,
+      isFeatured,
+      inStock,
     };
     startTransition(async () => {
       const result = product ? await updateProduct(product._id, input) : await createProduct(input);
@@ -247,16 +308,60 @@ export function ProductEditor({
       </section>}
 
       {!isColorProduct && <section className="space-y-4 rounded-3xl border border-brand-dark/10 bg-brand-card p-5 shadow-warm-sm sm:p-7">
-        <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="font-display text-xl font-semibold text-brand-dark">{usesSizes ? "Medidas y precios" : "Variantes opcionales"}</h2><p className="text-sm text-brand-taupe">{usesSizes ? "Cada medida tiene su propio precio." : "Puedes agregar una variante con nombre y precio, si aplica."}</p></div><Button type="button" variant="outline" onClick={() => setVariants((current) => [...current, { ...EMPTY_VARIANT }])}><Plus aria-hidden="true" />{usesSizes ? "Agregar medida" : "Agregar variante"}</Button></div>
+        <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="font-display text-xl font-semibold text-brand-dark">{usesSizes ? "Medidas y precios" : "Variantes opcionales"}</h2><p className="text-sm text-brand-taupe">{usesSizes ? "Cada medida tiene su propio precio." : "Puedes agregar una variante con nombre y precio, si aplica."}</p></div><Button type="button" variant="outline" onClick={addVariant}><Plus aria-hidden="true" />{usesSizes ? "Agregar medida" : "Agregar variante"}</Button></div>
         <div className="space-y-3">
           {variants.map((variant, index) => <article key={index} className="space-y-4 rounded-2xl border border-brand-dark/10 bg-secondary/30 p-4"><div className="flex items-center justify-between"><h3 className="font-semibold text-brand-dark">{isMattress ? `Medida ${index + 1}` : `Variante ${index + 1}`}</h3><Button type="button" variant="ghost" size="icon" className="text-red-600" onClick={() => removeVariant(index)} aria-label={`Eliminar ${isMattress ? "medida" : "variante"} ${index + 1}`}><Trash2 aria-hidden="true" /></Button></div><div className="grid gap-3 sm:grid-cols-3"><div className="space-y-1"><Label htmlFor={`variant-name-${index}`}>{isMattress ? "Medida" : "Nombre"}</Label>{isMattress ? <div className="flex gap-2"><select id={`variant-name-${index}`} value={variant.name} onChange={(event) => updateVariant(index, "name", event.target.value)} className="h-11 min-w-0 flex-1 rounded-xl border border-input bg-background px-3 text-sm"><option value="">Selecciona una medida</option>{sizeOptions.map((option) => <option key={option._id} value={option.name}>{option.name}</option>)}</select><Button type="button" variant="outline" size="icon" onClick={() => setQuickCreate("size")} aria-label="Crear medida"><Plus/></Button></div> : <Input id={`variant-name-${index}`} value={variant.name} onChange={(event) => updateVariant(index, "name", event.target.value)} placeholder="Individual" autoComplete="off" />}</div><div className="space-y-1"><Label htmlFor={`variant-price-${index}`}>Precio</Label><Input id={`variant-price-${index}`} type="number" min="0.01" step="0.01" value={variant.price} onChange={(event) => updateVariant(index, "price", event.target.value)} placeholder="0.00" /></div><div className="space-y-1"><Label htmlFor={`variant-sku-${index}`}>SKU</Label><Input id={`variant-sku-${index}`} value={variant.sku} onChange={(event) => updateVariant(index, "sku", event.target.value)} placeholder="Ej. COL-MAT-01" autoComplete="off" /></div></div><label className="inline-flex items-center gap-2 text-sm font-medium text-brand-dark"><input type="radio" name="default-variant" checked={variant.isDefault} onChange={() => setVariants((current) => current.map((item, itemIndex) => ({ ...item, isDefault: itemIndex === index })))} />Mostrar esta {isMattress ? "medida" : "variante"} primero</label></article>)}
         </div>
       </section>}
 
-      <ProductPreview title={name} category={selectedCategoryName} imageUrl={images[0] ?? ""} variants={variants} selectedIndex={previewVariant} onSelect={setPreviewVariant} isMattress={isMattress} features={{ model: mattressModel, pillow: mattressPillow, composition: mattressComposition, warrantyYears: mattressWarranty }} basePrice={basePrice} />
+      <section className="space-y-4 rounded-3xl border border-brand-dark/10 bg-brand-card p-5 shadow-warm-sm sm:p-7">
+        <div><h2 className="flex items-center gap-2 font-display text-xl font-semibold text-brand-dark"><Palette className="h-5 w-5 text-brand-accent" aria-hidden="true" />Colores disponibles</h2><p className="text-sm text-brand-taupe">Busca una combinación guardada o escribe una nueva. La fotografía es opcional.</p></div>
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-3 top-3.5 z-10 h-4 w-4 text-brand-taupe" aria-hidden="true" />
+          <Input value={colorQuery} onFocus={() => setColorPickerOpen(true)} onBlur={() => window.setTimeout(() => setColorPickerOpen(false), 120)} onChange={(event) => { setColorQuery(event.target.value); setColorPickerOpen(true); }} onKeyDown={(event) => { if (event.key !== "Enter") return; event.preventDefault(); if (matchingColorPresets[0]) addSavedColor(matchingColorPresets[0]); else createColorFromQuery(); }} placeholder="Escribe para buscar o crear un color…" className="pl-9" role="combobox" aria-expanded={colorPickerOpen} aria-controls="color-results" autoComplete="off" />
+          {colorPickerOpen && <div id="color-results" className="absolute z-20 mt-2 max-h-64 w-full overflow-y-auto rounded-2xl border border-brand-dark/10 bg-background p-2 shadow-warm" role="listbox">
+            {matchingColorPresets.map((preset) => <button key={preset._id} type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => addSavedColor(preset)} className="flex min-h-12 w-full items-center gap-3 rounded-xl px-3 text-left text-sm hover:bg-secondary"><span className="h-8 w-8 shrink-0 rounded-full border border-black/10" style={{ background: colorSwatchBackground(preset.colors) }} /><span className="flex-1 font-semibold text-brand-dark">{preset.name}</span><span className="text-xs text-brand-taupe">Agregar</span></button>)}
+            {colorQuery.trim() && !colorPresets.some((preset) => preset.name.toLocaleLowerCase("es") === normalizedColorQuery) && <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={createColorFromQuery} className="flex min-h-12 w-full items-center gap-3 rounded-xl px-3 text-left text-sm text-brand-dark hover:bg-brand-accent/10"><span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-accent/10 text-brand-accent"><Plus className="h-4 w-4" /></span><span>Crear <strong>“{colorQuery.trim()}”</strong></span></button>}
+            {!colorQuery.trim() && matchingColorPresets.length === 0 && <p className="px-3 py-3 text-sm text-brand-taupe">No hay más combinaciones guardadas.</p>}
+          </div>}
+        </div>
+        {colors.length > 0 ? <div className="grid gap-2 sm:grid-cols-2">{colors.map((color, index) => <div key={`${color.name}-${index}`} className="flex min-h-14 items-center gap-3 rounded-xl border border-brand-dark/10 bg-secondary/30 px-3 py-2"><button type="button" onClick={() => { setActiveColorIndex(index); setEditingColorIndex(index); }} className="flex min-w-0 flex-1 items-center gap-3 text-left"><span className="h-9 w-9 shrink-0 rounded-full border border-black/10" style={{ background: colorSwatchBackground(color.colors) }} /><span className="min-w-0"><strong className="block truncate text-sm text-brand-dark">{color.name}</strong><span className="text-xs text-brand-taupe">{color.colors.length} {color.colors.length === 1 ? "color" : "colores"}{color.image ? " · Con foto" : ""}</span></span></button><Button type="button" variant="ghost" size="icon" className="h-9 w-9" onClick={() => { setActiveColorIndex(index); setEditingColorIndex(index); }} aria-label={`Editar ${color.name}`}><Pencil className="h-4 w-4" /></Button><Button type="button" variant="ghost" size="icon" className="h-9 w-9 text-red-600" onClick={() => removeColor(index)} aria-label={`Quitar ${color.name}`}><X className="h-4 w-4" /></Button></div>)}</div> : <p className="rounded-xl border border-dashed border-brand-dark/15 bg-secondary/20 p-4 text-sm text-brand-taupe">Sin colores agregados. Este apartado es opcional.</p>}
+      </section>
+
+      <section className="space-y-4 rounded-3xl border border-brand-dark/10 bg-brand-card p-5 shadow-warm-sm sm:p-7">
+        <div>
+          <h2 className="font-display text-xl font-semibold text-brand-dark">Publicación</h2>
+          <p className="text-sm text-brand-taupe">Controla si el producto puede comprarse y si aparece en la vitrina destacada.</p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="flex min-h-16 cursor-pointer items-center gap-3 rounded-2xl border border-brand-dark/10 bg-secondary/30 px-4 py-3">
+            <input type="checkbox" checked={inStock} onChange={(event) => setInStock(event.target.checked)} className="h-4 w-4 accent-[hsl(var(--brand-accent))]" />
+            <span><strong className="block text-sm text-brand-dark">Disponible para la venta</strong><span className="text-xs text-brand-taupe">Visible como producto con existencia.</span></span>
+          </label>
+          <label className="flex min-h-16 cursor-pointer items-center gap-3 rounded-2xl border border-brand-dark/10 bg-secondary/30 px-4 py-3">
+            <input type="checkbox" checked={isFeatured} onChange={(event) => setIsFeatured(event.target.checked)} className="h-4 w-4 accent-[hsl(var(--brand-accent))]" />
+            <span><strong className="flex items-center gap-1.5 text-sm text-brand-dark"><Star className="h-4 w-4 text-brand-accent" aria-hidden="true" />Producto destacado</strong><span className="text-xs text-brand-taupe">Puede aparecer en la portada.</span></span>
+          </label>
+        </div>
+      </section>
+
+      <ProductPreview title={name} category={selectedCategoryName} imageUrl={images[0] ?? ""} variants={variants} selectedIndex={previewVariant} onSelect={setPreviewVariant} colors={colors} selectedColorIndex={activeColorIndex} onColorSelect={setActiveColorIndex} isMattress={isMattress} features={{ model: mattressModel, pillow: mattressPillow, composition: mattressComposition, warrantyYears: mattressWarranty }} basePrice={basePrice} />
 
       {error && <p role="alert" className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
       <div className="flex flex-wrap justify-between gap-3"><Button type="button" variant="ghost" onClick={() => router.push("/admin/productos")}><ArrowLeft aria-hidden="true" />Cancelar</Button><Button type="submit" variant="accent" disabled={pending}>{pending && <Loader2 className="animate-spin" aria-hidden="true" />}{pending ? "Guardando..." : product ? "Guardar cambios" : "Crear producto"}</Button></div>
+      <Dialog open={editingColorIndex !== null && Boolean(colors[editingColorIndex])} onOpenChange={(open) => { if (!open) setEditingColorIndex(null); }}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl">
+          {editingColorIndex !== null && colors[editingColorIndex] && <>
+            <DialogHeader><DialogTitle className="flex items-center gap-3"><span className="h-9 w-9 rounded-full border border-black/10" style={{ background: colorSwatchBackground(colors[editingColorIndex].colors) }} />Editar {colors[editingColorIndex].name}</DialogTitle></DialogHeader>
+            <div className="space-y-5">
+              <div className="space-y-2"><Label htmlFor={`color-name-${editingColorIndex}`}>Nombre de la combinación *</Label><Input id={`color-name-${editingColorIndex}`} value={colors[editingColorIndex].name} onChange={(event) => updateColor(editingColorIndex, { name: event.target.value })} placeholder="Ej. Canela / Off White" /></div>
+              <div className="space-y-3"><div className="flex items-center justify-between gap-3"><div><Label>Colores de la muestra</Label><p className="text-xs text-brand-taupe">Se reparten en partes iguales.</p></div>{colors[editingColorIndex].colors.length < 4 && <Button type="button" variant="outline" size="sm" onClick={() => updateColor(editingColorIndex, { colors: [...colors[editingColorIndex].colors, "#f5f0e6"] })}><Plus />Agregar color</Button>}</div><div className="grid gap-2 sm:grid-cols-2">{colors[editingColorIndex].colors.map((hex, colorIndex) => <div key={colorIndex} className="flex h-12 items-center gap-2 rounded-xl border border-input bg-background px-2"><input type="color" aria-label={`Color ${colorIndex + 1}`} value={hex} onChange={(event) => updateColor(editingColorIndex, { colors: colors[editingColorIndex].colors.map((item, index) => index === colorIndex ? event.target.value : item) })} className="h-8 w-10 cursor-pointer rounded border-0 bg-transparent p-0" /><span className="flex-1 text-xs uppercase text-brand-taupe">{hex}</span>{colors[editingColorIndex].colors.length > 1 && <button type="button" onClick={() => updateColor(editingColorIndex, { colors: colors[editingColorIndex].colors.filter((_, index) => index !== colorIndex) })} className="rounded p-1 text-red-600" aria-label={`Quitar color ${colorIndex + 1}`}><X className="h-4 w-4" /></button>}</div>)}</div></div>
+              <ProductImageUploader images={colors[editingColorIndex].image ? [colors[editingColorIndex].image] : []} onChange={(next) => updateColor(editingColorIndex, { image: next[0] ?? "" })} maxImages={1} compactLabel="Fotografía para esta combinación" />
+            </div>
+            <DialogFooter><Button type="button" variant="accent" onClick={() => setEditingColorIndex(null)}><Check />Listo</Button></DialogFooter>
+          </>}
+        </DialogContent>
+      </Dialog>
       <Dialog open={quickCreate !== null} onOpenChange={(open) => { if (!open) { setQuickCreate(null); setQuickName(""); setQuickConfirm(false); } }}>
         <DialogContent>
           <DialogHeader><DialogTitle>{quickConfirm ? "Confirmar creación" : `Crear ${quickKindLabel(quickCreate)}`}</DialogTitle></DialogHeader>

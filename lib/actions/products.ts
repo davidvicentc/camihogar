@@ -8,6 +8,7 @@ import { serializeProduct } from "@/lib/data/products";
 import type { ProductDTO, ProductInput } from "@/lib/types";
 import BrandModel from "@/lib/models/Brand";
 import CategoryModel from "@/lib/models/Category";
+import ColorPresetModel from "@/lib/models/ColorPreset";
 import { normalizeImageUrl } from "@/lib/utils";
 import { deleteProductImage, productImageKeyFromUrl } from "@/lib/r2";
 import { validateProductReferences } from "@/lib/product-validation";
@@ -59,6 +60,24 @@ function validateMattressFeatures(input: Pick<ProductInput, "mattressFeatures">)
   return null;
 }
 
+function validateColors(input: Pick<ProductInput, "colorOptions">): string | null {
+  const colors = input.colorOptions ?? [];
+  if (colors.some((option) => !option.name.trim() || option.colors.length < 1 || option.colors.length > 4 || option.colors.some((color) => !/^#[0-9a-f]{6}$/i.test(color)))) {
+    return "Cada opción necesita un nombre y entre 1 y 4 colores válidos.";
+  }
+  const names = colors.map((color) => color.name.trim().toLocaleLowerCase("es"));
+  if (new Set(names).size !== names.length) return "No puedes repetir el mismo color.";
+  return null;
+}
+
+async function saveColorPresets(options: ProductInput["colorOptions"] = []) {
+  await Promise.all(options.map((option) => ColorPresetModel.findOneAndUpdate(
+    { name: option.name.trim() },
+    { $set: { colors: option.colors, isActive: true }, $setOnInsert: { slug: option.name.trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") } },
+    { upsert: true }
+  )));
+}
+
 function revalidatePublicPages(slug?: string) {
   revalidatePath("/");
   revalidatePath("/catalogo");
@@ -79,6 +98,8 @@ export async function createProduct(
     if (variantsError) return { ok: false, error: variantsError };
     const mattressError = validateMattressFeatures(input);
     if (mattressError) return { ok: false, error: mattressError };
+    const colorsError = validateColors(input);
+    if (colorsError) return { ok: false, error: colorsError };
     const referencesError = validateProductReferences(input);
     if (referencesError) return { ok: false, error: referencesError };
     await connectDB();
@@ -90,10 +111,12 @@ export async function createProduct(
     const doc = await ProductModel.create({
       ...input,
       images: (input.images ?? []).map(normalizeImageUrl).filter(Boolean),
+      colorOptions: (input.colorOptions ?? []).map((color) => ({ ...color, image: color.image ? normalizeImageUrl(color.image) : "" })),
       brand: brand.name,
       category: category.name,
       metrics: { viewsCount: 0, whatsappClicksCount: 0 },
     });
+    await saveColorPresets(input.colorOptions);
     revalidatePublicPages(doc.slug ?? undefined);
     return { ok: true, data: serializeProduct(doc.toObject()) };
   } catch (error) {
@@ -104,33 +127,36 @@ export async function createProduct(
 
 export async function updateProduct(
   id: string,
-  input: Partial<ProductInput>
+  input: ProductInput
 ): Promise<ActionResult<ProductDTO>> {
   try {
     await requireAdmin("products.write");
     await connectDB();
     const doc = await ProductModel.findById(id);
     if (!doc) return { ok: false, error: "Producto no encontrado" };
+    if (!input.title.trim()) return { ok: false, error: "El producto necesita un nombre." };
     const referencesError = validateProductReferences(input);
     if (referencesError) return { ok: false, error: referencesError };
-    if (input.variants) {
-      const variantsError = validateVariants({ variants: input.variants });
-      if (variantsError) return { ok: false, error: variantsError };
-    }
+    const variantsError = validateVariants({ variants: input.variants });
+    if (variantsError) return { ok: false, error: variantsError };
     if (input.mattressFeatures) {
       const mattressError = validateMattressFeatures({ mattressFeatures: input.mattressFeatures });
       if (mattressError) return { ok: false, error: mattressError };
     }
+    const colorsError = validateColors(input);
+    if (colorsError) return { ok: false, error: colorsError };
     const [brand, category] = await Promise.all([
       BrandModel.findById(input.brandId),
       CategoryModel.findById(input.categoryId),
     ]);
     if (!brand || !category) return { ok: false, error: "Selecciona una marca y categoría válidas." };
-    const previousImages = [...doc.images];
-    input = { ...input, brand: brand?.name ?? "", category: category.name, images: (input.images ?? []).map(normalizeImageUrl).filter(Boolean) };
+    const previousImages = [...doc.images, ...doc.colorOptions.map((color) => color.image).filter(Boolean)];
+    input = { ...input, brand: brand.name, category: category.name, images: input.images.map(normalizeImageUrl).filter(Boolean), colorOptions: (input.colorOptions ?? []).map((color) => ({ ...color, image: color.image ? normalizeImageUrl(color.image) : "" })) };
     Object.assign(doc, input);
+    if (!input.mattressFeatures) doc.set("mattressFeatures", undefined);
     await doc.save();
-    const currentImages = new Set(doc.images);
+    await saveColorPresets(input.colorOptions);
+    const currentImages = new Set([...doc.images, ...doc.colorOptions.map((color) => color.image).filter(Boolean)]);
     await Promise.allSettled(previousImages.filter((url) => !currentImages.has(url)).map((url) => productImageKeyFromUrl(url)).filter((key): key is string => Boolean(key)).map(deleteProductImage));
     revalidatePublicPages(doc.slug ?? undefined);
     return { ok: true, data: serializeProduct(doc.toObject()) };
@@ -195,7 +221,7 @@ export async function deleteProduct(id: string): Promise<ActionResult> {
     await requireAdmin("products.delete");
     await connectDB();
     const doc = await ProductModel.findByIdAndDelete(id);
-    if (doc) await Promise.allSettled(doc.images.map((url) => productImageKeyFromUrl(url)).filter((key): key is string => Boolean(key)).map(deleteProductImage));
+    if (doc) await Promise.allSettled([...doc.images, ...doc.colorOptions.map((color) => color.image).filter(Boolean)].map((url) => productImageKeyFromUrl(url)).filter((key): key is string => Boolean(key)).map(deleteProductImage));
     revalidatePublicPages(doc?.slug ?? undefined);
     return { ok: true };
   } catch (error) {

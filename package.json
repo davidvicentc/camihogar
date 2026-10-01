@@ -13,6 +13,7 @@
     "test:admin-flow": "node scripts/test-admin-flow.mjs",
     "test:images": "tsx scripts/test-images.ts",
     "seed": "tsx scripts/seed.ts",
+    "seed:demo-product": "tsx scripts/seed-demo-product.ts",
     "seed:fabrica": "tsx scripts/seed-fabricacion.ts",
     "test:fabrica": "tsx scripts/test-fabricacion.ts"
     ,"test:products": "tsx --test scripts/test-products.ts scripts/test-product-serialization.ts"

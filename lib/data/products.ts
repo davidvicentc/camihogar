@@ -36,6 +36,13 @@ export function serializeProduct(doc: any): ProductDTO {
             : undefined,
           }))
       : [],
+    colorOptions: Array.isArray(doc.colorOptions)
+      ? doc.colorOptions.map((option: any) => ({
+          name: option.name ?? "",
+          colors: Array.isArray(option.colors) && option.colors.length ? option.colors : [option.hex || "#8c7a6b"],
+          image: option.image ? normalizeImageUrl(option.image) : undefined,
+        }))
+      : [],
     images: (doc.images ?? []).map((image: string) => normalizeImageUrl(image)).filter(Boolean),
     dimensions: {
       width: doc.dimensions?.width ?? 0,

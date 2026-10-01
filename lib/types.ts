@@ -81,6 +81,12 @@ export interface ProductVariant {
   mattressFeatures?: MattressFeatures;
 }
 
+export interface ProductColorOption {
+  name: string;
+  colors: string[];
+  image?: string;
+}
+
 export interface ProductDTO {
   _id: string;
   title: string;
@@ -96,6 +102,7 @@ export interface ProductDTO {
   basePrice: number;
   warrantyYears?: number;
   variants?: ProductVariant[];
+  colorOptions?: ProductColorOption[];
   images: string[];
   dimensions: Dimensions;
   customizationOptions: CustomizationOptions;
@@ -124,6 +131,7 @@ export interface ProductInput {
   basePrice: number;
   warrantyYears?: number;
   variants?: ProductVariant[];
+  colorOptions?: ProductColorOption[];
   images: string[];
   dimensions: Dimensions;
   customizationOptions: CustomizationOptions;

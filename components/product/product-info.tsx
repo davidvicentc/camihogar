@@ -12,6 +12,7 @@ import { trackEvent } from "@/lib/track";
 import { cn, formatPrice } from "@/lib/utils";
 import type { ProductDTO } from "@/lib/types";
 import { useWhatsAppNumber } from "@/components/layout/whatsapp-settings-provider";
+import { colorSwatchBackground } from "@/lib/color-swatch";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 14 },
@@ -22,7 +23,7 @@ const fadeUp = {
  * Columna de información de la ficha de producto: título, rating, precio,
  * vista previa de variaciones y CTAs de WhatsApp / personalizador.
  */
-export function ProductInfo({ product }: { product: ProductDTO }) {
+export function ProductInfo({ product, selectedColorIndex = 0, onColorChange }: { product: ProductDTO; selectedColorIndex?: number; onColorChange?: (index: number) => void }) {
   const whatsappNumber = useWhatsAppNumber();
   const initialVariantIndex =
     product.variants && product.variants.length > 0
@@ -51,6 +52,7 @@ export function ProductInfo({ product }: { product: ProductDTO }) {
     product.variants && product.variants.length > 0
       ? product.variants[selectedVariantIndex] ?? product.variants[0]
       : null;
+  const activeColor = product.colorOptions?.[selectedColorIndex];
   const hasProductConfiguration = Boolean(product.mattressFeatures);
   const isLegacyMattress = !hasProductConfiguration && Boolean(product.variants?.some((variant) => variant.mattressFeatures));
   const mattressSizes = (product.variants ?? []).reduce<string[]>((sizes, variant) => {
@@ -128,6 +130,29 @@ export function ProductInfo({ product }: { product: ProductDTO }) {
         </motion.div>
       )}
 
+      {product.colorOptions && product.colorOptions.length > 0 && (
+        <motion.fieldset variants={fadeUp} className="space-y-3">
+          <legend className="text-base font-semibold text-brand-dark">Color: <span className="font-normal text-brand-taupe">{activeColor?.name}</span></legend>
+          <div className="flex flex-wrap gap-3">
+            {product.colorOptions.map((color, index) => (
+              <button
+                key={`${color.name}-${index}`}
+                type="button"
+                onClick={() => onColorChange?.(index)}
+                aria-label={`Elegir color ${color.name}`}
+                aria-pressed={selectedColorIndex === index}
+                title={color.name}
+                className={cn("relative h-11 w-11 rounded-full border-2 p-1 transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent focus-visible:ring-offset-2", selectedColorIndex === index ? "border-brand-dark" : "border-transparent")}
+              >
+                <span className="block h-full w-full rounded-full border border-black/10" style={{ background: colorSwatchBackground(color.colors) }} />
+                {selectedColorIndex === index && <span className="absolute inset-0 flex items-center justify-center text-white drop-shadow"><span aria-hidden="true">✓</span></span>}
+              </button>
+            ))}
+          </div>
+          {activeColor?.image && <p className="text-xs text-brand-taupe">La fotografía corresponde al color seleccionado.</p>}
+        </motion.fieldset>
+      )}
+
       {/* Rating */}
       <motion.div
         variants={fadeUp}
@@ -196,7 +221,7 @@ export function ProductInfo({ product }: { product: ProductDTO }) {
       <motion.div variants={fadeUp} className="space-y-3 pt-1">
         <Button asChild variant="whatsapp" size="lg" className="w-full">
           <a
-            href={productInquiryLink(product, activeVariant ?? undefined, whatsappNumber)}
+            href={productInquiryLink(product, activeVariant ?? undefined, whatsappNumber, activeColor)}
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => trackEvent(product._id, "WHATSAPP_CLICK")}

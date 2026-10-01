@@ -16,6 +16,7 @@ import { trackEvent } from "@/lib/track";
 import type { ProductDTO } from "@/lib/types";
 import { useWhatsAppNumber } from "@/components/layout/whatsapp-settings-provider";
 import { cardProfileForCategory, DEFAULT_CARD_STYLE, type CardProfileKey, type CardStyle } from "@/lib/card-style";
+import { colorSwatchBackground } from "@/lib/color-swatch";
 
 interface ProductCardProps {
   product: ProductDTO;
@@ -37,8 +38,11 @@ export function ProductCard({ product, priority = false, className, cardStyle, c
     const index = product.variants?.findIndex((variant) => variant.isDefault) ?? -1;
     return index >= 0 ? index : 0;
   });
+  const [selectedColorIndex, setSelectedColorIndex] = useState(0);
 
   const activeVariant = product.variants?.[selectedVariantIndex];
+  const activeColor = product.colorOptions?.[selectedColorIndex];
+  const visibleImage = activeColor?.image ?? product.images[0];
 
   const visiblePrice =
     activeVariant?.price ?? product.basePrice;
@@ -59,9 +63,9 @@ export function ProductCard({ product, priority = false, className, cardStyle, c
         className="block flex-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <div className="warm-glow relative overflow-hidden bg-brand-sand" style={{ height: style.imageHeight }}>
-          {product.images[0] ? (
+          {visibleImage ? (
             <Image
-              src={product.images[0]}
+              src={visibleImage}
               alt={product.title}
               fill
               priority={priority}
@@ -121,6 +125,11 @@ export function ProductCard({ product, priority = false, className, cardStyle, c
         </div>
       </Link>
 
+      {product.colorOptions && product.colorOptions.length > 0 && <div className="flex items-center gap-2 px-4 pb-3" aria-label={`Colores de ${product.title}`}>
+        <span className="mr-1 text-[0.65rem] font-semibold text-brand-taupe">{activeColor?.name}</span>
+        {product.colorOptions.map((color, index) => <button key={`${color.name}-${index}`} type="button" onClick={() => setSelectedColorIndex(index)} aria-label={`Elegir ${color.name}`} aria-pressed={selectedColorIndex === index} title={color.name} className={cn("h-7 w-7 rounded-full border-2 p-0.5 transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent", selectedColorIndex === index ? "border-brand-dark" : "border-transparent")}><span className="block h-full w-full rounded-full border border-black/10" style={{ background: colorSwatchBackground(color.colors) }} /></button>)}
+      </div>}
+
       {style.showVariants && <div className="shrink-0 space-y-2 overflow-hidden px-4 pb-3 pt-1" style={{ height: style.variantsHeight }}>
         {product.variants && product.variants.length > 1 ? (
           <>
@@ -165,7 +174,7 @@ export function ProductCard({ product, priority = false, className, cardStyle, c
       </div>}
 
       {style.showWhatsapp && <a
-        href={productInquiryLink(product, activeVariant, whatsappNumber)}
+        href={productInquiryLink(product, activeVariant, whatsappNumber, activeColor)}
         target="_blank"
         rel="noopener noreferrer"
         onClick={() => trackEvent(product._id, "WHATSAPP_CLICK")}

@@ -37,7 +37,7 @@ function uploadWithProgress(url: string, file: File, onProgress: (value: number)
   });
 }
 
-export function ProductImageUploader({ images, onChange }: { images: string[]; onChange: (images: string[]) => void }) {
+export function ProductImageUploader({ images, onChange, maxImages = MAX_IMAGES, compactLabel }: { images: string[]; onChange: (images: string[]) => void; maxImages?: number; compactLabel?: string }) {
   const input = useRef<HTMLInputElement>(null);
   const originalImages = useRef(new Set(images));
   const [uploading, setUploading] = useState(false);
@@ -47,9 +47,9 @@ export function ProductImageUploader({ images, onChange }: { images: string[]; o
   async function uploadFiles(files: FileList | null) {
     if (!files?.length) return;
     setUploading(true); setError("");
-    const next = [...images];
+    const next = maxImages === 1 ? [] : [...images];
     try {
-      for (const source of Array.from(files).slice(0, MAX_IMAGES - images.length)) {
+      for (const source of Array.from(files).slice(0, maxImages === 1 ? 1 : maxImages - images.length)) {
         setProgress(5);
         const optimized = await optimizeImage(source);
         setProgress(15);
@@ -79,11 +79,11 @@ export function ProductImageUploader({ images, onChange }: { images: string[]; o
   }
 
   return <div className="space-y-4">
-    <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="font-medium text-brand-dark">Fotos del producto</p><p className="text-xs text-brand-taupe">Hasta {MAX_IMAGES}. La primera será la portada. Se convierten a WebP y máximo 2000 px.</p></div><Button type="button" variant="outline" disabled={uploading || images.length >= MAX_IMAGES} onClick={() => input.current?.click()}><ImagePlus aria-hidden="true"/>{images.length ? "Agregar fotos" : "Subir fotos"}</Button></div>
+    <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="font-medium text-brand-dark">{compactLabel ?? "Fotos del producto"}</p><p className="text-xs text-brand-taupe">{compactLabel ? "Opcional. Se mostrará al elegir este color." : `Hasta ${maxImages}. La primera será la portada. Se convierten a WebP y máximo 2000 px.`}</p></div><Button type="button" variant="outline" disabled={uploading || (!compactLabel && images.length >= maxImages)} onClick={() => input.current?.click()}><ImagePlus aria-hidden="true"/>{images.length ? "Cambiar foto" : "Subir foto"}</Button></div>
     <input ref={input} type="file" accept="image/jpeg,image/png,image/webp" multiple className="sr-only" onChange={(event) => void uploadFiles(event.target.files)} />
     {uploading && <div className="space-y-2 rounded-xl bg-secondary/60 p-3"><div className="flex items-center justify-between text-xs text-brand-taupe"><span className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin"/>Optimizando y subiendo</span><span>{progress}%</span></div><Progress value={progress}/></div>}
     {error && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>}
-    {!images.length && !uploading && <button type="button" onClick={() => input.current?.click()} className="flex min-h-36 w-full flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-brand-dark/20 bg-secondary/30 text-sm text-brand-taupe hover:border-brand-accent hover:text-brand-dark"><UploadCloud className="h-7 w-7"/><span>Selecciona fotografías desde tu equipo o teléfono</span></button>}
+    {!compactLabel && !images.length && !uploading && <button type="button" onClick={() => input.current?.click()} className="flex min-h-36 w-full flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-brand-dark/20 bg-secondary/30 text-sm text-brand-taupe hover:border-brand-accent hover:text-brand-dark"><UploadCloud className="h-7 w-7"/><span>Selecciona fotografías desde tu equipo o teléfono</span></button>}
     {images.length > 0 && <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4">{images.map((url, index) => <li key={`${url}-${index}`} className="overflow-hidden rounded-2xl border border-brand-dark/10 bg-brand-card"><div className="relative aspect-square bg-brand-sand"><img src={url} alt={`Foto ${index + 1}`} className="h-full w-full object-cover"/>{index === 0 && <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-lg bg-brand-dark/80 px-2 py-1 text-[11px] font-semibold text-white"><Star className="h-3 w-3 fill-current"/>Portada</span>}</div><div className="flex items-center justify-center gap-1 p-2"><button type="button" onClick={() => move(index, -1)} disabled={index === 0} aria-label="Mover a la izquierda" className="rounded-lg p-2 text-brand-taupe hover:bg-secondary disabled:opacity-25"><ArrowLeft className="h-4 w-4"/></button><button type="button" onClick={() => void remove(index)} aria-label="Eliminar foto" className="rounded-lg p-2 text-red-600 hover:bg-red-50"><Trash2 className="h-4 w-4"/></button><button type="button" onClick={() => move(index, 1)} disabled={index === images.length - 1} aria-label="Mover a la derecha" className="rounded-lg p-2 text-brand-taupe hover:bg-secondary disabled:opacity-25"><ArrowRight className="h-4 w-4"/></button></div></li>)}</ul>}
   </div>;
 }
