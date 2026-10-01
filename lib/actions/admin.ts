@@ -2,16 +2,24 @@
 
 import { randomBytes, createHash } from "node:crypto";
 import { validEmail, validPassword } from "@/lib/admin-validation";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { requireAdminPermission as requirePermission } from "@/lib/admin-session";
 import { connectDB } from "@/lib/mongodb";
 import AdminUserModel from "@/lib/models/AdminUser";
 import SiteSettingsModel from "@/lib/models/SiteSettings";
 import { hashAdminPassword } from "@/lib/admin-users";
 import { ADMIN_PERMISSIONS, type AdminPermission, type HomeProductSort } from "@/lib/types";
-import { CARD_PROFILE_OPTIONS, type CardProfileKey, type CardStyle } from "@/lib/card-style";
+import { CARD_PROFILE_OPTIONS, PRODUCT_CARD_IMAGE_HEIGHT, type CardProfileKey, type CardStyle } from "@/lib/card-style";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 
 export interface AdminActionResult<T = undefined> { ok: boolean; error?: string; data?: T }
+
+function refreshPublicSettings() {
+  revalidateTag(CACHE_TAGS.settings);
+  revalidatePath("/");
+  revalidatePath("/catalogo");
+  revalidatePath("/admin/configuracion");
+}
 
 export async function saveWhatsAppNumber(number: string): Promise<AdminActionResult> {
   try {
@@ -20,7 +28,7 @@ export async function saveWhatsAppNumber(number: string): Promise<AdminActionRes
     if (clean.length < 10 || clean.length > 15) return { ok: false, error: "Usa el formato internacional, por ejemplo 584120000000." };
     await connectDB();
     await SiteSettingsModel.findOneAndUpdate({ key: "main" }, { whatsappNumber: clean }, { upsert: true, new: true });
-    revalidatePath("/"); revalidatePath("/catalogo"); revalidatePath("/admin/configuracion");
+    refreshPublicSettings();
     return { ok: true };
   } catch (error) { return { ok: false, error: error instanceof Error ? error.message : "No se pudo guardar." }; }
 }
@@ -32,7 +40,7 @@ export async function saveSiteSettings(input: { whatsappNumber: string; instagra
     if (whatsappNumber.length < 10 || whatsappNumber.length > 15) return { ok: false, error: "El WhatsApp debe estar en formato internacional." };
     await connectDB();
     await SiteSettingsModel.findOneAndUpdate({ key: "main" }, { ...input, whatsappNumber }, { upsert: true });
-    revalidatePath("/"); revalidatePath("/catalogo"); revalidatePath("/admin/configuracion");
+    refreshPublicSettings();
     return { ok: true };
   } catch (error) { return { ok: false, error: error instanceof Error ? error.message : "No se pudo guardar." }; }
 }
@@ -48,7 +56,7 @@ export async function saveHomeProductOrder(input: { bestsellers: { sort: HomePro
     };
     await connectDB();
     await SiteSettingsModel.findOneAndUpdate({ key: "main" }, { $set: { homeProductOrder: clean } }, { upsert: true, runValidators: true });
-    revalidatePath("/"); revalidatePath("/catalogo"); revalidatePath("/admin/configuracion");
+    refreshPublicSettings();
     return { ok: true };
   } catch (error) { return { ok: false, error: error instanceof Error ? error.message : "No se pudo guardar el orden del home." }; }
 }
@@ -62,13 +70,13 @@ export async function saveHomeCardStyle(profile: CardProfileKey, input: CardStyl
     const settings = await SiteSettingsModel.findOne({ key: "main" });
     if (settings) {
       const current = (settings.categoryCardStyles ?? {}) as Record<string, CardStyle>;
-      settings.categoryCardStyles = { ...current, [profile]: input };
+      settings.categoryCardStyles = { ...current, [profile]: { ...input, imageHeight: PRODUCT_CARD_IMAGE_HEIGHT } };
       settings.markModified("categoryCardStyles");
       await settings.save();
     } else {
-      await SiteSettingsModel.create({ key: "main", categoryCardStyles: { [profile]: input } });
+      await SiteSettingsModel.create({ key: "main", categoryCardStyles: { [profile]: { ...input, imageHeight: PRODUCT_CARD_IMAGE_HEIGHT } } });
     }
-    revalidatePath("/"); revalidatePath("/catalogo"); revalidatePath("/admin/configuracion");
+    refreshPublicSettings();
     return { ok: true };
   } catch (error) { return { ok: false, error: error instanceof Error ? error.message : "No se pudo guardar el diseño." }; }
 }

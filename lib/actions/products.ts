@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { requireAdminPermission as requireAdmin } from "@/lib/admin-session";
 import { connectDB } from "@/lib/mongodb";
 import ProductModel from "@/lib/models/Product";
@@ -12,6 +12,7 @@ import ColorPresetModel from "@/lib/models/ColorPreset";
 import { normalizeImageUrl } from "@/lib/utils";
 import { deleteProductImage, productImageKeyFromUrl } from "@/lib/r2";
 import { validateProductReferences } from "@/lib/product-validation";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 
 export interface ActionResult<T = undefined> {
   ok: boolean;
@@ -79,6 +80,8 @@ async function saveColorPresets(options: ProductInput["colorOptions"] = []) {
 }
 
 function revalidatePublicPages(slug?: string) {
+  revalidateTag(CACHE_TAGS.products);
+  revalidateTag(CACHE_TAGS.colors);
   revalidatePath("/");
   revalidatePath("/catalogo");
   revalidatePath("/admin/productos");

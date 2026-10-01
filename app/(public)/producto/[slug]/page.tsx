@@ -9,7 +9,9 @@ import { ViewTracker } from "@/components/product/view-tracker";
 import { ProductCard } from "@/components/catalog/product-card";
 import { getSiteSettings } from "@/lib/data/settings";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
+export const dynamic = "force-static";
+export const dynamicParams = true;
 
 interface PageProps {
   params: Promise<{ slug: string }>;

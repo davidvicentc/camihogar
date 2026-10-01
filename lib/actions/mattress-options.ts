@@ -1,15 +1,16 @@
 "use server";
 
 import mongoose from "mongoose";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { requireAdminPermission } from "@/lib/admin-session";
 import { connectDB } from "@/lib/mongodb";
 import MattressOptionModel, { MATTRESS_OPTION_KINDS, type MattressOptionKind } from "@/lib/models/MattressOption";
 import ProductModel from "@/lib/models/Product";
 import type { ActionResult } from "@/lib/actions/products";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 
 function normalized(name: string) { return name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase(); }
-function refresh() { revalidatePath("/"); revalidatePath("/catalogo"); revalidatePath("/admin/productos/nuevo"); revalidatePath("/admin/opciones-colchones"); }
+function refresh() { revalidateTag(CACHE_TAGS.mattressOptions); revalidateTag(CACHE_TAGS.products); revalidatePath("/"); revalidatePath("/catalogo"); revalidatePath("/admin/productos/nuevo"); revalidatePath("/admin/opciones-colchones"); }
 
 export async function saveMattressOption(kind: MattressOptionKind, name: string, id?: string): Promise<ActionResult<{ _id: string; name: string }>> {
   try {

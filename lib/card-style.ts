@@ -18,11 +18,14 @@ export type CardStyle = {
   brandText: string; buttonText: string;
 };
 
+/** Todas las tarjetas comparten el mismo marco para que fotos verticales no rompan la grilla. */
+export const PRODUCT_CARD_IMAGE_HEIGHT = 280;
+
 export const DEFAULT_CARD_STYLE: CardStyle = {
   showBrand: true, showCategory: true, showDescription: true, showRating: true, showVariants: true, showWhatsapp: true,
   scale: "standard", accentColor: "#B45338", imageRatio: "square", titleSize: "medium", priceSize: "medium",
   cardBackground: "#FFFFFF", textColor: "#2B211B", mutedColor: "#88796D", borderColor: "#E9E1D9", radius: "large",
-  imageHeight: 280, cardPadding: 16, titleFontSize: 16, priceFontSize: 18, bodyFontSize: 12,
+  imageHeight: PRODUCT_CARD_IMAGE_HEIGHT, cardPadding: 16, titleFontSize: 16, priceFontSize: 18, bodyFontSize: 12,
   variantsHeight: 128, variantsFontSize: 12, variantsGap: 8, buttonHeight: 36,
   brandFontSize: 20, categoryFontSize: 10, ratingFontSize: 12, buttonFontSize: 12,
   brandText: "CamiHogar", buttonText: "Consultar por WhatsApp",

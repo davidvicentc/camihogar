@@ -6,6 +6,8 @@ import type { CatalogFilters, HomeSectionOrder, ProductDTO } from "@/lib/types";
 import type { FilterQuery } from "mongoose";
 import type { Product } from "@/lib/models/Product";
 import { normalizeImageUrl } from "@/lib/utils";
+import { unstable_cache } from "next/cache";
+import { CACHE_TAGS, PUBLIC_CACHE_SECONDS } from "@/lib/cache-tags";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export function serializeProduct(doc: any): ProductDTO {
@@ -113,12 +115,11 @@ export function orderHomeProducts(products: ProductDTO[], order: HomeSectionOrde
  * (p. ej. durante el primer arranque sin MONGODB_URI configurado).
  */
 
-export async function getProducts(
+async function queryProducts(
   filters: CatalogFilters = {}
 ): Promise<ProductDTO[]> {
-  try {
-    await connectDB();
-    const query: FilterQuery<Product> = {};
+  await connectDB();
+  const query: FilterQuery<Product> = {};
 
     if (filters.category) query.category = filters.category;
     if (filters.inStock !== undefined) query.inStock = filters.inStock;
@@ -133,27 +134,40 @@ export async function getProducts(
 
     const sort: Record<string, 1 | -1> = { basePrice: 1 };
 
-    const docs = await ProductModel.find(query).populate("brandId", "name").sort(sort).limit(100).lean();
-    return sortByStartingPrice(docs.map(serializeProduct));
+  const docs = await ProductModel.find(query).populate("brandId", "name").sort(sort).limit(100).lean();
+  return sortByStartingPrice(docs.map(serializeProduct));
+}
+
+const getProductsCached = unstable_cache(queryProducts, ["products"], {
+  revalidate: PUBLIC_CACHE_SECONDS,
+  tags: [CACHE_TAGS.products],
+});
+
+export async function getProducts(filters: CatalogFilters = {}): Promise<ProductDTO[]> {
+  try {
+    return await getProductsCached(filters);
   } catch (error) {
     console.error("[data/products] getProducts:", error);
     return [];
   }
 }
 
+const getProductBySlugCached = unstable_cache(async (slug: string): Promise<ProductDTO | null> => {
+  await connectDB();
+  const doc = await ProductModel.findOne({ slug }).populate("brandId", "name").lean();
+  return doc ? serializeProduct(doc) : null;
+}, ["product-by-slug"], { revalidate: PUBLIC_CACHE_SECONDS, tags: [CACHE_TAGS.products] });
+
 export async function getProductBySlug(slug: string): Promise<ProductDTO | null> {
   try {
-    await connectDB();
-    const doc = await ProductModel.findOne({ slug }).populate("brandId", "name").lean();
-    return doc ? serializeProduct(doc) : null;
+    return await getProductBySlugCached(slug);
   } catch (error) {
     console.error("[data/products] getProductBySlug:", error);
     return null;
   }
 }
 
-export async function getProductById(id: string): Promise<ProductDTO | null> {
-  try {
+const getProductByIdCached = unstable_cache(async (id: string): Promise<ProductDTO | null> => {
     await connectDB();
     const doc = await ProductModel.findById(id).lean();
     if (!doc) return null;
@@ -166,20 +180,29 @@ export async function getProductById(id: string): Promise<ProductDTO | null> {
       brandId: doc.brandId ?? brand?._id,
       categoryId: doc.categoryId ?? category?._id,
     });
+}, ["product-by-id"], { revalidate: PUBLIC_CACHE_SECONDS, tags: [CACHE_TAGS.products] });
+
+export async function getProductById(id: string): Promise<ProductDTO | null> {
+  try {
+    return await getProductByIdCached(id);
   } catch (error) {
     console.error("[data/products] getProductById:", error);
     return null;
   }
 }
 
-export async function getFeaturedProducts(limit = 6): Promise<ProductDTO[]> {
-  try {
+const getFeaturedProductsCached = unstable_cache(async (limit: number): Promise<ProductDTO[]> => {
     await connectDB();
     const docs = await ProductModel.find({ isFeatured: true, inStock: true })
       .sort({ createdAt: -1 })
       .limit(limit)
       .lean();
     return sortByStartingPrice(docs.map(serializeProduct));
+}, ["featured-products"], { revalidate: PUBLIC_CACHE_SECONDS, tags: [CACHE_TAGS.products] });
+
+export async function getFeaturedProducts(limit = 6): Promise<ProductDTO[]> {
+  try {
+    return await getFeaturedProductsCached(limit);
   } catch (error) {
     console.error("[data/products] getFeaturedProducts:", error);
     return [];
@@ -187,14 +210,18 @@ export async function getFeaturedProducts(limit = 6): Promise<ProductDTO[]> {
 }
 
 /** "Bestsellers": mayor interacción real (clics a WhatsApp, luego vistas). */
-export async function getBestsellers(limit = 8): Promise<ProductDTO[]> {
-  try {
+const getBestsellersCached = unstable_cache(async (limit: number): Promise<ProductDTO[]> => {
     await connectDB();
     const docs = await ProductModel.find({ inStock: true })
       .sort({ "metrics.whatsappClicksCount": -1, "metrics.viewsCount": -1 })
       .limit(limit)
       .lean();
     return sortByStartingPrice(docs.map(serializeProduct));
+}, ["bestseller-products"], { revalidate: PUBLIC_CACHE_SECONDS, tags: [CACHE_TAGS.products] });
+
+export async function getBestsellers(limit = 8): Promise<ProductDTO[]> {
+  try {
+    return await getBestsellersCached(limit);
   } catch (error) {
     console.error("[data/products] getBestsellers:", error);
     return [];
@@ -202,8 +229,7 @@ export async function getBestsellers(limit = 8): Promise<ProductDTO[]> {
 }
 
 /** Productos que tienen al menos una opción de personalización cargada. */
-export async function getCustomizableProducts(limit = 24): Promise<ProductDTO[]> {
-  try {
+const getCustomizableProductsCached = unstable_cache(async (limit: number): Promise<ProductDTO[]> => {
     await connectDB();
     const docs = await ProductModel.find({
       inStock: true,
@@ -217,35 +243,40 @@ export async function getCustomizableProducts(limit = 24): Promise<ProductDTO[]>
       .limit(limit)
       .lean();
     return sortByStartingPrice(docs.map(serializeProduct));
+}, ["customizable-products"], { revalidate: PUBLIC_CACHE_SECONDS, tags: [CACHE_TAGS.products] });
+
+export async function getCustomizableProducts(limit = 24): Promise<ProductDTO[]> {
+  try {
+    return await getCustomizableProductsCached(limit);
   } catch (error) {
     console.error("[data/products] getCustomizableProducts:", error);
     return [];
   }
 }
 
-export async function getRelatedProducts(
-  product: ProductDTO,
-  limit = 4
-): Promise<ProductDTO[]> {
-  try {
+const getRelatedProductsCached = unstable_cache(async (productId: string, category: string, limit: number): Promise<ProductDTO[]> => {
     await connectDB();
     const docs = await ProductModel.find({
-      category: product.category,
-      _id: { $ne: product._id },
+      category,
+      _id: { $ne: productId },
       inStock: true,
     })
       .sort({ basePrice: 1 })
       .limit(limit)
       .lean();
     return sortByStartingPrice(docs.map(serializeProduct));
+}, ["related-products"], { revalidate: PUBLIC_CACHE_SECONDS, tags: [CACHE_TAGS.products] });
+
+export async function getRelatedProducts(product: ProductDTO, limit = 4): Promise<ProductDTO[]> {
+  try {
+    return await getRelatedProductsCached(product._id, product.category, limit);
   } catch (error) {
     console.error("[data/products] getRelatedProducts:", error);
     return [];
   }
 }
 
-export async function getPriceRange(): Promise<{ min: number; max: number }> {
-  try {
+const getPriceRangeCached = unstable_cache(async (): Promise<{ min: number; max: number }> => {
     await connectDB();
     const [result] = await ProductModel.aggregate([
       {
@@ -257,6 +288,11 @@ export async function getPriceRange(): Promise<{ min: number; max: number }> {
       },
     ]);
     return { min: result?.min ?? 0, max: result?.max ?? 5000 };
+}, ["product-price-range"], { revalidate: PUBLIC_CACHE_SECONDS, tags: [CACHE_TAGS.products] });
+
+export async function getPriceRange(): Promise<{ min: number; max: number }> {
+  try {
+    return await getPriceRangeCached();
   } catch (error) {
     console.error("[data/products] getPriceRange:", error);
     return { min: 0, max: 5000 };

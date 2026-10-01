@@ -1,7 +1,9 @@
 import SiteSettingsModel from "@/lib/models/SiteSettings";
 import { connectDB } from "@/lib/mongodb";
 import type { HomeProductSort } from "@/lib/types";
-import { CARD_PROFILE_OPTIONS, DEFAULT_CARD_STYLE, type CardProfileKey, type CardStyle } from "@/lib/card-style";
+import { CARD_PROFILE_OPTIONS, DEFAULT_CARD_STYLE, PRODUCT_CARD_IMAGE_HEIGHT, type CardProfileKey, type CardStyle } from "@/lib/card-style";
+import { unstable_cache } from "next/cache";
+import { CACHE_TAGS, PUBLIC_CACHE_SECONDS } from "@/lib/cache-tags";
 
 function validSort(value: unknown): HomeProductSort {
   return ["price-asc", "price-desc", "popular", "recent", "manual"].includes(String(value)) ? value as HomeProductSort : "price-asc";
@@ -12,17 +14,10 @@ export function fallbackWhatsAppNumber() {
 }
 
 export async function getWhatsAppNumber() {
-  try {
-    await connectDB();
-    const settings = await SiteSettingsModel.findOne({ key: "main" }).lean();
-    return settings?.whatsappNumber || fallbackWhatsAppNumber();
-  } catch {
-    return fallbackWhatsAppNumber();
-  }
+  return (await getSiteSettings()).whatsappNumber;
 }
 
-export async function getSiteSettings() {
-  try {
+const getSiteSettingsCached = unstable_cache(async () => {
     await connectDB();
     const settings = await SiteSettingsModel.findOne({ key: "main" }).lean();
     const legacyStyle = { ...DEFAULT_CARD_STYLE, ...(settings?.homeCardStyle ?? {}) } as CardStyle;
@@ -53,7 +48,7 @@ export async function getSiteSettings() {
         mutedColor: settings?.homeCardStyle?.mutedColor ?? "#88796D",
         borderColor: settings?.homeCardStyle?.borderColor ?? "#E9E1D9",
         radius: settings?.homeCardStyle?.radius ?? "large",
-        imageHeight: settings?.homeCardStyle?.imageHeight ?? 280,
+        imageHeight: PRODUCT_CARD_IMAGE_HEIGHT,
         cardPadding: settings?.homeCardStyle?.cardPadding ?? 16,
         titleFontSize: settings?.homeCardStyle?.titleFontSize ?? 16,
         priceFontSize: settings?.homeCardStyle?.priceFontSize ?? 18,
@@ -75,6 +70,11 @@ export async function getSiteSettings() {
         featured: { sort: validSort(settings?.homeProductOrder?.featured?.sort), productIds: settings?.homeProductOrder?.featured?.productIds?.map(String) ?? [] },
       },
     };
+}, ["site-settings"], { revalidate: PUBLIC_CACHE_SECONDS, tags: [CACHE_TAGS.settings] });
+
+export async function getSiteSettings() {
+  try {
+    return await getSiteSettingsCached();
   } catch {
     return { whatsappNumber: fallbackWhatsAppNumber(), instagramUrl: "https://instagram.com/camihogar", facebookUrl: "", tagline: "Muebles que abrazan tu hogar", warrantyText: "Garantía CamiHogar de 2 años", deliveryText: "Entrega e instalación en toda Venezuela", email: "hola@camihogar.com", homeCardStyle: DEFAULT_CARD_STYLE, categoryCardStyles: Object.fromEntries(CARD_PROFILE_OPTIONS.map(({ key }) => [key, DEFAULT_CARD_STYLE])) as Record<CardProfileKey, CardStyle>, homeProductOrder: { bestsellers: { sort: "price-asc" as const, productIds: [] }, featured: { sort: "price-asc" as const, productIds: [] } } };
   }

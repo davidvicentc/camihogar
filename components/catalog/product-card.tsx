@@ -62,7 +62,7 @@ export function ProductCard({ product, priority = false, className, cardStyle, c
         href={`/producto/${product.slug}`}
         className="block flex-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
-        <div className="warm-glow relative overflow-hidden bg-brand-sand" style={{ height: style.imageHeight }}>
+        <div className="warm-glow relative h-48 overflow-hidden bg-brand-sand sm:h-60 lg:h-[280px]">
           {visibleImage ? (
             <Image
               src={visibleImage}

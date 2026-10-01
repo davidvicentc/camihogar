@@ -8,8 +8,6 @@ import { getCategories } from "@/lib/data/catalog";
 import { getSiteSettings } from "@/lib/data/settings";
 import type { CatalogFilters as Filters } from "@/lib/types";
 
-export const dynamic = "force-dynamic";
-
 export async function generateMetadata(): Promise<Metadata> {
   return {
     title: "Catálogo",

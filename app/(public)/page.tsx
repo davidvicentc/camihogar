@@ -8,7 +8,7 @@ import { Bestsellers } from "@/components/home/bestsellers";
 import { FeaturedStrip } from "@/components/home/featured-strip";
 import { TrustBadges } from "@/components/home/trust-badges";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 function EmptyCatalog() {
   return (

@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { requireAdminPermission as requireAdmin } from "@/lib/admin-session";
 import { connectDB } from "@/lib/mongodb";
 import BrandModel from "@/lib/models/Brand";
@@ -9,8 +9,11 @@ import ProductModel from "@/lib/models/Product";
 import type { ActionResult } from "@/lib/actions/products";
 import { slugify } from "@/lib/utils";
 import mongoose, { type Model } from "mongoose";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 
 function refreshCatalog() {
+  revalidateTag(CACHE_TAGS.catalog);
+  revalidateTag(CACHE_TAGS.products);
   revalidatePath("/");
   revalidatePath("/catalogo");
   revalidatePath("/admin/productos");
