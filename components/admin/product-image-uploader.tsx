@@ -37,7 +37,7 @@ function uploadWithProgress(url: string, file: File, onProgress: (value: number)
   });
 }
 
-export function ProductImageUploader({ images, onChange, maxImages = MAX_IMAGES, compactLabel }: { images: string[]; onChange: (images: string[]) => void; maxImages?: number; compactLabel?: string }) {
+export function ProductImageUploader({ images, onChange, maxImages = MAX_IMAGES, compactLabel, compactHint }: { images: string[]; onChange: (images: string[]) => void; maxImages?: number; compactLabel?: string; compactHint?: string }) {
   const input = useRef<HTMLInputElement>(null);
   const originalImages = useRef(new Set(images));
   const [uploading, setUploading] = useState(false);
@@ -79,7 +79,7 @@ export function ProductImageUploader({ images, onChange, maxImages = MAX_IMAGES,
   }
 
   return <div className="space-y-4">
-    <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="font-medium text-brand-dark">{compactLabel ?? "Fotos del producto"}</p><p className="text-xs text-brand-taupe">{compactLabel ? "Opcional. Se mostrará al elegir este color." : `Hasta ${maxImages}. La primera será la portada. Se convierten a WebP y máximo 2000 px.`}</p></div><Button type="button" variant="outline" disabled={uploading || (!compactLabel && images.length >= maxImages)} onClick={() => input.current?.click()}><ImagePlus aria-hidden="true"/>{images.length ? "Cambiar foto" : "Subir foto"}</Button></div>
+    <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="font-medium text-brand-dark">{compactLabel ?? "Fotos del producto"}</p><p className="text-xs text-brand-taupe">{compactLabel ? compactHint ?? "Se mostrará al elegir este color." : `Hasta ${maxImages}. La primera será la portada. Se convierten a WebP y máximo 2000 px.`}</p></div><Button type="button" variant="outline" disabled={uploading || (!compactLabel && images.length >= maxImages)} onClick={() => input.current?.click()}><ImagePlus aria-hidden="true"/>{images.length ? "Cambiar foto" : "Subir foto"}</Button></div>
     <input ref={input} type="file" accept="image/jpeg,image/png,image/webp" multiple className="sr-only" onChange={(event) => void uploadFiles(event.target.files)} />
     {uploading && <div className="space-y-2 rounded-xl bg-secondary/60 p-3"><div className="flex items-center justify-between text-xs text-brand-taupe"><span className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin"/>Optimizando y subiendo</span><span>{progress}%</span></div><Progress value={progress}/></div>}
     {error && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>}

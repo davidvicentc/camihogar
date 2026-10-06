@@ -66,6 +66,7 @@ function validateColors(input: Pick<ProductInput, "colorOptions">): string | nul
   if (colors.some((option) => !option.name.trim() || option.colors.length < 1 || option.colors.length > 4 || option.colors.some((color) => !/^#[0-9a-f]{6}$/i.test(color)))) {
     return "Cada opción necesita un nombre y entre 1 y 4 colores válidos.";
   }
+  if (colors.some((option) => !option.image)) return "Cada color agregado necesita una fotografía propia del producto.";
   const names = colors.map((color) => color.name.trim().toLocaleLowerCase("es"));
   if (new Set(names).size !== names.length) return "No puedes repetir el mismo color.";
   return null;
