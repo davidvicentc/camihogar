@@ -10,8 +10,8 @@ export default function manifest(): MetadataRoute.Manifest {
       "Muebles con diseño cálido, personalizables y hechos en Venezuela.",
     start_url: "/",
     display: "standalone",
-    background_color: "#25160F",
-    theme_color: "#25160F",
+    background_color: "#FFFFFF",
+    theme_color: "#FFFFFF",
     lang: "es-VE",
     icons: [
       { src: "/icon-192.png", sizes: "192x192", type: "image/png" },
