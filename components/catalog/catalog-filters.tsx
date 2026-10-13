@@ -92,6 +92,9 @@ export function CatalogFilters({ priceRange, total, categories }: CatalogFilters
   const searchParams = useSearchParams();
 
   const activeCategorySlug = searchParams.get("categoria") ?? "";
+  const activeCategoryName =
+    categories.find((category) => category.slug === activeCategorySlug)?.name ??
+    "Todo el catálogo";
 
   // Rango real del slider (evita un track degenerado si min === max)
   const sliderMin = priceRange.min;
@@ -199,7 +202,7 @@ export function CatalogFilters({ priceRange, total, categories }: CatalogFilters
   return (
     <div className="flex items-center gap-3">
       {/* Acceso rápido + vista completa. La tira conserva el acceso inmediato sin esconder la arquitectura. */}
-      <div className="grid flex-1 grid-cols-2 gap-2 py-1 sm:flex sm:flex-wrap sm:items-center">
+      <div className="hidden flex-1 flex-wrap items-center gap-2 py-1 sm:flex">
         <CategoryChip active={!activeCategorySlug} onClick={() => setCategory(null)}>
           Todo
         </CategoryChip>
@@ -212,6 +215,17 @@ export function CatalogFilters({ priceRange, total, categories }: CatalogFilters
             {category.name}
           </CategoryChip>
         ))}
+      </div>
+
+      <div className="flex min-w-0 flex-1 items-center gap-2 sm:hidden">
+        <div className="min-w-0 flex-1 rounded-2xl border border-brand-dark/10 bg-brand-card px-3 py-2">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-brand-taupe">
+            Viendo
+          </p>
+          <p className="truncate text-sm font-semibold text-brand-dark">
+            {activeCategoryName}
+          </p>
+        </div>
       </div>
 
       <Dialog open={categoriesOpen} onOpenChange={setCategoriesOpen}>

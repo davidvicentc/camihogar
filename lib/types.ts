@@ -142,6 +142,7 @@ export interface ProductInput {
 
 export interface CatalogFilters {
   category?: Category;
+  categoryId?: string;
   minPrice?: number;
   maxPrice?: number;
   inStock?: boolean;

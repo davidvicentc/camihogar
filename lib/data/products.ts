@@ -121,7 +121,12 @@ async function queryProducts(
   await connectDB();
   const query: FilterQuery<Product> = {};
 
-    if (filters.category) query.category = filters.category;
+    if (filters.categoryId) {
+      query.categoryId = filters.categoryId;
+    } else if (filters.category) {
+      const escapedCategory = filters.category.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      query.category = { $regex: `^${escapedCategory}$`, $options: "i" };
+    }
     if (filters.inStock !== undefined) query.inStock = filters.inStock;
     if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
       query.basePrice = {};

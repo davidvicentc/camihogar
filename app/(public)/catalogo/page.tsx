@@ -35,6 +35,7 @@ export default async function CatalogoPage({
   const selectedCategory = categories.find((category) => category.slug === sp.categoria);
   const filters: Filters = {
     category: selectedCategory?.name ?? (sp.categoria ? categoryFromSlug(sp.categoria) : undefined),
+    categoryId: selectedCategory?._id,
     minPrice: parsePrice(sp.precioMin),
     maxPrice: parsePrice(sp.precioMax),
     inStock: sp.disponibles === "1" ? true : undefined,
