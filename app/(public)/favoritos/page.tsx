@@ -28,7 +28,7 @@ export default function FavoritosPage() {
   const whatsappHref = React.useMemo(() => {
     const lines = [
       "¡Hola CamiHogar! Me enamoré de estos muebles de su catálogo:",
-      ...items.map((item) => `- ${item.title} (${formatPrice(item.basePrice)})`),
+      ...items.map((item) => `- ${item.title} (${formatPrice(item.basePrice)} + IVA)`),
       "¿Me pueden dar más información?",
     ];
     return buildWhatsAppLink(lines.join("\n"));

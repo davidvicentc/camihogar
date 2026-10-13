@@ -34,7 +34,7 @@ export function productInquiryLink(
     : "";
   const message = `¡Hola CamiHogar! Estoy interesado en *${product.title}*.${variantLine}${colorLine}${featuresLines}\n- Precio: ${formatPrice(
     price
-  )}\nVer producto: ${url}`;
+  )} + IVA\nVer producto: ${url}`;
   return whatsappNumber ? buildWhatsAppLinkForNumber(message, whatsappNumber) : buildWhatsAppLink(message);
 }
 
@@ -56,7 +56,7 @@ export function customOrderLink(summary: CustomizationSummary): string {
     `- Tela/Tapizado: ${summary.fabricName ?? "Sin preferencia"}`,
     `- Acabado: ${summary.finishName ?? "Sin preferencia"}`,
     `- Configuración: ${summary.configurationLabel ?? "Estándar"}`,
-    `- Precio Estimado: ${formatPrice(summary.totalPrice)}`,
+    `- Precio Estimado: ${formatPrice(summary.totalPrice)} + IVA`,
     `Link de mi diseño: ${url}`,
   ];
   return buildWhatsAppLink(lines.join("\n"));

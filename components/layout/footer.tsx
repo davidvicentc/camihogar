@@ -9,6 +9,7 @@ import { getSiteSettings } from "@/lib/data/settings";
 import { buildWhatsAppLinkForNumber } from "@/lib/whatsapp";
 
 const HELP_LINKS = [
+  { label: "Preguntas frecuentes", href: "/preguntas-frecuentes" },
   { label: "Garantía", href: "#" },
   { label: "Entregas", href: "#" },
   { label: "Contacto", href: "#" },

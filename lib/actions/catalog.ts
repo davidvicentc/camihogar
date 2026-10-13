@@ -89,7 +89,8 @@ export async function deleteCategory(id: string): Promise<ActionResult> {
 
     await connectDB();
     if (await ProductModel.exists({ categoryId: id })) return { ok: false, error: "No puedes borrar una categoría usada por productos." };
-    await CategoryModel.findByIdAndDelete(id);
+    const deleted = await CategoryModel.findByIdAndDelete(id);
+    if (!deleted) return { ok: false, error: "La categoría ya no existe o no se pudo encontrar." };
     refreshCatalog();
     return { ok: true };
   } catch (error) {

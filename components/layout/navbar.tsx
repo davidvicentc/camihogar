@@ -17,6 +17,7 @@ const NAV_LINKS = [
   { label: "Inicio", href: "/" },
   { label: "Catálogo", href: "/catalogo" },
   { label: "Favoritos", href: "/favoritos" },
+  { label: "Preguntas frecuentes", href: "/preguntas-frecuentes" },
 ] as const;
 
 const WHATSAPP_HREF = `https://wa.me/${

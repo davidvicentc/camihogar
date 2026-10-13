@@ -3,7 +3,7 @@
 import * as React from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { SlidersHorizontal } from "lucide-react";
+import { List, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
@@ -24,6 +24,14 @@ import {
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { cn, formatPrice } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 const SORT_OPTIONS = [
   { value: "recent", label: "Más recientes" },
@@ -91,6 +99,7 @@ export function CatalogFilters({ priceRange, total, categories }: CatalogFilters
   const sliderStep = Math.max(1, Math.round((sliderMax - sliderMin) / 100));
 
   const [open, setOpen] = React.useState(false);
+  const [categoriesOpen, setCategoriesOpen] = React.useState(false);
   const [draftPrice, setDraftPrice] = React.useState<[number, number]>([
     sliderMin,
     sliderMax,
@@ -189,7 +198,7 @@ export function CatalogFilters({ priceRange, total, categories }: CatalogFilters
 
   return (
     <div className="flex items-center gap-3">
-      {/* Chips de categoría, scroll horizontal en móvil */}
+      {/* Acceso rápido + vista completa. La tira conserva el acceso inmediato sin esconder la arquitectura. */}
       <div className="scrollbar-hide -mx-4 flex flex-1 items-center gap-2 overflow-x-auto px-4 py-1 sm:mx-0 sm:px-0">
         <CategoryChip active={!activeCategorySlug} onClick={() => setCategory(null)}>
           Todo
@@ -204,6 +213,28 @@ export function CatalogFilters({ priceRange, total, categories }: CatalogFilters
           </CategoryChip>
         ))}
       </div>
+
+      <Dialog open={categoriesOpen} onOpenChange={setCategoriesOpen}>
+        <DialogTrigger asChild>
+          <Button variant="outline" size="sm" className="h-10 shrink-0 rounded-full bg-brand-card px-4">
+            <List className="h-4 w-4" aria-hidden="true" />
+            <span className="hidden sm:inline">Ver categorías</span>
+            <span className="sm:hidden">Categorías</span>
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader className="text-left">
+            <DialogTitle>Explora por categoría</DialogTitle>
+            <DialogDescription>Elige una categoría para ver sus muebles.</DialogDescription>
+          </DialogHeader>
+          <div className="grid max-h-[60vh] gap-2 overflow-y-auto pr-1 sm:grid-cols-2">
+            <button type="button" onClick={() => { setCategory(null); setCategoriesOpen(false); }} aria-pressed={!activeCategorySlug} className={cn("min-h-12 rounded-xl border px-4 text-left text-sm font-semibold transition-colors", !activeCategorySlug ? "border-brand-dark bg-brand-dark text-brand-bg" : "border-brand-dark/10 bg-brand-card text-brand-dark hover:border-brand-accent")}>Todo el catálogo</button>
+            {categories.map((category) => (
+              <button key={category.slug} type="button" onClick={() => { setCategory(category.slug); setCategoriesOpen(false); }} aria-pressed={activeCategorySlug === category.slug} className={cn("min-h-12 rounded-xl border px-4 text-left text-sm font-semibold transition-colors", activeCategorySlug === category.slug ? "border-brand-dark bg-brand-dark text-brand-bg" : "border-brand-dark/10 bg-brand-card text-brand-dark hover:border-brand-accent")}>{category.name}</button>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Filtros avanzados en sheet inferior */}
       <Sheet open={open} onOpenChange={handleOpenChange}>

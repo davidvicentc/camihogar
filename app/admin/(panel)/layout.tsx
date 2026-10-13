@@ -55,6 +55,7 @@ const NAV_LINKS: readonly GrupoNav[] = [
       { href: "/admin/opciones-colchones", label: "Opciones de colchones", icon: BedDouble, capacidades: ["categories.manage"] },
       { href: "/admin/marcas", label: "Marcas", icon: BadgeCheck, capacidades: ["brands.manage"] },
       { href: "/admin/configuracion", label: "Configuración", icon: Settings, capacidades: ["settings.manage"] },
+      { href: "/admin/preguntas-frecuentes", label: "Preguntas frecuentes", icon: CircleHelp, capacidades: ["settings.manage"] },
       { href: "/admin/usuarios", label: "Usuarios", icon: UserRound, capacidades: ["users.manage"] },
       { href: "/admin/ayuda/productos", label: "Ayuda de productos", icon: CircleHelp, capacidades: ["products.read"] },
     ],

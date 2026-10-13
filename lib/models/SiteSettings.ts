@@ -7,6 +7,7 @@ const SiteSettingsSchema = new Schema(
     instagramUrl: { type: String, default: "" },
     facebookUrl: { type: String, default: "" },
     tagline: { type: String, default: "" },
+    faqIntro: { type: String, default: "Respuestas claras sobre nuestros muebles, pedidos, entregas y garantías." },
     warrantyText: { type: String, default: "" },
     deliveryText: { type: String, default: "" },
     email: { type: String, default: "" },

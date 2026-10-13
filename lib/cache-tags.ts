@@ -5,6 +5,7 @@ export const CACHE_TAGS = {
   settings: "site-settings",
   colors: "color-presets",
   mattressOptions: "mattress-options",
+  faq: "faq",
 } as const;
 
 /** Cinco minutos mantiene fresca la tienda sin consultar MongoDB en cada visita. */

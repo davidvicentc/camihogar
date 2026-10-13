@@ -28,6 +28,7 @@ const getSiteSettingsCached = unstable_cache(async () => {
       instagramUrl: settings?.instagramUrl || "https://instagram.com/camihogar",
       facebookUrl: settings?.facebookUrl || "",
       tagline: settings?.tagline || "Muebles que abrazan tu hogar",
+      faqIntro: settings?.faqIntro || "Respuestas claras sobre nuestros muebles, pedidos, entregas y garantías.",
       warrantyText: settings?.warrantyText || "Garantía CamiHogar de 2 años",
       deliveryText: settings?.deliveryText || "Entrega e instalación en toda Venezuela",
       email: settings?.email || "hola@camihogar.com",
@@ -76,6 +77,6 @@ export async function getSiteSettings() {
   try {
     return await getSiteSettingsCached();
   } catch {
-    return { whatsappNumber: fallbackWhatsAppNumber(), instagramUrl: "https://instagram.com/camihogar", facebookUrl: "", tagline: "Muebles que abrazan tu hogar", warrantyText: "Garantía CamiHogar de 2 años", deliveryText: "Entrega e instalación en toda Venezuela", email: "hola@camihogar.com", homeCardStyle: DEFAULT_CARD_STYLE, categoryCardStyles: Object.fromEntries(CARD_PROFILE_OPTIONS.map(({ key }) => [key, DEFAULT_CARD_STYLE])) as Record<CardProfileKey, CardStyle>, homeProductOrder: { bestsellers: { sort: "price-asc" as const, productIds: [] }, featured: { sort: "price-asc" as const, productIds: [] } } };
+    return { whatsappNumber: fallbackWhatsAppNumber(), instagramUrl: "https://instagram.com/camihogar", facebookUrl: "", tagline: "Muebles que abrazan tu hogar", faqIntro: "Respuestas claras sobre nuestros muebles, pedidos, entregas y garantías.", warrantyText: "Garantía CamiHogar de 2 años", deliveryText: "Entrega e instalación en toda Venezuela", email: "hola@camihogar.com", homeCardStyle: DEFAULT_CARD_STYLE, categoryCardStyles: Object.fromEntries(CARD_PROFILE_OPTIONS.map(({ key }) => [key, DEFAULT_CARD_STYLE])) as Record<CardProfileKey, CardStyle>, homeProductOrder: { bestsellers: { sort: "price-asc" as const, productIds: [] }, featured: { sort: "price-asc" as const, productIds: [] } } };
   }
 }
