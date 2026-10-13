@@ -98,12 +98,13 @@ export const BRAND = {
   name: "CamiHogar",
   legalName: "CamiHogar Muebles",
   tagline: "Muebles que abrazan tu hogar",
-  instagram: "https://instagram.com/camihogar",
+  instagram: "https://instagram.com/colchonescamihogarvzla_/",
   warranty: "Garantía CamiHogar de 2 años",
   delivery: "Entrega e instalación en toda Venezuela",
   email: "hola@camihogar.com",
-  phone: "+58 412-000-0000",
-  location: "Valencia, Venezuela",
+  phone: "+58 412-7322091",
+  location: "C. Rivas, Guatire, Miranda, Venezuela",
+  serviceAreas: ["Guatire", "Guarenas", "Caracas", "Higuerote", "Miranda", "Venezuela"],
 } as const;
 
 export const BRAND_CONFIG = BRAND;

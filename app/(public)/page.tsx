@@ -7,6 +7,74 @@ import { CategoryCarousel } from "@/components/home/category-carousel";
 import { Bestsellers } from "@/components/home/bestsellers";
 import { FeaturedStrip } from "@/components/home/featured-strip";
 import { TrustBadges } from "@/components/home/trust-badges";
+import { getSiteUrl } from "@/lib/utils";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Mueblería en Guatire, Guarenas y Caracas",
+  description:
+    "Compra muebles en Guatire y Guarenas con entregas en Caracas, Higuerote y toda Venezuela. Salas, comedores, camas, colchones y muebles a medida.",
+  alternates: { canonical: "/" },
+};
+
+const localBusinessSchema = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "@id": `${getSiteUrl()}/#business`,
+  name: "CAMIHOGAR GUATIRE",
+  url: getSiteUrl(),
+  image: `${getSiteUrl()}/camihogarlogo.jpeg`,
+  description: "Colchonería y mueblería en Guatire con entregas en Guarenas, Caracas, Higuerote y toda Venezuela.",
+  telephone: "+584127322091",
+  email: "hola@camihogar.com",
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: "C. Rivas",
+    addressLocality: "Guatire",
+    addressRegion: "Miranda",
+    postalCode: "1221",
+    addressCountry: "VE",
+  },
+  location: [
+    {
+      "@type": "FurnitureStore",
+      name: "CAMIHOGAR GUATIRE",
+      telephone: "+584127322091",
+      address: {
+        "@type": "PostalAddress",
+        streetAddress: "C. Rivas",
+        addressLocality: "Guatire",
+        addressRegion: "Miranda",
+        postalCode: "1221",
+        addressCountry: "VE",
+      },
+    },
+    {
+      "@type": "FurnitureStore",
+      name: "CAMIHOGAR CARACAS",
+      telephone: "+584127322091",
+      address: {
+        "@type": "PostalAddress",
+        streetAddress: "Centro Empresarial Millennium Mall, Av. Rómulo Gallegos, Qta 10-27 C. La Venezolana",
+        addressLocality: "Caracas",
+        addressRegion: "Miranda",
+        postalCode: "1071",
+        addressCountry: "VE",
+      },
+    },
+  ],
+  areaServed: ["Guatire", "Guarenas", "Caracas", "Higuerote", "Miranda", "Venezuela"],
+  aggregateRating: {
+    "@type": "AggregateRating",
+    ratingValue: "4.5",
+    reviewCount: "39",
+  },
+  priceRange: "$$",
+  sameAs: [
+    "https://instagram.com/colchonescamihogarvzla_/",
+    "https://instagram.com/colchonescamihogargyg/",
+  ],
+};
 
 export const revalidate = 300;
 
@@ -42,6 +110,7 @@ export default async function HomePage() {
 
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }} />
       <Hero />
       <div className="space-y-14 py-12 md:space-y-20 md:py-16">
         <CategoryCarousel categories={categories} />

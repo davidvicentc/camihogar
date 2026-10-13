@@ -12,6 +12,7 @@ import { MobileDrawer } from "@/components/layout/mobile-drawer";
 import { cn } from "@/lib/utils";
 import { useWhatsAppNumber } from "@/components/layout/whatsapp-settings-provider";
 import { buildWhatsAppLinkForNumber } from "@/lib/whatsapp";
+import type { CatalogOptionDTO } from "@/lib/data/catalog";
 
 const NAV_LINKS = [
   { label: "Inicio", href: "/" },
@@ -24,7 +25,7 @@ const WHATSAPP_HREF = `https://wa.me/${
   process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "584120000000"
 }`;
 
-export function Navbar() {
+export function Navbar({ categories }: { categories: Pick<CatalogOptionDTO, "name" | "slug">[] }) {
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = React.useState(false);
   const [scrolled, setScrolled] = React.useState(false);
@@ -137,7 +138,7 @@ export function Navbar() {
         />
       </header>
 
-      <MobileDrawer open={drawerOpen} onOpenChange={setDrawerOpen} />
+      <MobileDrawer categories={categories} open={drawerOpen} onOpenChange={setDrawerOpen} />
     </>
   );
 }

@@ -14,7 +14,8 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Logo, LogoMark } from "@/components/brand/logo";
-import { BRAND, CATEGORY_META } from "@/lib/constants";
+import { BRAND } from "@/lib/constants";
+import type { CatalogOptionDTO } from "@/lib/data/catalog";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
 import { cn } from "@/lib/utils";
 import { useWhatsAppNumber } from "@/components/layout/whatsapp-settings-provider";
@@ -29,9 +30,10 @@ const NAV_LINKS = [
 interface MobileDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  categories: Pick<CatalogOptionDTO, "name" | "slug">[];
 }
 
-export function MobileDrawer({ open, onOpenChange }: MobileDrawerProps) {
+export function MobileDrawer({ open, onOpenChange, categories }: MobileDrawerProps) {
   const pathname = usePathname();
   const whatsappNumber = useWhatsAppNumber();
   const close = () => onOpenChange(false);
@@ -93,15 +95,15 @@ export function MobileDrawer({ open, onOpenChange }: MobileDrawerProps) {
           <p className="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-brand-accent">
             Categorías
           </p>
-          <ul className="mt-3 flex flex-col gap-0.5">
-            {CATEGORY_META.map((category) => (
+          <ul className="mt-3 grid grid-cols-2 gap-1">
+            {categories.map((category) => (
               <li key={category.slug}>
                 <Link
                   href={`/catalogo?categoria=${category.slug}`}
                   onClick={close}
-                  className="block rounded-xl px-2 py-2 text-sm tracking-tight text-brand-taupe transition-colors hover:bg-brand-dark/5 hover:text-brand-dark"
+                  className="block rounded-xl px-2 py-2.5 text-sm tracking-tight text-brand-taupe transition-colors hover:bg-brand-dark/5 hover:text-brand-dark"
                 >
-                  {category.label}
+                  {category.name}
                 </Link>
               </li>
             ))}

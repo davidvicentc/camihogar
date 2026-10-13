@@ -199,7 +199,7 @@ export function CatalogFilters({ priceRange, total, categories }: CatalogFilters
   return (
     <div className="flex items-center gap-3">
       {/* Acceso rápido + vista completa. La tira conserva el acceso inmediato sin esconder la arquitectura. */}
-      <div className="scrollbar-hide -mx-4 flex flex-1 items-center gap-2 overflow-x-auto px-4 py-1 sm:mx-0 sm:px-0">
+      <div className="grid flex-1 grid-cols-2 gap-2 py-1 sm:flex sm:flex-wrap sm:items-center">
         <CategoryChip active={!activeCategorySlug} onClick={() => setCategory(null)}>
           Todo
         </CategoryChip>

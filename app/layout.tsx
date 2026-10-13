@@ -22,7 +22,17 @@ export const metadata: Metadata = {
     template: `%s | ${BRAND.name}`,
   },
   description:
-    "Muebles con diseño cálido para salas, comedores, dormitorios y más. Personaliza telas, acabados y medidas, y pide por WhatsApp.",
+    "Mueblería en Guatire y Guarenas con entrega en Caracas, Higuerote y toda Venezuela. Salas, comedores, camas, colchones y muebles a medida.",
+  keywords: [
+    "mueblería Guatire",
+    "mueblería Guarenas",
+    "mueblería Caracas",
+    "mueblería Higuerote",
+    "muebles en Venezuela",
+    "salas y comedores",
+    "camas y colchones",
+    "muebles a medida",
+  ],
   applicationName: BRAND.name,
   appleWebApp: {
     capable: true,
@@ -39,7 +49,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: `${BRAND.name} — ${BRAND.tagline}`,
     description:
-      "Muebles con diseño cálido. Personaliza telas, acabados y medidas, y pide por WhatsApp.",
+      "Mueblería en Guatire y Guarenas con entrega en Caracas, Higuerote y toda Venezuela. Muebles que abrazan tu hogar.",
     type: "website",
     locale: "es_VE",
     siteName: BRAND.name,

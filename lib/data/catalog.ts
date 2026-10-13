@@ -1,7 +1,6 @@
 import { connectDB } from "@/lib/mongodb";
 import BrandModel from "@/lib/models/Brand";
 import CategoryModel from "@/lib/models/Category";
-import { PRODUCT_CATEGORY_OPTIONS } from "@/lib/constants";
 import { unstable_cache } from "next/cache";
 import { CACHE_TAGS, PUBLIC_CACHE_SECONDS } from "@/lib/cache-tags";
 
@@ -39,18 +38,7 @@ const getCategoriesCached = unstable_cache(async (includeInactive: boolean): Pro
     const query = includeInactive ? {} : { isActive: true };
     const docs = await CategoryModel.find(query).sort({ name: 1 }).lean();
 
-    if (docs.length > 0) return docs.map(serialize);
-
-    if (includeInactive) return [];
-
-    return PRODUCT_CATEGORY_OPTIONS.map((category, index) => ({
-      _id: `default-${index}`,
-      name: category.label,
-      slug: category.slug,
-      isActive: true,
-      description: category.description,
-      image: category.image,
-    }));
+    return docs.map(serialize);
 }, ["catalog-categories"], { revalidate: PUBLIC_CACHE_SECONDS, tags: [CACHE_TAGS.catalog] });
 
 export async function getCategories(includeInactive = false): Promise<CatalogOptionDTO[]> {

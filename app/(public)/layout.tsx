@@ -6,10 +6,13 @@ import { FavoritesHydration } from "@/components/layout/favorites-hydration";
 import { GoogleAnalytics } from "@/components/layout/google-analytics";
 import { VisitorPresenceTracker } from "@/components/layout/visitor-presence-tracker";
 import { WhatsAppSettingsProvider } from "@/components/layout/whatsapp-settings-provider";
+import { getCategories } from "@/lib/data/catalog";
 
-export default function PublicLayout({
+export default async function PublicLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const categories = await getCategories();
+
   return (
     <WhatsAppSettingsProvider>
       <Suspense fallback={null}>
@@ -18,7 +21,7 @@ export default function PublicLayout({
       <VisitorPresenceTracker />
       <div className="flex min-h-screen flex-col">
       <FavoritesHydration />
-      <Navbar />
+      <Navbar categories={categories} />
       {/* pb en móvil deja espacio para la Bottom App Bar fija */}
       <main className="flex-1 pb-24 md:pb-0">{children}</main>
       <Footer />
