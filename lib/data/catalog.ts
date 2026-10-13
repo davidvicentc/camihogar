@@ -1,7 +1,7 @@
 import { connectDB } from "@/lib/mongodb";
 import BrandModel from "@/lib/models/Brand";
 import CategoryModel from "@/lib/models/Category";
-import { PRODUCT_CATEGORY_OPTIONS, PRODUCT_FORM_CATEGORIES } from "@/lib/constants";
+import { PRODUCT_CATEGORY_OPTIONS } from "@/lib/constants";
 import { unstable_cache } from "next/cache";
 import { CACHE_TAGS, PUBLIC_CACHE_SECONDS } from "@/lib/cache-tags";
 
@@ -36,9 +36,6 @@ export async function getBrands(includeInactive = false): Promise<CatalogOptionD
 
 const getCategoriesCached = unstable_cache(async (includeInactive: boolean): Promise<CatalogOptionDTO[]> => {
     await connectDB();
-    await CategoryModel.bulkWrite(PRODUCT_FORM_CATEGORIES.map((category) => ({
-      updateOne: { filter: { slug: category.slug }, update: { $setOnInsert: { name: category.name, slug: category.slug, description: category.description, isActive: true } }, upsert: true },
-    })));
     const query = includeInactive ? {} : { isActive: true };
     const docs = await CategoryModel.find(query).sort({ name: 1 }).lean();
 
