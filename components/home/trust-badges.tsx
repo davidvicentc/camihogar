@@ -1,33 +1,18 @@
 import { ShieldCheck, Truck } from "lucide-react";
 import { SiWhatsapp } from "@icons-pack/react-simple-icons";
-import { BRAND } from "@/lib/constants";
-
-const BADGES = [
-  {
-    icon: ShieldCheck,
-    title: "Compra tranquila",
-    text: BRAND.warranty,
-  },
-  {
-    icon: Truck,
-    title: "Hasta tu puerta",
-    text: BRAND.delivery,
-  },
-  {
-    icon: SiWhatsapp,
-    title: "Atención cercana",
-    text: "Pide y coordina por WhatsApp",
-  },
-] as const;
-
-export function TrustBadges() {
+export function TrustBadges({ warrantyText, deliveryText }: { warrantyText: string; deliveryText: string }) {
+  const badges = [
+    { icon: ShieldCheck, title: "Compra tranquila", text: warrantyText },
+    { icon: Truck, title: "Hasta tu puerta", text: deliveryText },
+    { icon: SiWhatsapp, title: "Atención cercana", text: "Pide y coordina por WhatsApp" },
+  ];
   return (
     <section
       aria-label="Beneficios de comprar en CamiHogar"
       className="mx-auto w-full max-w-6xl px-4 md:px-6"
     >
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 md:gap-5">
-        {BADGES.map((badge) => (
+        {badges.map((badge) => (
           <div
             key={badge.title}
             className="group relative flex items-center gap-4 overflow-hidden rounded-[1.5rem] border border-brand-dark/[0.06] bg-brand-card p-4 shadow-warm-sm transition-all duration-300 hover:-translate-y-1 hover:border-brand-accent/20 hover:shadow-warm md:p-5"

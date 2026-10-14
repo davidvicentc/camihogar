@@ -22,7 +22,7 @@ const item: Variants = {
   },
 };
 
-export function Bestsellers({ products, cardStyles }: { products: ProductDTO[]; cardStyles?: Parameters<typeof ProductCard>[0]["cardStyles"] }) {
+export function Bestsellers({ products, cardStyles, taxNoteText }: { products: ProductDTO[]; cardStyles?: Parameters<typeof ProductCard>[0]["cardStyles"]; taxNoteText?: string }) {
   if (products.length === 0) return null;
 
   return (
@@ -45,7 +45,7 @@ export function Bestsellers({ products, cardStyles }: { products: ProductDTO[]; 
       >
         {products.map((product, index) => (
           <motion.div key={product._id} variants={item}>
-            <ProductCard product={product} priority={index < 2} className="h-full" cardStyles={cardStyles} />
+            <ProductCard product={product} priority={index < 2} className="h-full" cardStyles={cardStyles} taxNoteText={taxNoteText} />
           </motion.div>
         ))}
       </motion.div>

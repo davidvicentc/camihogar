@@ -6,7 +6,6 @@ import { ShieldCheck, Star, Truck } from "lucide-react";
 import { SiWhatsapp } from "@icons-pack/react-simple-icons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { BRAND } from "@/lib/constants";
 import { productInquiryLink } from "@/lib/whatsapp";
 import { trackEvent } from "@/lib/track";
 import { cn, formatPrice } from "@/lib/utils";
@@ -23,7 +22,7 @@ const fadeUp = {
  * Columna de información de la ficha de producto: título, rating, precio,
  * vista previa de variaciones y CTAs de WhatsApp / personalizador.
  */
-export function ProductInfo({ product, selectedColorIndex = 0, onColorChange }: { product: ProductDTO; selectedColorIndex?: number; onColorChange?: (index: number) => void }) {
+export function ProductInfo({ product, selectedColorIndex = 0, onColorChange, taxNoteText }: { product: ProductDTO; selectedColorIndex?: number; onColorChange?: (index: number) => void; taxNoteText: string }) {
   const whatsappNumber = useWhatsAppNumber();
   const initialVariantIndex =
     product.variants && product.variants.length > 0
@@ -95,7 +94,7 @@ export function ProductInfo({ product, selectedColorIndex = 0, onColorChange }: 
           <fieldset className="space-y-3">
             <legend className="text-base font-semibold text-brand-dark">2. Elige la configuración</legend>
             <div className="grid gap-3 sm:grid-cols-2">
-              {configurationsForSize.map(({ variant, index }) => { const features = variant.mattressFeatures ?? product.mattressFeatures; return <button key={`${variant.name}-${index}`} type="button" onClick={() => setSelectedVariantIndex(index)} aria-pressed={selectedVariantIndex === index} className={cn("min-h-[94px] rounded-2xl border px-4 py-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent", selectedVariantIndex === index ? "border-brand-accent bg-brand-accent/10 shadow-warm-sm" : "border-brand-dark/15 bg-brand-card hover:border-brand-accent/50")}><span className="flex items-start justify-between gap-3"><span><span className="block font-semibold text-brand-dark">{features?.pillow ?? "Configuración estándar"}</span><span className="mt-1 block text-xs leading-relaxed text-brand-taupe">{features ? `${features.model} · ${features.composition} · ${features.warrantyYears} años` : variant.sku || "Disponible"}</span></span><span className="shrink-0 font-bold tabular-nums text-brand-accent">{formatPrice(variant.price)}</span></span></button>; })}
+              {configurationsForSize.map(({ variant, index }) => { const features = variant.mattressFeatures ?? product.mattressFeatures; return <button key={`${variant.name}-${index}`} type="button" onClick={() => setSelectedVariantIndex(index)} aria-pressed={selectedVariantIndex === index} className={cn("min-h-[94px] rounded-2xl border px-4 py-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent", selectedVariantIndex === index ? "border-brand-accent bg-brand-accent/10 shadow-warm-sm" : "border-brand-dark/15 bg-brand-card hover:border-brand-accent/50")}><span className="flex items-start justify-between gap-3"><span><span className="block font-semibold text-brand-dark">{features?.pillow ?? "Configuración estándar"}</span><span className="mt-1 block text-xs leading-relaxed text-brand-taupe">{features ? `${features.model} · ${features.composition} · Calidad garantizada` : variant.sku || "Disponible"}</span></span><span className="shrink-0 font-bold tabular-nums text-brand-accent">{formatPrice(variant.price)}</span></span></button>; })}
             </div>
           </fieldset>
         </motion.div>
@@ -183,6 +182,7 @@ export function ProductInfo({ product, selectedColorIndex = 0, onColorChange }: 
         <p className="text-3xl font-bold text-brand-dark lg:text-4xl">
           {formatPrice(activeVariantPrice)}
         </p>
+        <p className="text-xs text-brand-taupe">{taxNoteText}</p>
         {activeVariant && (
           <p className="text-sm text-brand-taupe">
             {activeVariant.name} · {activeVariant.sku || "SKU sin definir"}
@@ -211,7 +211,7 @@ export function ProductInfo({ product, selectedColorIndex = 0, onColorChange }: 
           <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
             <div><dt className="text-brand-taupe">Tipo</dt><dd className="font-semibold text-brand-dark">{(activeVariant?.mattressFeatures ?? product.mattressFeatures)!.model}</dd></div>
             <div><dt className="text-brand-taupe">Pillow</dt><dd className="font-semibold text-brand-dark">{(activeVariant?.mattressFeatures ?? product.mattressFeatures)!.pillow}</dd></div>
-            <div><dt className="text-brand-taupe">Garantía</dt><dd className="font-semibold text-brand-dark">{(activeVariant?.mattressFeatures ?? product.mattressFeatures)!.warrantyYears} años</dd></div>
+            <div><dt className="text-brand-taupe">Calidad</dt><dd className="font-semibold text-brand-dark">Garantizada</dd></div>
             <div><dt className="text-brand-taupe">Composición interna</dt><dd className="font-semibold text-brand-dark">{(activeVariant?.mattressFeatures ?? product.mattressFeatures)!.composition}</dd></div>
           </dl>
         </motion.section>
@@ -240,11 +240,11 @@ export function ProductInfo({ product, selectedColorIndex = 0, onColorChange }: 
       >
         <span className="flex items-center gap-2">
           <ShieldCheck className="h-4 w-4 shrink-0 text-brand-accent" aria-hidden="true" />
-          {BRAND.warranty}
+          Calidad garantizada
         </span>
         <span className="flex items-center gap-2">
           <Truck className="h-4 w-4 shrink-0 text-brand-accent" aria-hidden="true" />
-          {BRAND.delivery}
+          Entrega e instalación en toda Venezuela
         </span>
       </motion.div>
     </motion.div>

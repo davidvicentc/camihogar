@@ -29,8 +29,19 @@ const getSiteSettingsCached = unstable_cache(async () => {
       facebookUrl: settings?.facebookUrl || "",
       tagline: settings?.tagline || "Muebles que abrazan tu hogar",
       faqIntro: settings?.faqIntro || "Respuestas claras sobre nuestros muebles, pedidos, entregas y garantías.",
-      warrantyText: settings?.warrantyText || "Garantía CamiHogar de 2 años",
+      warrantyText: !settings?.warrantyText || settings.warrantyText === "Garantía CamiHogar de 2 años" ? "Calidad garantizada" : settings.warrantyText,
       deliveryText: settings?.deliveryText || "Entrega e instalación en toda Venezuela",
+      heroTitle: settings?.heroTitle || "SOMOS LA SOLUCIÓN PARA TU HOGAR",
+      heroSubtitle: settings?.heroSubtitle || "Explora nuestro catálogo de piezas cálidas para cada rincón de tu casa. Elige tu producto, revisa sus variantes y consúltanos directamente.",
+      heroEyebrow: settings?.heroEyebrow || "Hecho en Venezuela · Envíos a todo el país",
+      heroButtonText: settings?.heroButtonText || "Ver catálogo",
+      heroPrimaryStat: settings?.heroPrimaryStat || "+5000",
+      heroPrimaryStatLabel: settings?.heroPrimaryStatLabel || "hogares amoblados",
+      heroQualityStat: settings?.heroQualityStat || "Calidad",
+      heroQualityStatLabel: settings?.heroQualityStatLabel || "garantizada",
+      heroCountryStat: settings?.heroCountryStat || "100%",
+      heroCountryStatLabel: settings?.heroCountryStatLabel || "hecho en Venezuela",
+      taxNoteText: settings?.taxNoteText || "Precio no incluye IVA",
       email: settings?.email || "hola@camihogar.com",
       homeCardStyle: {
         showBrand: settings?.homeCardStyle?.showBrand ?? true,
@@ -39,6 +50,7 @@ const getSiteSettingsCached = unstable_cache(async () => {
         showRating: settings?.homeCardStyle?.showRating ?? true,
         showVariants: settings?.homeCardStyle?.showVariants ?? true,
         showWhatsapp: settings?.homeCardStyle?.showWhatsapp ?? true,
+        showTaxNote: settings?.homeCardStyle?.showTaxNote ?? true,
         scale: settings?.homeCardStyle?.scale ?? "standard",
         accentColor: settings?.homeCardStyle?.accentColor ?? "#B45338",
         imageRatio: settings?.homeCardStyle?.imageRatio ?? "square",
@@ -77,6 +89,6 @@ export async function getSiteSettings() {
   try {
     return await getSiteSettingsCached();
   } catch {
-    return { whatsappNumber: fallbackWhatsAppNumber(), instagramUrl: "https://instagram.com/camihogar", facebookUrl: "", tagline: "Muebles que abrazan tu hogar", faqIntro: "Respuestas claras sobre nuestros muebles, pedidos, entregas y garantías.", warrantyText: "Garantía CamiHogar de 2 años", deliveryText: "Entrega e instalación en toda Venezuela", email: "hola@camihogar.com", homeCardStyle: DEFAULT_CARD_STYLE, categoryCardStyles: Object.fromEntries(CARD_PROFILE_OPTIONS.map(({ key }) => [key, DEFAULT_CARD_STYLE])) as Record<CardProfileKey, CardStyle>, homeProductOrder: { bestsellers: { sort: "price-asc" as const, productIds: [] }, featured: { sort: "price-asc" as const, productIds: [] } } };
+    return { whatsappNumber: fallbackWhatsAppNumber(), instagramUrl: "https://instagram.com/camihogar", facebookUrl: "", tagline: "SOMOS LA SOLUCIÓN PARA TU HOGAR", faqIntro: "Respuestas claras sobre nuestros muebles, pedidos, entregas y garantías.", warrantyText: "Calidad garantizada", deliveryText: "Entrega e instalación en toda Venezuela", email: "hola@camihogar.com", heroTitle: "SOMOS LA SOLUCIÓN PARA TU HOGAR", heroSubtitle: "Explora nuestro catálogo de piezas cálidas para cada rincón de tu casa. Elige tu producto, revisa sus variantes y consúltanos directamente.", heroEyebrow: "Hecho en Venezuela · Envíos a todo el país", heroButtonText: "Ver catálogo", heroPrimaryStat: "+5000", heroPrimaryStatLabel: "hogares amoblados", heroQualityStat: "Calidad", heroQualityStatLabel: "garantizada", heroCountryStat: "100%", heroCountryStatLabel: "hecho en Venezuela", taxNoteText: "Precio no incluye IVA", homeCardStyle: DEFAULT_CARD_STYLE, categoryCardStyles: Object.fromEntries(CARD_PROFILE_OPTIONS.map(({ key }) => [key, DEFAULT_CARD_STYLE])) as Record<CardProfileKey, CardStyle>, homeProductOrder: { bestsellers: { sort: "price-asc" as const, productIds: [] }, featured: { sort: "price-asc" as const, productIds: [] } } };
   }
 }

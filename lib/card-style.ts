@@ -8,7 +8,7 @@ export const CARD_PROFILE_OPTIONS = [
 export type CardProfileKey = (typeof CARD_PROFILE_OPTIONS)[number]["key"];
 
 export type CardStyle = {
-  showBrand: boolean; showCategory: boolean; showDescription: boolean; showRating: boolean; showVariants: boolean; showWhatsapp: boolean;
+  showBrand: boolean; showCategory: boolean; showDescription: boolean; showRating: boolean; showVariants: boolean; showWhatsapp: boolean; showTaxNote: boolean;
   scale: "compact" | "standard" | "large"; accentColor: string; imageRatio: "portrait" | "square" | "landscape";
   titleSize: "small" | "medium" | "large"; priceSize: "small" | "medium" | "large"; cardBackground: string;
   textColor: string; mutedColor: string; borderColor: string; radius: "small" | "medium" | "large";
@@ -22,7 +22,7 @@ export type CardStyle = {
 export const PRODUCT_CARD_IMAGE_HEIGHT = 280;
 
 export const DEFAULT_CARD_STYLE: CardStyle = {
-  showBrand: true, showCategory: true, showDescription: true, showRating: true, showVariants: true, showWhatsapp: true,
+  showBrand: true, showCategory: true, showDescription: true, showRating: true, showVariants: true, showWhatsapp: true, showTaxNote: true,
   scale: "standard", accentColor: "#B45338", imageRatio: "square", titleSize: "medium", priceSize: "medium",
   cardBackground: "#FFFFFF", textColor: "#2B211B", mutedColor: "#88796D", borderColor: "#E9E1D9", radius: "large",
   imageHeight: PRODUCT_CARD_IMAGE_HEIGHT, cardPadding: 16, titleFontSize: 16, priceFontSize: 18, bodyFontSize: 12,

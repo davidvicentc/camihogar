@@ -23,13 +23,14 @@ const item: Variants = {
   },
 };
 
-const STATS = [
-  { value: "+500", label: "hogares amoblados" },
-  { value: "2 años", label: "de garantía" },
-  { value: "100%", label: "hecho en Venezuela" },
-] as const;
+type HeroContent = { title: string; subtitle: string; eyebrow: string; buttonText: string; primaryStat: string; primaryStatLabel: string; qualityStat: string; qualityStatLabel: string; countryStat: string; countryStatLabel: string };
 
-export function Hero() {
+export function Hero({ content }: { content: HeroContent }) {
+  const stats = [
+    { value: content.primaryStat, label: content.primaryStatLabel },
+    { value: content.qualityStat, label: content.qualityStatLabel },
+    { value: content.countryStat, label: content.countryStatLabel },
+  ];
   return (
     <section className="relative overflow-hidden bg-hero-gradient">
       {/* Móvil: la foto como fondo full-bleed con overlay oscuro para legibilidad */}
@@ -90,7 +91,7 @@ export function Hero() {
           <motion.div variants={item}>
             <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.08] px-3.5 py-1.5 text-xs font-medium tracking-tight text-brand-bg/90 backdrop-blur">
               <MapPin className="h-3.5 w-3.5 text-brand-accent" aria-hidden="true" />
-              Hecho en Venezuela · Envíos a todo el país
+              {content.eyebrow}
             </span>
           </motion.div>
 
@@ -109,22 +110,20 @@ export function Hero() {
             variants={item}
             className="max-w-2xl text-balance font-display text-[2.6rem] font-semibold leading-[1.03] tracking-tightest text-brand-bg sm:text-6xl md:text-7xl"
           >
-            Muebles que{" "}
-            <span className="text-gradient-ember">abrazan</span> tu hogar
+            {content.title}
           </motion.h1>
 
           <motion.p
             variants={item}
             className="max-w-xl text-pretty text-base leading-relaxed tracking-tight text-brand-bg/70 md:text-lg"
           >
-            Explora nuestro catálogo de piezas cálidas para cada rincón de tu casa.
-            Elige tu producto, revisa sus variantes y consúltanos directamente.
+            {content.subtitle}
           </motion.p>
 
           <motion.div variants={item} className="flex flex-col gap-3 pt-1 sm:flex-row">
             <Button asChild variant="accent" size="lg">
               <Link href="/catalogo">
-                Ver catálogo
+                {content.buttonText}
                 <ArrowRight aria-hidden="true" />
               </Link>
             </Button>
@@ -135,7 +134,7 @@ export function Hero() {
             variants={item}
             className="mt-4 flex w-full max-w-md items-stretch gap-5 border-t border-white/10 pt-6"
           >
-            {STATS.map((stat, index) => (
+            {stats.map((stat, index) => (
               <div key={stat.label} className="flex flex-1 items-center gap-5">
                 <div>
                   <dt className="sr-only">{stat.label}</dt>
@@ -148,7 +147,7 @@ export function Hero() {
                     </span>
                   </dd>
                 </div>
-                {index < STATS.length - 1 && (
+                {index < stats.length - 1 && (
                   <span
                     className="w-px self-stretch bg-gradient-to-b from-transparent via-brand-accent/40 to-transparent"
                     aria-hidden="true"
@@ -212,7 +211,7 @@ export function Hero() {
                   4.9 de 5
                 </span>
                 <span className="block text-xs leading-tight text-brand-taupe">
-                  +500 hogares felices
+                  {content.primaryStat} hogares felices
                 </span>
               </span>
             </motion.div>

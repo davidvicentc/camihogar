@@ -37,7 +37,7 @@ function uploadWithProgress(url: string, file: File, onProgress: (value: number)
   });
 }
 
-export function ProductImageUploader({ images, onChange, maxImages = MAX_IMAGES, compactLabel, compactHint }: { images: string[]; onChange: (images: string[]) => void; maxImages?: number; compactLabel?: string; compactHint?: string }) {
+export function ProductImageUploader({ images, onChange, maxImages = MAX_IMAGES, compactLabel, compactHint, deleteFromStorage = true }: { images: string[]; onChange: (images: string[]) => void; maxImages?: number; compactLabel?: string; compactHint?: string; deleteFromStorage?: boolean }) {
   const input = useRef<HTMLInputElement>(null);
   const originalImages = useRef(new Set(images));
   const [uploading, setUploading] = useState(false);
@@ -67,7 +67,7 @@ export function ProductImageUploader({ images, onChange, maxImages = MAX_IMAGES,
   async function remove(index: number) {
     const url = images[index];
     onChange(images.filter((_, itemIndex) => itemIndex !== index));
-    if (!url.includes("/productos/") || originalImages.current.has(url)) return;
+    if (!deleteFromStorage || !url.includes("/productos/") || originalImages.current.has(url)) return;
     const response = await fetch("/api/admin/images", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url }) });
     if (!response.ok) setError("La foto salió del producto, pero no se pudo borrar del almacenamiento.");
   }

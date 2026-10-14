@@ -23,7 +23,7 @@ const itemVariants: Variants = {
   },
 };
 
-export function CatalogGrid({ products, cardStyles }: { products: ProductDTO[]; cardStyles?: Parameters<typeof ProductCard>[0]["cardStyles"] }) {
+export function CatalogGrid({ products, cardStyles, taxNoteText }: { products: ProductDTO[]; cardStyles?: Parameters<typeof ProductCard>[0]["cardStyles"]; taxNoteText?: string }) {
   if (products.length === 0) {
     return (
       <motion.div
@@ -65,6 +65,7 @@ export function CatalogGrid({ products, cardStyles }: { products: ProductDTO[]; 
             priority={index < 4}
             className="h-full"
             cardStyles={cardStyles}
+            taxNoteText={taxNoteText}
           />
         </motion.div>
       ))}

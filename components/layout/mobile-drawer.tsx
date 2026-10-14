@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Instagram } from "lucide-react";
+import { ChevronDown, Instagram } from "lucide-react";
 import { SiWhatsapp } from "@icons-pack/react-simple-icons";
 import {
   Sheet,
@@ -20,11 +20,10 @@ import { buildWhatsAppLink } from "@/lib/whatsapp";
 import { cn } from "@/lib/utils";
 import { useWhatsAppNumber } from "@/components/layout/whatsapp-settings-provider";
 import { buildWhatsAppLinkForNumber } from "@/lib/whatsapp";
+import { useState } from "react";
 
 const NAV_LINKS = [
   { label: "Inicio", href: "/" },
-  { label: "Catálogo", href: "/catalogo" },
-  { label: "Favoritos", href: "/favoritos" },
 ] as const;
 
 interface MobileDrawerProps {
@@ -36,6 +35,7 @@ interface MobileDrawerProps {
 export function MobileDrawer({ open, onOpenChange, categories }: MobileDrawerProps) {
   const pathname = usePathname();
   const whatsappNumber = useWhatsAppNumber();
+  const [categoriesOpen, setCategoriesOpen] = useState(false);
   const close = () => onOpenChange(false);
 
   const isActive = (href: string) =>
@@ -91,11 +91,11 @@ export function MobileDrawer({ open, onOpenChange, categories }: MobileDrawerPro
 
         <Separator className="mx-6 my-1 bg-brand-dark/10" />
 
-        <div className="px-6 py-4">
-          <p className="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-brand-accent">
-            Categorías
-          </p>
-          <ul className="mt-3 grid grid-cols-2 gap-1">
+        <div className="px-3 py-3">
+          <button type="button" aria-expanded={categoriesOpen} onClick={() => setCategoriesOpen((value) => !value)} className="flex min-h-12 w-full items-center justify-between rounded-2xl px-4 text-left font-display text-lg font-semibold text-brand-dark transition-colors hover:bg-brand-dark/5">
+            Catálogo <ChevronDown className={cn("h-5 w-5 text-brand-accent transition-transform", categoriesOpen && "rotate-180")} />
+          </button>
+          {categoriesOpen && <><div className="grid grid-cols-2 gap-2 px-2 pb-2"><Link href="/catalogo" onClick={close} className="rounded-xl bg-brand-dark px-3 py-3 text-center text-sm font-semibold text-white">Ver todo</Link><Link href="/catalogo#categorias" onClick={close} className="rounded-xl border border-brand-dark/10 bg-brand-card px-3 py-3 text-center text-sm font-semibold text-brand-dark">Ver categorías</Link></div><ul className="mt-1 grid grid-cols-1 gap-1 px-2">
             {categories.map((category) => (
               <li key={category.slug}>
                 <Link
@@ -107,7 +107,8 @@ export function MobileDrawer({ open, onOpenChange, categories }: MobileDrawerPro
                 </Link>
               </li>
             ))}
-          </ul>
+          </ul></>}
+          <Link href="/preguntas-frecuentes" onClick={close} className={cn("mt-1 block rounded-2xl px-4 py-3 font-display text-lg font-semibold tracking-tight transition-colors", pathname.startsWith("/preguntas-frecuentes") ? "bg-brand-accent/10 text-brand-accent ring-1 ring-inset ring-brand-accent/15" : "text-brand-dark hover:bg-brand-dark/5")}>Preguntas frecuentes</Link>
         </div>
 
         <Separator className="mx-6 my-1 bg-brand-dark/10" />

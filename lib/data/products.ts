@@ -136,6 +136,8 @@ async function queryProducts(
     if (filters.search) {
       query.title = { $regex: filters.search, $options: "i" };
     }
+    if (filters.color) query["colorOptions.name"] = { $regex: `^${filters.color.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, $options: "i" };
+    if (filters.size) query["variants.name"] = { $regex: `^${filters.size.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, $options: "i" };
 
     const sort: Record<string, 1 | -1> = { basePrice: 1 };
 

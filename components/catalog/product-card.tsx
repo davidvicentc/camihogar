@@ -25,9 +25,10 @@ interface ProductCardProps {
   className?: string;
   cardStyle?: { showBrand?: boolean; showCategory?: boolean; showDescription?: boolean; showRating?: boolean; showVariants?: boolean; showWhatsapp?: boolean; scale?: "compact" | "standard" | "large"; accentColor?: string; imageRatio?: "portrait" | "square" | "landscape"; titleSize?: "small" | "medium" | "large"; priceSize?: "small" | "medium" | "large"; cardBackground?: string; textColor?: string; mutedColor?: string; borderColor?: string; radius?: "small" | "medium" | "large"; imageHeight?: number; cardPadding?: number; titleFontSize?: number; priceFontSize?: number; bodyFontSize?: number; variantsHeight?: number; variantsFontSize?: number; variantsGap?: number; buttonHeight?: number };
   cardStyles?: Partial<Record<CardProfileKey, CardStyle>>;
+  taxNoteText?: string;
 }
 
-export function ProductCard({ product, priority = false, className, cardStyle, cardStyles }: ProductCardProps) {
+export function ProductCard({ product, priority = false, className, cardStyle, cardStyles, taxNoteText = "Precio no incluye IVA" }: ProductCardProps) {
   const categoryStyle = cardStyles?.[cardProfileForCategory(product.category)];
   const style = { ...DEFAULT_CARD_STYLE, ...categoryStyle, ...cardStyle };
   const isFavorite = useFavoritesStore((s) => s.isFavorite(product._id));
@@ -99,6 +100,8 @@ export function ProductCard({ product, priority = false, className, cardStyle, c
           <h3 className="line-clamp-2 font-display font-semibold leading-snug tracking-tight" style={{ color: style.textColor, fontSize: style.titleFontSize }}>
             {product.title}
           </h3>
+          {product.collection && <p className="truncate text-[0.68rem] font-medium" style={{ color: style.mutedColor }}>Colección {product.collection}</p>}
+          {(product.dimensions.width > 0 || product.dimensions.height > 0 || product.dimensions.depth > 0) && <p className="truncate text-[0.68rem] tabular-nums" style={{ color: style.mutedColor }}>{[product.dimensions.width, product.dimensions.height, product.dimensions.depth].filter((value) => value > 0).join(" × ")} {product.dimensions.unit}</p>}
           {style.showDescription && <p className="line-clamp-2 min-h-8 leading-relaxed" style={{ color: style.mutedColor, fontSize: style.bodyFontSize }}>
             {product.description || "Producto disponible para consultar por WhatsApp."}
           </p>}
@@ -107,6 +110,7 @@ export function ProductCard({ product, priority = false, className, cardStyle, c
               <p className="tabular font-semibold tracking-tight" style={{ color: style.textColor, fontSize: style.priceFontSize }}>
                 {formatPrice(visiblePrice)}
               </p>
+              {style.showTaxNote && <span className="text-[0.62rem] leading-tight" style={{ color: style.mutedColor }}>{taxNoteText}</span>}
               {(product.mattressFeatures ?? activeVariant?.mattressFeatures) && <span className="max-w-[150px] truncate text-[0.65rem] text-brand-taupe">{(product.mattressFeatures ?? activeVariant?.mattressFeatures)!.model} · {(product.mattressFeatures ?? activeVariant?.mattressFeatures)!.pillow}</span>}
               {product.variants && product.variants.length > 1 && (
                 <span className="text-[0.6rem] uppercase tracking-[0.12em] text-brand-taupe">
@@ -122,6 +126,7 @@ export function ProductCard({ product, priority = false, className, cardStyle, c
               )}
             </span>}
           </div>
+          <p className={`text-[0.68rem] font-medium ${product.inStock ? "text-green-700" : "text-amber-700"}`}>{product.inStock ? "Disponible para entrega" : "Disponible bajo pedido"}</p>
         </div>
       </Link>
 

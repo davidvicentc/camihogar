@@ -107,22 +107,23 @@ export default async function HomePage() {
   const featured = orderHomeProducts(products.filter((product) => product.isFeatured), priceOrder).slice(0, 6);
 
   const storeIsEmpty = featured.length === 0 && bestsellers.length === 0;
+  const categoryProductCounts = products.reduce<Record<string, number>>((counts, product) => { if (product.categoryId) counts[product.categoryId] = (counts[product.categoryId] ?? 0) + 1; return counts; }, {});
 
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }} />
-      <Hero />
+      <Hero content={{ title: settings.heroTitle, subtitle: settings.heroSubtitle, eyebrow: settings.heroEyebrow, buttonText: settings.heroButtonText, primaryStat: settings.heroPrimaryStat, primaryStatLabel: settings.heroPrimaryStatLabel, qualityStat: settings.heroQualityStat, qualityStatLabel: settings.heroQualityStatLabel, countryStat: settings.heroCountryStat, countryStatLabel: settings.heroCountryStatLabel }} />
       <div className="space-y-14 py-12 md:space-y-20 md:py-16">
-        <CategoryCarousel categories={categories} />
+        <CategoryCarousel categories={categories} productCounts={categoryProductCounts} />
         {storeIsEmpty ? (
           <EmptyCatalog />
         ) : (
           <>
-            <Bestsellers products={bestsellers} cardStyles={settings.categoryCardStyles} />
-            <FeaturedStrip products={featured} cardStyles={settings.categoryCardStyles} />
+            <Bestsellers products={bestsellers} cardStyles={settings.categoryCardStyles} taxNoteText={settings.taxNoteText} />
+            <FeaturedStrip products={featured} cardStyles={settings.categoryCardStyles} taxNoteText={settings.taxNoteText} />
           </>
         )}
-        <TrustBadges />
+        <TrustBadges warrantyText={settings.warrantyText} deliveryText={settings.deliveryText} />
       </div>
     </>
   );

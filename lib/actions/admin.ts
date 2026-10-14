@@ -33,7 +33,7 @@ export async function saveWhatsAppNumber(number: string): Promise<AdminActionRes
   } catch (error) { return { ok: false, error: error instanceof Error ? error.message : "No se pudo guardar." }; }
 }
 
-export async function saveSiteSettings(input: { whatsappNumber: string; instagramUrl: string; facebookUrl: string; tagline: string; faqIntro?: string; warrantyText: string; deliveryText: string; email: string }): Promise<AdminActionResult> {
+export async function saveSiteSettings(input: { whatsappNumber: string; instagramUrl: string; facebookUrl: string; tagline: string; faqIntro?: string; warrantyText: string; deliveryText: string; email: string; heroTitle: string; heroSubtitle: string; heroEyebrow: string; heroButtonText: string; heroPrimaryStat: string; heroPrimaryStatLabel: string; heroQualityStat: string; heroQualityStatLabel: string; heroCountryStat: string; heroCountryStatLabel: string; taxNoteText: string }): Promise<AdminActionResult> {
   try {
     await requirePermission("settings.manage");
     const whatsappNumber = input.whatsappNumber.replace(/\D/g, "");

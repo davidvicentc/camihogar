@@ -147,5 +147,7 @@ export interface CatalogFilters {
   maxPrice?: number;
   inStock?: boolean;
   search?: string;
+  color?: string;
+  size?: string;
   sort?: "recent" | "price-asc" | "price-desc" | "popular";
 }

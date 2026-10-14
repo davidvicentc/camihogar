@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, useMotionValueEvent, useScroll } from "framer-motion";
-import { Menu } from "lucide-react";
+import { ChevronDown, Menu } from "lucide-react";
 import { SiWhatsapp } from "@icons-pack/react-simple-icons";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/brand/logo";
@@ -16,8 +16,6 @@ import type { CatalogOptionDTO } from "@/lib/data/catalog";
 
 const NAV_LINKS = [
   { label: "Inicio", href: "/" },
-  { label: "Catálogo", href: "/catalogo" },
-  { label: "Favoritos", href: "/favoritos" },
   { label: "Preguntas frecuentes", href: "/preguntas-frecuentes" },
 ] as const;
 
@@ -29,6 +27,7 @@ export function Navbar({ categories }: { categories: Pick<CatalogOptionDTO, "nam
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = React.useState(false);
   const [scrolled, setScrolled] = React.useState(false);
+  const [categoriesOpen, setCategoriesOpen] = React.useState(false);
   const whatsappNumber = useWhatsAppNumber();
 
   // La barra se condensa y gana vidrio al separarse del tope, como en iOS.
@@ -95,6 +94,7 @@ export function Navbar({ categories }: { categories: Pick<CatalogOptionDTO, "nam
                   aria-current={active ? "page" : undefined}
                   className={cn(
                     "relative rounded-full px-4 py-2 text-[0.9rem] font-medium tracking-tight transition-colors",
+                    link.href === "/" ? "order-1" : "order-3",
                     active
                       ? "text-brand-accent"
                       : "text-brand-taupe hover:text-brand-dark"
@@ -111,6 +111,12 @@ export function Navbar({ categories }: { categories: Pick<CatalogOptionDTO, "nam
                 </Link>
               );
             })}
+            <div className="group relative order-2" onMouseEnter={() => setCategoriesOpen(true)} onMouseLeave={() => setCategoriesOpen(false)} onFocus={() => setCategoriesOpen(true)} onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setCategoriesOpen(false); }}>
+              <button type="button" aria-expanded={categoriesOpen} aria-haspopup="menu" onClick={() => setCategoriesOpen((open) => !open)} className="flex min-h-10 items-center gap-1 rounded-full px-4 py-2 text-[0.9rem] font-medium tracking-tight text-brand-taupe transition-colors hover:text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent">
+                Catálogo <ChevronDown className={cn("h-4 w-4 transition-transform", categoriesOpen && "rotate-180")} />
+              </button>
+              {categoriesOpen && <div className="absolute left-1/2 top-full z-50 w-80 -translate-x-1/2 pt-2"><div role="menu" className="overflow-hidden rounded-2xl border border-brand-dark/10 bg-brand-card shadow-warm-lg"><div className="p-2"><p className="px-3 pb-2 pt-1 text-xs font-semibold text-brand-taupe">Compra por categoría</p>{categories.slice(0, 5).map((category) => <Link key={category.slug} role="menuitem" href={`/catalogo?categoria=${category.slug}`} onClick={() => setCategoriesOpen(false)} className="block rounded-xl px-3 py-2.5 text-sm font-medium text-brand-dark transition-colors hover:bg-brand-accent/10 hover:text-brand-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent">{category.name}</Link>)}</div><div className="grid grid-cols-2 gap-2 border-t border-brand-dark/10 bg-brand-bg/70 p-3"><Link href="/catalogo" onClick={() => setCategoriesOpen(false)} className="rounded-xl bg-brand-dark px-3 py-2.5 text-center text-xs font-semibold text-white">Ver todo</Link><Link href="/catalogo#categorias" onClick={() => setCategoriesOpen(false)} className="rounded-xl border border-brand-dark/10 bg-brand-card px-3 py-2.5 text-center text-xs font-semibold text-brand-dark">Ver categorías</Link></div></div></div>}
+            </div>
           </nav>
 
           <motion.div whileTap={{ scale: 0.96 }} whileHover={{ scale: 1.03 }}>

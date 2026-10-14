@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { SectionHeading } from "@/components/home/section-heading";
 import type { CatalogOptionDTO } from "@/lib/data/catalog";
 
-export function CategoryCarousel({ categories }: { categories: CatalogOptionDTO[] }) {
+export function CategoryCarousel({ categories, productCounts = {} }: { categories: CatalogOptionDTO[]; productCounts?: Record<string, number> }) {
   return (
     <section aria-labelledby="category-carousel-title" className="mx-auto w-full max-w-6xl px-4 md:px-6">
       <SectionHeading
@@ -63,6 +63,7 @@ export function CategoryCarousel({ categories }: { categories: CatalogOptionDTO[
                 <p className="mt-1 line-clamp-2 text-xs leading-relaxed tracking-tight text-white/70">
                   {category.description}
                 </p>
+                <p className="mt-2 text-xs font-semibold text-white/90">{productCounts[category._id] ?? 0} {(productCounts[category._id] ?? 0) === 1 ? "producto" : "productos"}</p>
                 {/* Regla naranja del logo, se despliega al hover */}
                 <span
                   className="mt-2.5 block h-px w-8 bg-brand-accent transition-all duration-500 group-hover:w-16"

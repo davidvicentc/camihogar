@@ -2,8 +2,7 @@
 
 import * as React from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { motion } from "framer-motion";
-import { List, SlidersHorizontal } from "lucide-react";
+import { List, Search, SlidersHorizontal, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
@@ -42,59 +41,21 @@ const SORT_OPTIONS = [
 
 type SortValue = (typeof SORT_OPTIONS)[number]["value"];
 
-const chipSpring = { type: "spring", stiffness: 300, damping: 24 } as const;
-
-function CategoryChip({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <motion.button
-      type="button"
-      onClick={onClick}
-      whileTap={{ scale: 0.95 }}
-      transition={chipSpring}
-      aria-pressed={active}
-      className={cn(
-        "relative shrink-0 whitespace-nowrap rounded-full border px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-        active
-          ? "border-transparent text-brand-bg"
-          : "border-brand-dark/10 bg-brand-card text-brand-taupe hover:border-brand-dark/25 hover:text-brand-dark"
-      )}
-    >
-      {active && (
-        <motion.span
-          layoutId="catalogo-chip-activo"
-          transition={chipSpring}
-          className="absolute inset-0 rounded-full bg-brand-dark"
-          aria-hidden="true"
-        />
-      )}
-      <span className="relative z-10">{children}</span>
-    </motion.button>
-  );
-}
-
 interface CatalogFiltersProps {
   priceRange: { min: number; max: number };
   total: number;
-  categories: { name: string; slug: string }[];
+  categories: { name: string; slug: string; image?: string; description?: string; productCount?: number }[];
+  colors?: string[];
+  sizes?: string[];
 }
 
-export function CatalogFilters({ priceRange, total, categories }: CatalogFiltersProps) {
+export function CatalogFilters({ priceRange, total, categories, colors = [], sizes = [] }: CatalogFiltersProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const activeCategorySlug = searchParams.get("categoria") ?? "";
-  const activeCategoryName =
-    categories.find((category) => category.slug === activeCategorySlug)?.name ??
-    "Todo el catálogo";
+  const [query, setQuery] = React.useState(searchParams.get("q") ?? "");
 
   // Rango real del slider (evita un track degenerado si min === max)
   const sliderMin = priceRange.min;
@@ -108,7 +69,11 @@ export function CatalogFilters({ priceRange, total, categories }: CatalogFilters
     sliderMax,
   ]);
   const [draftInStock, setDraftInStock] = React.useState(false);
-  const [draftSort, setDraftSort] = React.useState<SortValue>("recent");
+  const [draftColor, setDraftColor] = React.useState("all");
+  const [draftSize, setDraftSize] = React.useState("all");
+  const activeSort = SORT_OPTIONS.some((option) => option.value === searchParams.get("orden"))
+    ? (searchParams.get("orden") as SortValue)
+    : "recent";
 
   const navigate = React.useCallback(
     (params: URLSearchParams) => {
@@ -129,6 +94,20 @@ export function CatalogFilters({ priceRange, total, categories }: CatalogFilters
     navigate(params);
   }
 
+  function submitSearch(event: React.FormEvent) {
+    event.preventDefault();
+    const params = new URLSearchParams(searchParams.toString());
+    const clean = query.trim();
+    if (clean) params.set("q", clean); else params.delete("q");
+    navigate(params);
+  }
+
+  function setSort(value: SortValue) {
+    const params = new URLSearchParams(searchParams.toString());
+    if (value === "recent") params.delete("orden"); else params.set("orden", value);
+    navigate(params);
+  }
+
   /** Al abrir el sheet sincronizamos los borradores con la URL actual. */
   function handleOpenChange(next: boolean) {
     if (next) {
@@ -143,12 +122,8 @@ export function CatalogFilters({ priceRange, total, categories }: CatalogFilters
           : sliderMax,
       ]);
       setDraftInStock(searchParams.get("disponibles") === "1");
-      const orden = searchParams.get("orden");
-      setDraftSort(
-        SORT_OPTIONS.some((o) => o.value === orden)
-          ? (orden as SortValue)
-          : "recent"
-      );
+      setDraftColor(searchParams.get("color") ?? "all");
+      setDraftSize(searchParams.get("medida") ?? "all");
     }
     setOpen(next);
   }
@@ -172,11 +147,8 @@ export function CatalogFilters({ priceRange, total, categories }: CatalogFilters
     } else {
       params.delete("disponibles");
     }
-    if (draftSort !== "recent") {
-      params.set("orden", draftSort);
-    } else {
-      params.delete("orden");
-    }
+    if (draftColor !== "all") params.set("color", draftColor); else params.delete("color");
+    if (draftSize !== "all") params.set("medida", draftSize); else params.delete("medida");
 
     navigate(params);
     setOpen(false);
@@ -185,64 +157,48 @@ export function CatalogFilters({ priceRange, total, categories }: CatalogFilters
   function clearFilters() {
     setDraftPrice([sliderMin, sliderMax]);
     setDraftInStock(false);
-    setDraftSort("recent");
-    router.replace(pathname, { scroll: false });
+    setDraftColor("all"); setDraftSize("all");
+    const params = new URLSearchParams(searchParams.toString());
+    ["precioMin", "precioMax", "disponibles", "color", "medida"].forEach((key) => params.delete(key));
+    navigate(params);
     setOpen(false);
   }
 
   const advancedCount =
     (searchParams.has("precioMin") || searchParams.has("precioMax") ? 1 : 0) +
     (searchParams.get("disponibles") === "1" ? 1 : 0) +
-    (SORT_OPTIONS.some(
-      (o) => o.value === searchParams.get("orden") && o.value !== "recent"
-    )
-      ? 1
-      : 0);
+    (searchParams.has("color") ? 1 : 0) +
+    (searchParams.has("medida") ? 1 : 0);
 
   return (
-    <div className="flex items-center gap-3">
-      {/* Acceso rápido + vista completa. La tira conserva el acceso inmediato sin esconder la arquitectura. */}
-      <div className="hidden flex-1 flex-wrap items-center gap-2 py-1 sm:flex">
-        <CategoryChip active={!activeCategorySlug} onClick={() => setCategory(null)}>
-          Todo
-        </CategoryChip>
-        {categories.map((category) => (
-          <CategoryChip
-            key={category.slug}
-            active={activeCategorySlug === category.slug}
-            onClick={() => setCategory(category.slug)}
-          >
-            {category.name}
-          </CategoryChip>
-        ))}
-      </div>
+    <div className="rounded-2xl border border-brand-dark/10 bg-brand-card p-2 shadow-warm-sm">
+      <h2 className="sr-only">Buscar y filtrar el catálogo</h2>
+      <div className="flex flex-col gap-2 lg:flex-row">
+        <form onSubmit={submitSearch} role="search" className="flex min-w-0 flex-1 gap-2">
+          <label className="relative min-w-0 flex-1">
+            <span className="sr-only">Buscar productos</span>
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-brand-taupe" aria-hidden="true" />
+            <input name="buscar" type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="¿Qué mueble buscas?" className="h-11 w-full rounded-xl border border-brand-dark/15 bg-brand-bg pl-11 pr-10 text-base text-brand-dark outline-none transition-colors placeholder:text-brand-taupe/70 focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/20" />
+            {query && <button type="button" onClick={() => setQuery("")} aria-label="Borrar búsqueda" className="absolute right-1.5 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-lg text-brand-taupe hover:bg-brand-dark/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><X className="h-4 w-4" aria-hidden="true" /></button>}
+          </label>
+          <Button type="submit" variant="accent" className="h-11 shrink-0 px-4">Buscar</Button>
+        </form>
 
-      <div className="flex min-w-0 flex-1 items-center gap-2 sm:hidden">
-        <div className="min-w-0 flex-1 rounded-2xl border border-brand-dark/10 bg-brand-card px-3 py-2">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-brand-taupe">
-            Viendo
-          </p>
-          <p className="truncate text-sm font-semibold text-brand-dark">
-            {activeCategoryName}
-          </p>
-        </div>
-      </div>
-
-      <Dialog open={categoriesOpen} onOpenChange={setCategoriesOpen}>
-        <DialogTrigger asChild>
-          <Button variant="outline" size="sm" className="h-10 shrink-0 rounded-full bg-brand-card px-4">
-            <List className="h-4 w-4" aria-hidden="true" />
-            <span className="hidden sm:inline">Ver categorías</span>
-            <span className="sm:hidden">Categorías</span>
-          </Button>
-        </DialogTrigger>
+        <div className="grid grid-cols-3 gap-2 lg:flex lg:shrink-0">
+          <Dialog open={categoriesOpen} onOpenChange={setCategoriesOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="h-11 min-w-0 justify-start rounded-xl bg-brand-card px-3 lg:w-52">
+                <List className="h-4 w-4 shrink-0" aria-hidden="true" />
+                <span>Categorías</span>
+              </Button>
+            </DialogTrigger>
         <DialogContent className="max-w-2xl">
           <DialogHeader className="text-left">
             <DialogTitle>Explora por categoría</DialogTitle>
             <DialogDescription>Elige una categoría para ver sus muebles.</DialogDescription>
           </DialogHeader>
           <div className="grid max-h-[60vh] gap-2 overflow-y-auto pr-1 sm:grid-cols-2">
-            <button type="button" onClick={() => { setCategory(null); setCategoriesOpen(false); }} aria-pressed={!activeCategorySlug} className={cn("min-h-12 rounded-xl border px-4 text-left text-sm font-semibold transition-colors", !activeCategorySlug ? "border-brand-dark bg-brand-dark text-brand-bg" : "border-brand-dark/10 bg-brand-card text-brand-dark hover:border-brand-accent")}>Todo el catálogo</button>
+            <button type="button" onClick={() => { setCategory(null); setCategoriesOpen(false); }} aria-pressed={!activeCategorySlug} className={cn("min-h-12 rounded-xl border px-4 text-left text-sm font-semibold transition-colors", !activeCategorySlug ? "border-brand-dark bg-brand-dark text-brand-bg" : "border-brand-dark/10 bg-brand-card text-brand-dark hover:border-brand-accent")}>Ver todos los muebles</button>
             {categories.map((category) => (
               <button key={category.slug} type="button" onClick={() => { setCategory(category.slug); setCategoriesOpen(false); }} aria-pressed={activeCategorySlug === category.slug} className={cn("min-h-12 rounded-xl border px-4 text-left text-sm font-semibold transition-colors", activeCategorySlug === category.slug ? "border-brand-dark bg-brand-dark text-brand-bg" : "border-brand-dark/10 bg-brand-card text-brand-dark hover:border-brand-accent")}>{category.name}</button>
             ))}
@@ -250,17 +206,15 @@ export function CatalogFilters({ priceRange, total, categories }: CatalogFilters
         </DialogContent>
       </Dialog>
 
-      {/* Filtros avanzados en sheet inferior */}
       <Sheet open={open} onOpenChange={handleOpenChange}>
         <SheetTrigger asChild>
           <Button
             variant="outline"
-            size="sm"
-            className="relative h-10 shrink-0 rounded-full bg-brand-card px-4"
+            className="relative h-11 min-w-0 justify-center rounded-xl border-brand-dark/15 bg-brand-card px-3"
             aria-label="Abrir filtros avanzados"
           >
             <SlidersHorizontal className="h-4 w-4" />
-            <span className="hidden sm:inline">Filtros</span>
+            <span>Filtrar</span>
             {advancedCount > 0 && (
               <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-brand-accent text-[10px] font-bold text-white">
                 {advancedCount}
@@ -323,24 +277,8 @@ export function CatalogFilters({ priceRange, total, categories }: CatalogFilters
             </div>
 
             {/* Orden */}
-            <div className="space-y-2">
-              <Label htmlFor="orden-catalogo">Ordenar por</Label>
-              <Select
-                value={draftSort}
-                onValueChange={(value) => setDraftSort(value as SortValue)}
-              >
-                <SelectTrigger id="orden-catalogo" aria-label="Ordenar por">
-                  <SelectValue placeholder="Más recientes" />
-                </SelectTrigger>
-                <SelectContent>
-                  {SORT_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {colors.length > 0 && <div className="space-y-2"><Label htmlFor="color-catalogo">Color</Label><Select value={draftColor} onValueChange={setDraftColor}><SelectTrigger id="color-catalogo"><SelectValue placeholder="Todos los colores"/></SelectTrigger><SelectContent><SelectItem value="all">Todos los colores</SelectItem>{colors.map((color) => <SelectItem key={color} value={color}>{color}</SelectItem>)}</SelectContent></Select></div>}
+            {sizes.length > 0 && <div className="space-y-2"><Label htmlFor="medida-catalogo">Medida o variante</Label><Select value={draftSize} onValueChange={setDraftSize}><SelectTrigger id="medida-catalogo"><SelectValue placeholder="Todas las medidas"/></SelectTrigger><SelectContent><SelectItem value="all">Todas las medidas</SelectItem>{sizes.map((size) => <SelectItem key={size} value={size}>{size}</SelectItem>)}</SelectContent></Select></div>}
 
             {/* Acciones */}
             <div className="flex gap-3 pt-1">
@@ -354,6 +292,19 @@ export function CatalogFilters({ priceRange, total, categories }: CatalogFilters
           </div>
         </SheetContent>
       </Sheet>
+
+          <Select value={activeSort} onValueChange={(value) => setSort(value as SortValue)}>
+            <SelectTrigger aria-label="Ordenar productos" className="h-11 min-w-0 rounded-xl bg-brand-card px-3 lg:w-48">
+              <SelectValue placeholder="Ordenar" />
+            </SelectTrigger>
+            <SelectContent align="end">
+              {SORT_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
     </div>
   );
 }

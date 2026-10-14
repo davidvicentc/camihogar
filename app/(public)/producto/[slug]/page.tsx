@@ -84,7 +84,7 @@ export default async function ProductPage({ params }: PageProps) {
       </nav>
 
       {/* Galería + Información */}
-      <ProductDetails product={product} />
+      <ProductDetails product={product} taxNoteText={settings.taxNoteText} />
 
       {/* Dimensiones */}
       <div className="mt-10 md:mt-14">
@@ -102,7 +102,7 @@ export default async function ProductPage({ params }: PageProps) {
           </h2>
           <div className="grid grid-cols-2 gap-4 md:gap-6 lg:grid-cols-4">
             {related.map((item) => (
-              <ProductCard key={item._id} product={item} cardStyles={settings.categoryCardStyles} />
+              <ProductCard key={item._id} product={item} cardStyles={settings.categoryCardStyles} taxNoteText={settings.taxNoteText} />
             ))}
           </div>
         </section>
