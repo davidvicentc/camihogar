@@ -33,9 +33,16 @@ export async function saveWhatsAppNumber(number: string): Promise<AdminActionRes
   } catch (error) { return { ok: false, error: error instanceof Error ? error.message : "No se pudo guardar." }; }
 }
 
-export async function saveSiteSettings(input: { whatsappNumber: string; instagramUrl: string; facebookUrl: string; tagline: string; faqIntro?: string; warrantyText: string; deliveryText: string; email: string; heroTitle: string; heroSubtitle: string; heroEyebrow: string; heroButtonText: string; heroPrimaryStat: string; heroPrimaryStatLabel: string; heroQualityStat: string; heroQualityStatLabel: string; heroCountryStat: string; heroCountryStatLabel: string; taxNoteText: string }): Promise<AdminActionResult> {
+export async function saveSiteSettings(input: { whatsappNumber: string; instagramUrl: string; facebookUrl: string; tagline: string; faqIntro?: string; warrantyText: string; deliveryText: string; email: string; heroTitleRanges?: import("@/lib/hero-title").TextStyleRange[]; heroTitleColor?: string; heroHighlightText?: string; heroHighlightMode?: string; heroHighlightColor?: string; heroHighlightEndColor?: string; heroTitle: string; heroSubtitle: string; heroEyebrow: string; heroButtonText: string; heroPrimaryStat: string; heroPrimaryStatLabel: string; heroQualityStat: string; heroQualityStatLabel: string; heroCountryStat: string; heroCountryStatLabel: string; taxNoteText: string }): Promise<AdminActionResult> {
   try {
     await requirePermission("settings.manage");
+    if (input.heroTitleRanges !== undefined) {
+      if (!Array.isArray(input.heroTitleRanges) || input.heroTitleRanges.length > 200 || input.heroTitleRanges.some((range) => !Number.isInteger(range.start) || !Number.isInteger(range.end) || range.start < 0 || range.end <= range.start || range.end > input.heroTitle.length || !["solid", "gradient"].includes(range.mode) || !/^#[0-9a-f]{6}$/i.test(range.color) || !/^#[0-9a-f]{6}$/i.test(range.endColor))) return { ok: false, error: "Revisa los fragmentos y colores del título." };
+    }
+    for (const color of [input.heroTitleColor, input.heroHighlightColor, input.heroHighlightEndColor]) {
+      if (color !== undefined && !/^#[0-9a-f]{6}$/i.test(color)) return { ok: false, error: "Selecciona un color válido para el título." };
+    }
+    if (input.heroHighlightMode !== undefined && !["solid", "gradient"].includes(input.heroHighlightMode)) return { ok: false, error: "Selecciona color sólido o degradado." };
     const whatsappNumber = input.whatsappNumber.replace(/\D/g, "");
     if (whatsappNumber.length < 10 || whatsappNumber.length > 15) return { ok: false, error: "El WhatsApp debe estar en formato internacional." };
     await connectDB();

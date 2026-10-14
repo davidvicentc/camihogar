@@ -33,7 +33,7 @@ export function FeaturedStrip({ products, cardStyles, taxNoteText }: { products:
         icon={Sparkles}
         title="Destacados de la casa"
         subtitle="Una selección especial con el sello de CamiHogar"
-        action={{ label: "Ver todo", href: "/catalogo" }}
+        action={{ label: "Ver todo", href: "/catalogo/categorias" }}
       />
 
       <motion.div

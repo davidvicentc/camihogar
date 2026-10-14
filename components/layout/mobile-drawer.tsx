@@ -95,11 +95,11 @@ export function MobileDrawer({ open, onOpenChange, categories }: MobileDrawerPro
           <button type="button" aria-expanded={categoriesOpen} onClick={() => setCategoriesOpen((value) => !value)} className="flex min-h-12 w-full items-center justify-between rounded-2xl px-4 text-left font-display text-lg font-semibold text-brand-dark transition-colors hover:bg-brand-dark/5">
             Catálogo <ChevronDown className={cn("h-5 w-5 text-brand-accent transition-transform", categoriesOpen && "rotate-180")} />
           </button>
-          {categoriesOpen && <><div className="grid grid-cols-2 gap-2 px-2 pb-2"><Link href="/catalogo" onClick={close} className="rounded-xl bg-brand-dark px-3 py-3 text-center text-sm font-semibold text-white">Ver todo</Link><Link href="/catalogo#categorias" onClick={close} className="rounded-xl border border-brand-dark/10 bg-brand-card px-3 py-3 text-center text-sm font-semibold text-brand-dark">Ver categorías</Link></div><ul className="mt-1 grid grid-cols-1 gap-1 px-2">
+          {categoriesOpen && <><Link href="/catalogo/categorias" onClick={close} className="mx-2 block rounded-xl px-3 py-3 text-sm font-semibold text-brand-accent hover:bg-brand-accent/10">Ver todas las categorías</Link><ul className="mt-1 grid grid-cols-1 gap-1 px-2">
             {categories.map((category) => (
               <li key={category.slug}>
                 <Link
-                  href={`/catalogo?categoria=${category.slug}`}
+                  href={`/catalogo/${category.slug}`}
                   onClick={close}
                   className="block rounded-xl px-2 py-2.5 text-sm tracking-tight text-brand-taupe transition-colors hover:bg-brand-dark/5 hover:text-brand-dark"
                 >

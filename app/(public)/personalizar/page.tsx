@@ -181,7 +181,7 @@ export default async function PersonalizarPage() {
               Mientras tanto, explora el catálogo y enamórate de tu próximo mueble.
             </p>
             <Button asChild variant="accent" className="mt-6">
-              <Link href="/catalogo">Explorar el catálogo</Link>
+              <Link href="/catalogo/categorias">Explorar el catálogo</Link>
             </Button>
           </div>
         )}

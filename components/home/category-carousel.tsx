@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { SectionHeading } from "@/components/home/section-heading";
 import type { CatalogOptionDTO } from "@/lib/data/catalog";
 
-export function CategoryCarousel({ categories, productCounts = {} }: { categories: CatalogOptionDTO[]; productCounts?: Record<string, number> }) {
+export function CategoryCarousel({ categories, productCounts = {}, grid = false }: { grid?: boolean; categories: CatalogOptionDTO[]; productCounts?: Record<string, number> }) {
   return (
     <section aria-labelledby="category-carousel-title" className="mx-auto w-full max-w-6xl px-4 md:px-6">
       <SectionHeading
@@ -15,14 +15,14 @@ export function CategoryCarousel({ categories, productCounts = {} }: { categorie
         eyebrow="Espacios"
         title="Explora por espacios"
         subtitle="Cada rincón de tu casa merece un mueble que lo abrace"
-        action={{ label: "Ver catálogo", href: "/catalogo" }}
+        action={grid ? undefined : { label: "Ver catálogo", href: "/catalogo/categorias" }}
       />
 
-      <div className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 scrollbar-hide md:gap-5">
+      <div className={grid ? "grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4" : "-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 scrollbar-hide md:gap-5"}>
         {categories.map((category) => (
           <Link
             key={category.slug}
-            href={`/catalogo?categoria=${category.slug}`}
+            href={`/catalogo/${category.slug}`}
             aria-label={`Ver catálogo de ${category.name}`}
             className="shrink-0 snap-start rounded-[1.75rem] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
@@ -30,13 +30,13 @@ export function CategoryCarousel({ categories, productCounts = {} }: { categorie
               whileHover={{ y: -8 }}
               whileTap={{ scale: 0.97 }}
               transition={{ type: "spring", stiffness: 300, damping: 24 }}
-              className="group relative h-60 w-44 overflow-hidden rounded-[1.75rem] bg-brand-dark shadow-warm-sm ring-1 ring-brand-dark/5 transition-shadow hover:shadow-warm sm:h-72 sm:w-52"
+              className={`group relative overflow-hidden rounded-[1.75rem] bg-brand-dark shadow-warm-sm ring-1 ring-brand-dark/5 transition-shadow hover:shadow-warm ${grid ? "aspect-[3/4] w-full" : "h-60 w-44 sm:h-72 sm:w-52"}`}
             >
               <Image
                 src={category.image || "/hero/living-warm.jpg"}
                 alt={category.name}
                 fill
-                sizes="(max-width: 640px) 176px, 208px"
+                sizes={grid ? "(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 280px" : "(max-width: 640px) 176px, 208px"}
                 className="object-cover transition-transform duration-700 group-hover:scale-[1.08]"
               />
               <div
@@ -57,10 +57,10 @@ export function CategoryCarousel({ categories, productCounts = {} }: { categorie
               </span>
 
               <div className="absolute inset-x-0 bottom-0 p-4">
-                <h3 className="font-display text-lg font-semibold tracking-tight text-white">
+                <h3 className="min-h-12 font-display text-lg font-semibold leading-6 tracking-tight text-white">
                   {category.name}
                 </h3>
-                <p className="mt-1 line-clamp-2 text-xs leading-relaxed tracking-tight text-white/70">
+                <p className="mt-1 line-clamp-2 min-h-10 text-xs leading-relaxed tracking-tight text-white/70">
                   {category.description}
                 </p>
                 <p className="mt-2 text-xs font-semibold text-white/90">{productCounts[category._id] ?? 0} {(productCounts[category._id] ?? 0) === 1 ? "producto" : "productos"}</p>

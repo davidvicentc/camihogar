@@ -1,5 +1,6 @@
 "use client";
 
+import { HeroTitle, type HeroTitleStyle } from "@/lib/hero-title";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, type Variants } from "framer-motion";
@@ -23,7 +24,7 @@ const item: Variants = {
   },
 };
 
-type HeroContent = { title: string; subtitle: string; eyebrow: string; buttonText: string; primaryStat: string; primaryStatLabel: string; qualityStat: string; qualityStatLabel: string; countryStat: string; countryStatLabel: string };
+type HeroContent = HeroTitleStyle & { title: string; subtitle: string; eyebrow: string; buttonText: string; primaryStat: string; primaryStatLabel: string; qualityStat: string; qualityStatLabel: string; countryStat: string; countryStatLabel: string };
 
 export function Hero({ content }: { content: HeroContent }) {
   const stats = [
@@ -110,7 +111,7 @@ export function Hero({ content }: { content: HeroContent }) {
             variants={item}
             className="max-w-2xl text-balance font-display text-[2.6rem] font-semibold leading-[1.03] tracking-tightest text-brand-bg sm:text-6xl md:text-7xl"
           >
-            {content.title}
+            <HeroTitle title="Somos la solución para tu hogar" settings={{ heroHighlightText: "solución", heroHighlightMode: "gradient", heroHighlightColor: "#E8511A", heroHighlightEndColor: "#FFB782", heroTitleColor: "#FBF8F4" }} />
           </motion.h1>
 
           <motion.p
@@ -122,37 +123,18 @@ export function Hero({ content }: { content: HeroContent }) {
 
           <motion.div variants={item} className="flex flex-col gap-3 pt-1 sm:flex-row">
             <Button asChild variant="accent" size="lg">
-              <Link href="/catalogo">
+              <Link href="/catalogo/categorias">
                 {content.buttonText}
                 <ArrowRight aria-hidden="true" />
               </Link>
             </Button>
           </motion.div>
 
-          {/* Cifras de confianza separadas por filos naranjas */}
-          <motion.dl
-            variants={item}
-            className="mt-4 flex w-full max-w-md items-stretch gap-5 border-t border-white/10 pt-6"
-          >
-            {stats.map((stat, index) => (
-              <div key={stat.label} className="flex flex-1 items-center gap-5">
-                <div>
-                  <dt className="sr-only">{stat.label}</dt>
-                  <dd>
-                    <span className="block font-display text-xl font-semibold tracking-tight text-brand-bg md:text-2xl">
-                      {stat.value}
-                    </span>
-                    <span className="mt-0.5 block text-[0.7rem] leading-tight text-brand-bg/50">
-                      {stat.label}
-                    </span>
-                  </dd>
-                </div>
-                {index < stats.length - 1 && (
-                  <span
-                    className="w-px self-stretch bg-gradient-to-b from-transparent via-brand-accent/40 to-transparent"
-                    aria-hidden="true"
-                  />
-                )}
+          <motion.dl variants={item} className="mt-4 grid w-full max-w-md grid-cols-3 border-t border-white/10 pt-6">
+            {stats.map((stat) => (
+              <div key={stat.label} className="grid min-w-0 grid-rows-subgrid row-span-2 gap-y-1 border-r border-white/15 px-3 first:pl-0 last:border-r-0 last:pr-0">
+                <dd className="font-display text-xl font-semibold leading-tight tracking-tight text-brand-bg md:text-2xl">{stat.value}</dd>
+                <dt className="text-[0.7rem] leading-snug text-brand-bg/70">{stat.label}</dt>
               </div>
             ))}
           </motion.dl>

@@ -51,6 +51,7 @@ export function ProductInfo({ product, selectedColorIndex = 0, onColorChange, ta
     product.variants && product.variants.length > 0
       ? product.variants[selectedVariantIndex] ?? product.variants[0]
       : null;
+  const mattressFeatures = activeVariant?.mattressFeatures ?? product.mattressFeatures;
   const activeColor = product.colorOptions?.[selectedColorIndex];
   const hasProductConfiguration = Boolean(product.mattressFeatures);
   const isLegacyMattress = !hasProductConfiguration && Boolean(product.variants?.some((variant) => variant.mattressFeatures));
@@ -94,7 +95,7 @@ export function ProductInfo({ product, selectedColorIndex = 0, onColorChange, ta
           <fieldset className="space-y-3">
             <legend className="text-base font-semibold text-brand-dark">2. Elige la configuración</legend>
             <div className="grid gap-3 sm:grid-cols-2">
-              {configurationsForSize.map(({ variant, index }) => { const features = variant.mattressFeatures ?? product.mattressFeatures; return <button key={`${variant.name}-${index}`} type="button" onClick={() => setSelectedVariantIndex(index)} aria-pressed={selectedVariantIndex === index} className={cn("min-h-[94px] rounded-2xl border px-4 py-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent", selectedVariantIndex === index ? "border-brand-accent bg-brand-accent/10 shadow-warm-sm" : "border-brand-dark/15 bg-brand-card hover:border-brand-accent/50")}><span className="flex items-start justify-between gap-3"><span><span className="block font-semibold text-brand-dark">{features?.pillow ?? "Configuración estándar"}</span><span className="mt-1 block text-xs leading-relaxed text-brand-taupe">{features ? `${features.model} · ${features.composition} · Calidad garantizada` : variant.sku || "Disponible"}</span></span><span className="shrink-0 font-bold tabular-nums text-brand-accent">{formatPrice(variant.price)}</span></span></button>; })}
+              {configurationsForSize.map(({ variant, index }) => { const features = variant.mattressFeatures ?? product.mattressFeatures; return <button key={`${variant.name}-${index}`} type="button" onClick={() => setSelectedVariantIndex(index)} aria-pressed={selectedVariantIndex === index} className={cn("min-h-[94px] rounded-2xl border px-4 py-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent", selectedVariantIndex === index ? "border-brand-accent bg-brand-accent/10 shadow-warm-sm" : "border-brand-dark/15 bg-brand-card hover:border-brand-accent/50")}><span className="flex items-start justify-between gap-3"><span><span className="block font-semibold text-brand-dark">{features?.pillow ?? "Configuración estándar"}</span><span className="mt-1 block text-xs leading-relaxed text-brand-taupe">{features ? `${features.model} · ${features.composition} · ${features.warrantyYears} ${features.warrantyYears === 1 ? "año" : "años"} de garantía` : variant.sku || "Disponible"}</span></span><span className="shrink-0 font-bold tabular-nums text-brand-accent">{formatPrice(variant.price)}</span></span></button>; })}
             </div>
           </fieldset>
         </motion.div>
@@ -211,7 +212,7 @@ export function ProductInfo({ product, selectedColorIndex = 0, onColorChange, ta
           <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
             <div><dt className="text-brand-taupe">Tipo</dt><dd className="font-semibold text-brand-dark">{(activeVariant?.mattressFeatures ?? product.mattressFeatures)!.model}</dd></div>
             <div><dt className="text-brand-taupe">Pillow</dt><dd className="font-semibold text-brand-dark">{(activeVariant?.mattressFeatures ?? product.mattressFeatures)!.pillow}</dd></div>
-            <div><dt className="text-brand-taupe">Calidad</dt><dd className="font-semibold text-brand-dark">Garantizada</dd></div>
+            <div><dt className="text-brand-taupe">Garantía</dt><dd className="font-semibold text-brand-dark">{mattressFeatures!.warrantyYears} {mattressFeatures!.warrantyYears === 1 ? "año" : "años"}</dd></div>
             <div><dt className="text-brand-taupe">Composición interna</dt><dd className="font-semibold text-brand-dark">{(activeVariant?.mattressFeatures ?? product.mattressFeatures)!.composition}</dd></div>
           </dl>
         </motion.section>

@@ -25,7 +25,7 @@ export default async function PublicLayout({
       {/* pb en móvil deja espacio para la Bottom App Bar fija */}
       <main className="flex-1 pb-24 md:pb-0">{children}</main>
       <Footer />
-      <BottomNav categories={categories} />
+      <BottomNav />
       </div>
     </WhatsAppSettingsProvider>
   );

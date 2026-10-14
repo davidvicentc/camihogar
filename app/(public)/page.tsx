@@ -112,7 +112,7 @@ export default async function HomePage() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }} />
-      <Hero content={{ title: settings.heroTitle, subtitle: settings.heroSubtitle, eyebrow: settings.heroEyebrow, buttonText: settings.heroButtonText, primaryStat: settings.heroPrimaryStat, primaryStatLabel: settings.heroPrimaryStatLabel, qualityStat: settings.heroQualityStat, qualityStatLabel: settings.heroQualityStatLabel, countryStat: settings.heroCountryStat, countryStatLabel: settings.heroCountryStatLabel }} />
+      <Hero content={{ ...settings, title: settings.heroTitle, subtitle: settings.heroSubtitle, eyebrow: settings.heroEyebrow, buttonText: settings.heroButtonText, primaryStat: settings.heroPrimaryStat, primaryStatLabel: settings.heroPrimaryStatLabel, qualityStat: settings.heroQualityStat, qualityStatLabel: settings.heroQualityStatLabel, countryStat: settings.heroCountryStat, countryStatLabel: settings.heroCountryStatLabel }} />
       <div className="space-y-14 py-12 md:space-y-20 md:py-16">
         <CategoryCarousel categories={categories} productCounts={categoryProductCounts} />
         {storeIsEmpty ? (

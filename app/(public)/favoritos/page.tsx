@@ -75,7 +75,7 @@ export default function FavoritosPage() {
             </p>
           </div>
           <Button asChild variant="accent" className="mt-2">
-            <Link href="/catalogo">Explorar el catálogo</Link>
+            <Link href="/catalogo/categorias">Explorar el catálogo</Link>
           </Button>
         </motion.div>
       ) : (

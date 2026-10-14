@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import * as React from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { List, Search, SlidersHorizontal, X } from "lucide-react";
@@ -22,16 +23,7 @@ import {
 } from "@/components/ui/sheet";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
-import { cn, formatPrice } from "@/lib/utils";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-
+import { formatPrice } from "@/lib/utils";
 const SORT_OPTIONS = [
   { value: "recent", label: "Más recientes" },
   { value: "price-asc", label: "Precio: menor a mayor" },
@@ -49,12 +41,11 @@ interface CatalogFiltersProps {
   sizes?: string[];
 }
 
-export function CatalogFilters({ priceRange, total, categories, colors = [], sizes = [] }: CatalogFiltersProps) {
+export function CatalogFilters({ priceRange, total, colors = [], sizes = [] }: CatalogFiltersProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const activeCategorySlug = searchParams.get("categoria") ?? "";
   const [query, setQuery] = React.useState(searchParams.get("q") ?? "");
 
   // Rango real del slider (evita un track degenerado si min === max)
@@ -63,7 +54,6 @@ export function CatalogFilters({ priceRange, total, categories, colors = [], siz
   const sliderStep = Math.max(1, Math.round((sliderMax - sliderMin) / 100));
 
   const [open, setOpen] = React.useState(false);
-  const [categoriesOpen, setCategoriesOpen] = React.useState(false);
   const [draftPrice, setDraftPrice] = React.useState<[number, number]>([
     sliderMin,
     sliderMax,
@@ -77,22 +67,13 @@ export function CatalogFilters({ priceRange, total, categories, colors = [], siz
 
   const navigate = React.useCallback(
     (params: URLSearchParams) => {
+      params.delete("categoria");
+      if (pathname === "/catalogo") params.set("ver", "todos");
       const qs = params.toString();
       router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
     },
     [router, pathname]
   );
-
-  /** Los chips de categoría aplican al instante, sin recargar la página. */
-  function setCategory(slug: string | null) {
-    const params = new URLSearchParams(searchParams.toString());
-    if (slug) {
-      params.set("categoria", slug);
-    } else {
-      params.delete("categoria");
-    }
-    navigate(params);
-  }
 
   function submitSearch(event: React.FormEvent) {
     event.preventDefault();
@@ -185,26 +166,7 @@ export function CatalogFilters({ priceRange, total, categories, colors = [], siz
         </form>
 
         <div className="grid grid-cols-3 gap-2 lg:flex lg:shrink-0">
-          <Dialog open={categoriesOpen} onOpenChange={setCategoriesOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" className="h-11 min-w-0 justify-start rounded-xl bg-brand-card px-3 lg:w-52">
-                <List className="h-4 w-4 shrink-0" aria-hidden="true" />
-                <span>Categorías</span>
-              </Button>
-            </DialogTrigger>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader className="text-left">
-            <DialogTitle>Explora por categoría</DialogTitle>
-            <DialogDescription>Elige una categoría para ver sus muebles.</DialogDescription>
-          </DialogHeader>
-          <div className="grid max-h-[60vh] gap-2 overflow-y-auto pr-1 sm:grid-cols-2">
-            <button type="button" onClick={() => { setCategory(null); setCategoriesOpen(false); }} aria-pressed={!activeCategorySlug} className={cn("min-h-12 rounded-xl border px-4 text-left text-sm font-semibold transition-colors", !activeCategorySlug ? "border-brand-dark bg-brand-dark text-brand-bg" : "border-brand-dark/10 bg-brand-card text-brand-dark hover:border-brand-accent")}>Ver todos los muebles</button>
-            {categories.map((category) => (
-              <button key={category.slug} type="button" onClick={() => { setCategory(category.slug); setCategoriesOpen(false); }} aria-pressed={activeCategorySlug === category.slug} className={cn("min-h-12 rounded-xl border px-4 text-left text-sm font-semibold transition-colors", activeCategorySlug === category.slug ? "border-brand-dark bg-brand-dark text-brand-bg" : "border-brand-dark/10 bg-brand-card text-brand-dark hover:border-brand-accent")}>{category.name}</button>
-            ))}
-          </div>
-        </DialogContent>
-      </Dialog>
+          <Button asChild variant="outline" className="h-11 min-w-0 justify-start rounded-xl bg-brand-card px-3 lg:w-52"><Link href="/catalogo/categorias"><List className="h-4 w-4 shrink-0" aria-hidden="true"/><span>Categorías</span></Link></Button>
 
       <Sheet open={open} onOpenChange={handleOpenChange}>
         <SheetTrigger asChild>

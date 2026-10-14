@@ -45,7 +45,7 @@ export function CatalogGrid({ products, cardStyles, taxNoteText }: { products: P
           </p>
         </div>
         <Button asChild variant="accent" className="mt-2">
-          <Link href="/catalogo">Limpiar filtros</Link>
+          <Link href="/catalogo/categorias">Limpiar filtros</Link>
         </Button>
       </motion.div>
     );

@@ -33,7 +33,7 @@ export function Bestsellers({ products, cardStyles, taxNoteText }: { products: P
         icon={Flame}
         title="Los más pedidos"
         subtitle="Las piezas que más hogares venezolanos están eligiendo"
-        action={{ label: "Ver todo", href: "/catalogo" }}
+        action={{ label: "Ver todo", href: "/catalogo/categorias" }}
       />
 
       <motion.div

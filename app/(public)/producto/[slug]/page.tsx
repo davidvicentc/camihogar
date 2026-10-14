@@ -70,7 +70,7 @@ export default async function ProductPage({ params }: PageProps) {
             <ChevronRight className="h-3.5 w-3.5" />
           </li>
           <li>
-            <Link href="/catalogo" className="transition-colors hover:text-brand-accent">
+            <Link href="/catalogo/categorias" className="transition-colors hover:text-brand-accent">
               Catálogo
             </Link>
           </li>
