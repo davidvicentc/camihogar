@@ -13,7 +13,7 @@ export default async function CategoriesPage() {
   return <main className="mx-auto max-w-7xl px-4 pb-16 pt-8 sm:px-6 lg:px-8">
     <nav aria-label="Ruta de navegación" className="mb-8 flex items-center gap-2 text-sm text-brand-taupe"><Link href="/">Inicio</Link><ChevronRight className="h-3 w-3"/><span aria-current="page">Categorías</span></nav>
     <header className="mb-9 grid gap-5 border-b border-brand-dark/10 pb-8 md:grid-cols-[1.2fr_1fr] md:items-end">
-      <div><p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-brand-accent">El catálogo CamiHogar</p><h1 className="max-w-xl text-balance font-display text-4xl font-semibold leading-[1.05] tracking-tight text-brand-dark sm:text-5xl lg:text-6xl">Encuentra lo que hace hogar.</h1></div>
+      <div><p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-brand-accent">El catálogo CamiHogar</p><h1 className="max-w-xl text-balance font-display text-4xl font-semibold leading-[1.05] tracking-tight text-brand-dark sm:text-5xl lg:text-6xl">Lo esencial para tu hogar en un solo sitio.</h1></div>
       <p className="max-w-md text-pretty text-base leading-relaxed text-brand-taupe">Un buen descanso, una sala para compartir, un espacio más organizado. Elige una categoría y descubre sus piezas.</p>
     </header>
     <div className="grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-6">
