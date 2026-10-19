@@ -68,7 +68,16 @@ function MobileSummaryBar() {
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Pedir este mueble personalizado por WhatsApp"
-          onClick={() => trackEvent(product._id, "WHATSAPP_CLICK")}
+          onClick={() =>
+            trackEvent(product._id, "WHATSAPP_CLICK", {
+              title: product.title,
+              price: total,
+              category: product.category,
+              brand: product.brand,
+              variant: selectedConfiguration?.label,
+              placement: "customizer_mobile_summary",
+            })
+          }
           className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-[#25D366] px-4 py-2.5 text-sm font-semibold text-white shadow-warm-sm transition-transform hover:bg-[#1fb958] active:scale-95"
         >
           <SiWhatsapp className="h-4 w-4" aria-hidden="true" />
@@ -87,7 +96,12 @@ export function Customizer({ product }: { product: ProductDTO }) {
     init(product);
     if (!trackedRef.current) {
       trackedRef.current = true;
-      trackEvent(product._id, "CUSTOMIZER_OPEN");
+      trackEvent(product._id, "CUSTOMIZER_OPEN", {
+        title: product.title,
+        price: product.basePrice,
+        category: product.category,
+        brand: product.brand,
+      });
     }
   }, [product, init]);
 

@@ -225,7 +225,16 @@ export function ProductInfo({ product, selectedColorIndex = 0, onColorChange, ta
             href={productInquiryLink(product, activeVariant ?? undefined, whatsappNumber, activeColor)}
             target="_blank"
             rel="noopener noreferrer"
-            onClick={() => trackEvent(product._id, "WHATSAPP_CLICK")}
+            onClick={() =>
+              trackEvent(product._id, "WHATSAPP_CLICK", {
+                title: product.title,
+                price: activeVariantPrice,
+                category: product.category,
+                brand: product.brand,
+                variant: activeVariant?.name,
+                placement: "product_detail",
+              })
+            }
           >
             <SiWhatsapp aria-hidden="true" />
             Consultar / Comprar por WhatsApp

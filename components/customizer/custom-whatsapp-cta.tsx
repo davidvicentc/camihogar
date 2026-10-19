@@ -40,7 +40,16 @@ export function CustomWhatsAppCta() {
             href={href}
             target="_blank"
             rel="noopener noreferrer"
-            onClick={() => trackEvent(product._id, "WHATSAPP_CLICK")}
+            onClick={() =>
+              trackEvent(product._id, "WHATSAPP_CLICK", {
+                title: product.title,
+                price: total,
+                category: product.category,
+                brand: product.brand,
+                variant: selectedConfiguration?.label,
+                placement: "customizer_cta",
+              })
+            }
           >
             <SiWhatsapp aria-hidden="true" />
             Pedir este Mueble Personalizado

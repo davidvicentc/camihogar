@@ -13,6 +13,7 @@ import { useFavoritesStore } from "@/store/favorites-store";
 import { cn, formatPrice } from "@/lib/utils";
 import { productInquiryLink } from "@/lib/whatsapp";
 import { trackEvent } from "@/lib/track";
+import { trackWishlistToggle } from "@/lib/gtag";
 import type { ProductDTO } from "@/lib/types";
 import { useWhatsAppNumber } from "@/components/layout/whatsapp-settings-provider";
 import { cardProfileForCategory, DEFAULT_CARD_STYLE, type CardProfileKey, type CardStyle } from "@/lib/card-style";
@@ -182,7 +183,16 @@ export function ProductCard({ product, priority = false, className, cardStyle, c
         href={productInquiryLink(product, activeVariant, whatsappNumber, activeColor)}
         target="_blank"
         rel="noopener noreferrer"
-        onClick={() => trackEvent(product._id, "WHATSAPP_CLICK")}
+        onClick={() =>
+          trackEvent(product._id, "WHATSAPP_CLICK", {
+            title: product.title,
+            price: visiblePrice,
+            category: product.category,
+            brand: product.brand,
+            variant: activeVariant?.name,
+            placement: "catalog_card",
+          })
+        }
         className="mx-4 mb-4 flex items-center justify-center gap-2 rounded-xl bg-[#25D366] px-3 font-semibold text-white transition-colors hover:bg-[#1fb958]"
         style={{ height: style.buttonHeight, fontSize: style.buttonFontSize }}
       >
@@ -193,7 +203,14 @@ export function ProductCard({ product, priority = false, className, cardStyle, c
       <button
         type="button"
         aria-label={isFavorite ? "Quitar de favoritos" : "Agregar a favoritos"}
-        onClick={() =>
+        onClick={() => {
+          const nextAction = isFavorite ? "remove" : "add";
+          trackWishlistToggle(nextAction, {
+            id: product._id,
+            title: product.title,
+            category: product.category,
+            price: visiblePrice,
+          });
           toggleFavorite({
             id: product._id,
             slug: product.slug,
@@ -201,8 +218,8 @@ export function ProductCard({ product, priority = false, className, cardStyle, c
             image: product.images[0] ?? "",
             basePrice: product.basePrice,
             category: product.category,
-          })
-        }
+          });
+        }}
         className="absolute right-3 top-3 rounded-full bg-white/90 p-2 shadow-warm-sm backdrop-blur transition-transform hover:scale-110 active:scale-95"
       >
         <Heart

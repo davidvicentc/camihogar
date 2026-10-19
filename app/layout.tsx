@@ -1,6 +1,9 @@
+import { Suspense } from "react";
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { BRAND } from "@/lib/constants";
+import { getSiteSettings } from "@/lib/data/settings";
+import { GoogleAnalytics } from "@/components/layout/google-analytics";
 import { getSiteUrl } from "@/lib/utils";
 import "./globals.css";
 
@@ -80,12 +83,20 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const settings = await getSiteSettings();
+  const gaId = settings.googleAnalyticsId || process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+
   return (
     <html lang="es" className={fontFallback.variable}>
-      <body className="min-h-screen font-sans">{children}</body>
+      <body className="min-h-screen font-sans">
+        <Suspense fallback={null}>
+          <GoogleAnalytics gaId={gaId} />
+        </Suspense>
+        {children}
+      </body>
     </html>
   );
 }

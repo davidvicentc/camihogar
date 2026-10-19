@@ -12,6 +12,7 @@ import { MobileDrawer } from "@/components/layout/mobile-drawer";
 import { cn } from "@/lib/utils";
 import { useWhatsAppNumber } from "@/components/layout/whatsapp-settings-provider";
 import { buildWhatsAppLinkForNumber } from "@/lib/whatsapp";
+import { trackWhatsAppLead } from "@/lib/gtag";
 import type { CatalogOptionDTO } from "@/lib/data/catalog";
 
 const NAV_LINKS = [
@@ -126,6 +127,7 @@ export function Navbar({ categories }: { categories: Pick<CatalogOptionDTO, "nam
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Escríbenos por WhatsApp"
+                onClick={() => trackWhatsAppLead(null, { placement: "navbar" })}
               >
                 <SiWhatsapp className="h-4 w-4" />
                 <span className="hidden sm:inline">Escríbenos</span>

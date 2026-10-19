@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useFavoritesStore } from "@/store/favorites-store";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
 import { formatPrice } from "@/lib/utils";
+import { trackWhatsAppLead, trackWishlistToggle } from "@/lib/gtag";
 
 const spring = { type: "spring", stiffness: 300, damping: 24 } as const;
 
@@ -127,7 +128,15 @@ export default function FavoritosPage() {
                   <button
                     type="button"
                     aria-label={`Quitar ${item.title} de favoritos`}
-                    onClick={() => remove(item.id)}
+                    onClick={() => {
+                      trackWishlistToggle("remove", {
+                        id: item.id,
+                        title: item.title,
+                        category: item.category,
+                        price: item.basePrice,
+                      });
+                      remove(item.id);
+                    }}
                     className="absolute right-3 top-3 rounded-full bg-white/90 p-2 shadow-warm-sm backdrop-blur transition-transform hover:scale-110 active:scale-95"
                   >
                     <X className="h-4 w-4 text-brand-taupe" aria-hidden="true" />
@@ -139,7 +148,19 @@ export default function FavoritosPage() {
 
           <div className="mt-8 flex justify-center">
             <Button asChild variant="whatsapp" size="lg" className="w-full sm:w-auto">
-              <a href={whatsappHref} target="_blank" rel="noopener noreferrer">
+              <a
+                href={whatsappHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => {
+                  const total = items.reduce((sum, item) => sum + (item.basePrice || 0), 0);
+                  trackWhatsAppLead(null, {
+                    placement: "favorites_page",
+                    total,
+                    count: items.length,
+                  });
+                }}
+              >
                 <SiWhatsapp aria-hidden="true" />
                 Consultar todos por WhatsApp
               </a>

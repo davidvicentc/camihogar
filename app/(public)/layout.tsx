@@ -1,9 +1,7 @@
-import { Suspense } from "react";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { FavoritesHydration } from "@/components/layout/favorites-hydration";
-import { GoogleAnalytics } from "@/components/layout/google-analytics";
 import { VisitorPresenceTracker } from "@/components/layout/visitor-presence-tracker";
 import { WhatsAppSettingsProvider } from "@/components/layout/whatsapp-settings-provider";
 import { getCategories } from "@/lib/data/catalog";
@@ -15,9 +13,6 @@ export default async function PublicLayout({
 
   return (
     <WhatsAppSettingsProvider>
-      <Suspense fallback={null}>
-        <GoogleAnalytics />
-      </Suspense>
       <VisitorPresenceTracker />
       <div className="flex min-h-screen flex-col">
       <FavoritesHydration />

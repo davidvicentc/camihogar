@@ -24,6 +24,7 @@ import {
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { formatPrice } from "@/lib/utils";
+import { trackSearch } from "@/lib/gtag";
 const SORT_OPTIONS = [
   { value: "recent", label: "Más recientes" },
   { value: "price-asc", label: "Precio: menor a mayor" },
@@ -79,7 +80,12 @@ export function CatalogFilters({ priceRange, total, colors = [], sizes = [] }: C
     event.preventDefault();
     const params = new URLSearchParams(searchParams.toString());
     const clean = query.trim();
-    if (clean) params.set("q", clean); else params.delete("q");
+    if (clean) {
+      params.set("q", clean);
+      trackSearch(clean, total);
+    } else {
+      params.delete("q");
+    }
     navigate(params);
   }
 

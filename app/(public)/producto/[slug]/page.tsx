@@ -56,7 +56,13 @@ export default async function ProductPage({ params }: PageProps) {
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 md:py-10 lg:px-8">
-      <ViewTracker productId={product._id} />
+      <ViewTracker
+        productId={product._id}
+        title={product.title}
+        category={product.category}
+        price={product.basePrice}
+        brand={product.brand}
+      />
 
       {/* Breadcrumb */}
       <nav aria-label="Ruta de navegación" className="mb-6">

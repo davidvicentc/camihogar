@@ -33,6 +33,7 @@ import { BRAND } from "@/lib/constants";
 
 import { SeguimientoNoEncontrado } from "@/components/fabricacion/seguimiento/seguimiento-no-encontrado";
 import { TarjetaSeguimiento } from "@/components/fabricacion/seguimiento/tarjeta-seguimiento";
+import { SeguimientoTracker } from "@/components/fabricacion/seguimiento/seguimiento-tracker";
 
 export const dynamic = "force-dynamic";
 
@@ -79,5 +80,10 @@ export default async function SeguimientoPage({ params }: PaginaProps) {
   // Código desconocido: página amable con salida, nunca un error del servidor.
   if (!datos) return <SeguimientoNoEncontrado codigo={canonico} />;
 
-  return <TarjetaSeguimiento datos={datos} />;
+  return (
+    <>
+      <SeguimientoTracker codigo={canonico} />
+      <TarjetaSeguimiento datos={datos} />
+    </>
+  );
 }

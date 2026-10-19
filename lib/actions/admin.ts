@@ -33,7 +33,7 @@ export async function saveWhatsAppNumber(number: string): Promise<AdminActionRes
   } catch (error) { return { ok: false, error: error instanceof Error ? error.message : "No se pudo guardar." }; }
 }
 
-export async function saveSiteSettings(input: { whatsappNumber: string; instagramUrl: string; facebookUrl: string; tagline: string; faqIntro?: string; warrantyText: string; deliveryText: string; email: string; heroTitleRanges?: import("@/lib/hero-title").TextStyleRange[]; heroTitleColor?: string; heroHighlightText?: string; heroHighlightMode?: string; heroHighlightColor?: string; heroHighlightEndColor?: string; heroTitle: string; heroSubtitle: string; heroEyebrow: string; heroButtonText: string; heroPrimaryStat: string; heroPrimaryStatLabel: string; heroQualityStat: string; heroQualityStatLabel: string; heroCountryStat: string; heroCountryStatLabel: string; taxNoteText: string }): Promise<AdminActionResult> {
+export async function saveSiteSettings(input: { whatsappNumber: string; instagramUrl: string; facebookUrl: string; tagline: string; faqIntro?: string; warrantyText: string; deliveryText: string; email: string; googleAnalyticsId?: string; heroTitleRanges?: import("@/lib/hero-title").TextStyleRange[]; heroTitleColor?: string; heroHighlightText?: string; heroHighlightMode?: string; heroHighlightColor?: string; heroHighlightEndColor?: string; heroTitle: string; heroSubtitle: string; heroEyebrow: string; heroButtonText: string; heroPrimaryStat: string; heroPrimaryStatLabel: string; heroQualityStat: string; heroQualityStatLabel: string; heroCountryStat: string; heroCountryStatLabel: string; taxNoteText: string }): Promise<AdminActionResult> {
   try {
     await requirePermission("settings.manage");
     if (input.heroTitleRanges !== undefined) {
@@ -45,8 +45,12 @@ export async function saveSiteSettings(input: { whatsappNumber: string; instagra
     if (input.heroHighlightMode !== undefined && !["solid", "gradient"].includes(input.heroHighlightMode)) return { ok: false, error: "Selecciona color sólido o degradado." };
     const whatsappNumber = input.whatsappNumber.replace(/\D/g, "");
     if (whatsappNumber.length < 10 || whatsappNumber.length > 15) return { ok: false, error: "El WhatsApp debe estar en formato internacional." };
+    const googleAnalyticsId = input.googleAnalyticsId ? input.googleAnalyticsId.trim().toUpperCase() : "";
+    if (googleAnalyticsId && !/^G-[A-Z0-9]+$/i.test(googleAnalyticsId)) {
+      return { ok: false, error: "El ID de Google Analytics debe tener el formato G-XXXXXXXXXX (ej. G-1234567890)." };
+    }
     await connectDB();
-    await SiteSettingsModel.findOneAndUpdate({ key: "main" }, { ...input, whatsappNumber }, { upsert: true });
+    await SiteSettingsModel.findOneAndUpdate({ key: "main" }, { ...input, whatsappNumber, googleAnalyticsId }, { upsert: true });
     refreshPublicSettings();
     return { ok: true };
   } catch (error) { return { ok: false, error: error instanceof Error ? error.message : "No se pudo guardar." }; }

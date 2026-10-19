@@ -2,34 +2,37 @@
 
 import Script from "next/script";
 import { usePathname, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+import { pageview } from "@/lib/gtag";
 
-declare global {
-  interface Window {
-    dataLayer: unknown[];
-    gtag: (...args: unknown[]) => void;
-  }
+interface GoogleAnalyticsProps {
+  gaId?: string;
 }
 
-const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
-
-function sendPageview(url: string) {
-  if (!measurementId) return;
-  window.gtag("config", measurementId, { page_path: url });
-}
-
-export function GoogleAnalytics() {
+export function GoogleAnalytics({ gaId }: GoogleAnalyticsProps) {
+  const measurementId = gaId || process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "G-BPJBSHQ20M";
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const isFirstLoad = useRef(true);
 
   useEffect(() => {
-    if (!measurementId || typeof window.gtag !== "function") return;
+    if (!measurementId) return;
 
-    const query = searchParams.toString();
-    sendPageview(query ? `${pathname}?${query}` : pathname);
-  }, [pathname, searchParams]);
+    // GA4 registra automáticamente la vista inicial en el gtag config.
+    // En navegaciones cliente posteriores dentro de Next.js, disparamos el pageview manual.
+    if (isFirstLoad.current) {
+      isFirstLoad.current = false;
+      return;
+    }
 
-  if (!measurementId) return null;
+    const query = searchParams?.toString();
+    const url = query ? `${pathname}?${query}` : pathname;
+    pageview(url);
+  }, [pathname, searchParams, measurementId]);
+
+  if (!measurementId) {
+    return null;
+  }
 
   return (
     <>
@@ -40,9 +43,12 @@ export function GoogleAnalytics() {
       <Script id="google-analytics-init" strategy="afterInteractive">
         {`
           window.dataLayer = window.dataLayer || [];
-          window.gtag = function(){window.dataLayer.push(arguments);};
-          window.gtag('js', new Date());
-          window.gtag('config', '${measurementId}', { send_page_view: false });
+          function gtag(){window.dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', '${measurementId}', {
+            page_path: window.location.pathname,
+            send_page_view: true
+          });
         `}
       </Script>
     </>

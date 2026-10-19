@@ -3,6 +3,7 @@ import mongoose, { Schema, type InferSchemaType, type Model } from "mongoose";
 const SiteSettingsSchema = new Schema(
   {
     key: { type: String, required: true, unique: true, default: "main" },
+    googleAnalyticsId: { type: String, default: "" },
     whatsappNumber: { type: String, default: "" },
     instagramUrl: { type: String, default: "" },
     facebookUrl: { type: String, default: "" },
