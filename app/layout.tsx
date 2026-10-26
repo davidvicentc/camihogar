@@ -5,6 +5,7 @@ import { BRAND } from "@/lib/constants";
 import { getSiteSettings } from "@/lib/data/settings";
 import { GoogleAnalytics } from "@/components/layout/google-analytics";
 import { getSiteUrl } from "@/lib/utils";
+import { CATALOG_DESCRIPTION, CATALOG_IMAGE, CATALOG_TITLE } from "@/lib/metadata";
 import "./globals.css";
 
 /**
@@ -50,26 +51,18 @@ export const metadata: Metadata = {
     apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
   },
   openGraph: {
-    title: `${BRAND.name} — ${BRAND.tagline}`,
-    description:
-      "Mueblería en Guatire y Guarenas con entrega en Caracas, Higuerote y toda Venezuela. Muebles que abrazan tu hogar.",
+    title: CATALOG_TITLE,
+    description: CATALOG_DESCRIPTION,
     type: "website",
     locale: "es_VE",
     siteName: BRAND.name,
-    images: [
-      {
-        url: "/camihogarlogo.jpeg",
-        width: 1000,
-        height: 1000,
-        alt: `Logo de ${BRAND.name}`,
-      },
-    ],
+    images: [CATALOG_IMAGE],
   },
   twitter: {
     card: "summary_large_image",
-    title: `${BRAND.name} — ${BRAND.tagline}`,
-    description: "Muebles con diseño cálido, hechos a tu medida.",
-    images: ["/camihogarlogo.jpeg"],
+    title: CATALOG_TITLE,
+    description: CATALOG_DESCRIPTION,
+    images: [CATALOG_IMAGE],
   },
 };
 

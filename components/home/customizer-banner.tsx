@@ -46,7 +46,7 @@ export function CustomizerBanner() {
           className="pointer-events-none absolute -bottom-10 right-4 hidden h-56 opacity-[0.07] md:block"
         >
           <div className="relative h-full overflow-hidden">
-            <LogoMark variant="white" className="h-full" />
+            <LogoMark className="h-full" />
             <span className="absolute inset-y-0 -left-1/3 w-1/3 animate-sheen bg-gradient-to-r from-transparent via-white/70 to-transparent" />
           </div>
         </div>

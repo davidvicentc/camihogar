@@ -59,7 +59,7 @@ export function Hero({ content }: { content: HeroContent }) {
         className="pointer-events-none absolute -right-24 top-1/2 hidden h-[34rem] -translate-y-1/2 opacity-[0.06] lg:block xl:-right-10"
       >
         <div className="relative h-full overflow-hidden">
-          <LogoMark variant="white" className="h-full" />
+          <LogoMark className="h-full" />
           <span className="absolute inset-y-0 -left-1/3 w-1/3 animate-sheen bg-gradient-to-r from-transparent via-white/70 to-transparent" />
         </div>
       </div>

@@ -9,12 +9,30 @@ import { FeaturedStrip } from "@/components/home/featured-strip";
 import { TrustBadges } from "@/components/home/trust-badges";
 import { getSiteUrl } from "@/lib/utils";
 import type { Metadata } from "next";
+import { catalogMetadata } from "@/lib/metadata";
 
 export const metadata: Metadata = {
   title: "Mueblería en Guatire, Guarenas y Caracas",
   description:
     "Compra muebles en Guatire y Guarenas con entregas en Caracas, Higuerote y toda Venezuela. Salas, comedores, camas, colchones y muebles a medida.",
   alternates: { canonical: "/" },
+  openGraph: catalogMetadata("/").openGraph,
+  twitter: catalogMetadata("/").twitter,
+};
+
+const webPageSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "@id": `${getSiteUrl()}/#webpage`,
+  url: getSiteUrl(),
+  name: "CamiHogar: mueblería en Guatire, Guarenas y Caracas",
+  primaryImageOfPage: {
+    "@type": "ImageObject",
+    url: `${getSiteUrl()}/camihogarlogo.jpeg`,
+    width: 1000,
+    height: 1000,
+  },
+  mainEntity: { "@id": `${getSiteUrl()}/#business` },
 };
 
 const localBusinessSchema = {
@@ -24,6 +42,13 @@ const localBusinessSchema = {
   name: "CAMIHOGAR GUATIRE",
   url: getSiteUrl(),
   image: `${getSiteUrl()}/camihogarlogo.jpeg`,
+  logo: {
+    "@type": "ImageObject",
+    url: `${getSiteUrl()}/camihogarlogo.jpeg`,
+    width: 1000,
+    height: 1000,
+    caption: "CamiHogar: logo oficial naranja sobre fondo marrón",
+  },
   description: "Colchonería y mueblería en Guatire con entregas en Guarenas, Caracas, Higuerote y toda Venezuela.",
   telephone: "+584127322091",
   email: "hola@camihogar.com",
@@ -111,7 +136,7 @@ export default async function HomePage() {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify([webPageSchema, localBusinessSchema]) }} />
       <Hero content={{ ...settings, title: settings.heroTitle, subtitle: settings.heroSubtitle, eyebrow: settings.heroEyebrow, buttonText: settings.heroButtonText, primaryStat: settings.heroPrimaryStat, primaryStatLabel: settings.heroPrimaryStatLabel, qualityStat: settings.heroQualityStat, qualityStatLabel: settings.heroQualityStatLabel, countryStat: settings.heroCountryStat, countryStatLabel: settings.heroCountryStatLabel }} />
       <div className="space-y-14 py-12 md:space-y-20 md:py-16">
         <CategoryCarousel categories={categories} productCounts={categoryProductCounts} />

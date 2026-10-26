@@ -57,7 +57,7 @@ export function MobileDrawer({ open, onOpenChange, categories }: MobileDrawerPro
             className="pointer-events-none absolute -right-6 top-1/2 h-24 -translate-y-1/2 opacity-[0.08]"
             aria-hidden="true"
           >
-            <LogoMark variant="white" className="h-full" />
+            <LogoMark className="h-full" />
           </div>
           <SheetTitle className="relative">
             <Logo surface="dark" className="[&>img]:h-9" />

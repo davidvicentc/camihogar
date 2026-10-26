@@ -1,11 +1,11 @@
-import type { Metadata } from "next";
+import { catalogMetadata } from "@/lib/metadata";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight, ChevronRight } from "lucide-react";
 import { getCategories } from "@/lib/data/catalog";
 import { getProducts } from "@/lib/data/products";
 
-export const metadata: Metadata = { title: "Categorías de muebles", description: "Encuentra tu próximo mueble: explora las categorías de CamiHogar y elige las piezas para tu hogar.", alternates: { canonical: "/catalogo/categorias" } };
+export const metadata = catalogMetadata("/catalogo/categorias");
 
 export default async function CategoriesPage() {
   const [categories, products] = await Promise.all([getCategories(), getProducts()]);
