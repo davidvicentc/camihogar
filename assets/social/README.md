@@ -1,12 +1,16 @@
 # CamiHogar catalog share artwork
 
-The current v3 master is `catalogo-camihogar-v3.png`, generated with the built-in ImageGen tool. Run `node scripts/generate-social-images.mjs` from the repository root to export the 1200 × 630 JPEG consumed by Open Graph and Twitter cards. Previous JPEGs stay available for cached links.
+The current v4 master is `catalogo-camihogar-v4.png`, generated with the built-in ImageGen tool. Run `node scripts/generate-social-images.mjs` from the repository root to export the 1200 × 630 JPEG consumed by Open Graph and Twitter cards. Previous JPEGs stay available for cached links.
 
 The composition uses the official logo and these existing catalog category photographs as references:
 
 - Beds: https://imagenes.camihogar.com/productos/2026-10/57e692c9-88d6-4757-9a2a-4b8117a90365.webp
 - Living room: https://imagenes.camihogar.com/productos/2026-10/189304d8-d427-4d38-8c3a-566befdb6940.webp
 - Dining room: https://imagenes.camihogar.com/productos/2026-10/d3b96f8f-f5ca-475c-9b86-f3b80001fded.webp
+
+## Category line revision prompt (v4)
+
+Make one precise text edit to this finished CamiHogar catalog banner. Replace ONLY the small secondary line "Camas, salas y comedores" with the exact Spanish text "Camas, salas, comedores y más". It must read exactly "Camas, salas, comedores y más", with accent on más. Keep that secondary line in the same clean ivory sans-serif, reduce its size slightly as needed so the whole phrase fits neatly on one line entirely within the brown left panel, comfortably clear of the photo edge. Keep the main headline EXACTLY "Lo esencial para tu hogar en un solo sitio", unchanged in position, style and line breaks. Preserve all other content and layout exactly: orange official CamiHogar house/CH logo, CAMIHOGAR wordmark, catalog label, orange "Abrir catálogo" CTA with arrow, footer "Guatire · Caracas" and "Envíos a toda Venezuela", authentic bedroom, sofa and dining images, page frames, warm sunlit background, brown/orange/ivory palette. Do not change furniture or regenerate the overall design. Landscape 1200:630 aspect ratio.
 
 ## Headline revision prompt (v3)
 
