@@ -5,11 +5,11 @@ export const CATALOG_TITLE = "Catálogo de CamiHogar | Muebles, camas y colchone
 export const CATALOG_DESCRIPTION =
   "Explora muebles, sofás cama, comedores, camas, colchones, clósets y centros de TV. Visítanos en Guatire y Caracas. Entregas en Guarenas, Higuerote y toda Venezuela. Consulta precios y disponibilidad por WhatsApp.";
 export const CATALOG_IMAGE = {
-  url: "/og/catalogo-camihogar-v1.jpg",
+  url: "/og/catalogo-camihogar-v2.jpg",
   width: 1200,
   height: 630,
   type: "image/jpeg",
-  alt: "Catálogo de CamiHogar: muebles, camas y colchones. Guatire y Caracas. Entregas en toda Venezuela.",
+  alt: "Abre el catálogo de CamiHogar: vista de una cama tapizada, una sala y un comedor. Tiendas en Guatire y Caracas, envíos a toda Venezuela.",
 };
 
 /** Each catalog route emits its own social tags instead of inheriting the home card. */
